@@ -2,4 +2,4 @@
 
 Helpful shell scripts and programs.
 
-* [git merge-svn](git-merge-svn)
+* [git merge-svn](bin/git-merge-svn)
