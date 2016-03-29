@@ -1,6 +1,6 @@
 test:
-	export PATH=$$PWD:$$PATH
+	export PATH=$$PWD/bin:$$PATH ; \
 	for t in t/* ; \
 	do \
-	    . $$t ; \
+	    test -x $$t && $$t ; \
 	done
