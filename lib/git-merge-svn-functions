@@ -1,24 +1,22 @@
 #!/bin/bash
 
-function setup_repo_and_clones {
+function _setup_repo_branch_and_clones {
     svnadmin create mergey
-    svn co file://$root/mergey svn
+
+    svn co file://$PWD/mergey svn
     pushd svn
     svn mkdir trunk tags branches
     svn commit -m 'Standard layout'
+    svn copy trunk branches/develop
+    svn commit -m 'Branch develop'
     popd
+
     # All repos start with 1 common commit
     and_commit_in svn_trunk 'foo' 'Common commit'
-    git svn clone -s file://$root/mergey git
-}
 
-function setup_branch {
-    svn copy file://$root/mergey/trunk file://$root/mergey/branches/develop -m 'Branch develop'
-    pushd svn
-    svn up
-    popd
+    git svn clone -s file://$PWD/mergey git
     pushd git
-    git svn fetch --fetch-all
+    git checkout -b develop origin/develop
     popd
 }
 
@@ -34,7 +32,7 @@ function trunk {
     shift 3
 }
 
-function svn_commit {
+function _svn_commit {
     local dir=$1
     local file=$2
     local commit_message=$3
@@ -47,7 +45,7 @@ function svn_commit {
     popd
 }
 
-function git_commit {
+function _git_commit {
     local branch=$1
     local file=$2
     local commit_message=$3
@@ -67,7 +65,7 @@ function svn_trunk {
     * ) error 'No file and commit message and contents for svn_trunk' ;;
     esac
 
-    svn_commit trunk $file "$commit_message" "$contents"
+    _svn_commit trunk $file "$commit_message" "$contents"
 }
 
 function svn_branch {
@@ -76,7 +74,7 @@ function svn_branch {
     * ) error 'No file and commit message and contents for svn_branch' ;;
     esac
 
-    svn_commit branches/develop $file "$commit_message" "$contents"
+    _svn_commit branches/develop $file "$commit_message" "$contents"
 }
 
 function git_trunk {
@@ -85,7 +83,7 @@ function git_trunk {
     * ) error 'No file and commit message and contents for git_trunk' ;;
     esac
 
-    git_commit master $file "$commit_message" "$contents"
+    _git_commit master $file "$commit_message" "$contents"
 }
 
 function git_branch {
@@ -94,7 +92,7 @@ function git_branch {
     * ) error 'No file and commit message and contents for git_branch' ;;
     esac
 
-    git_commit develop $file "$commit_message" "$contents"
+    _git_commit develop $file "$commit_message" "$contents"
 }
 
 function and_commit_in {
@@ -109,9 +107,8 @@ function and_no_changes {
 }
 
 function then_exit {
-    local actual=$1
-    local expected=$2
-    shift 2
+    local actual=$exit_code
+    local expected=$1 ; shift
 
     if (( actual == expected ))
     then
@@ -121,28 +118,27 @@ function then_exit {
     fi
 }
 
-function merge_develop_from_master {
-    pushd
+function _merge_develop_from_master {
+    pushd git
     git checkout develop
-    git merge-svn -i master
+    git merge-svn -i -m "Testing $test_name" master
     local code=$?
     popd
     return $code
 }
 
 function when_merge {
-    merge_develop_from_master
-    code=$?
+    _merge_develop_from_master
+    local exit_code=$?
 
     case $1 in
-    then_exit ) shift ; then_exit $code "$@" ;;
+    then_exit ) "$@" ;;
     * ) error 'No then_exit for when_merge' ;;
     esac
 }
 
 function given_repo {
-    setup_repo_and_clones
-    setup_branch
+    _setup_repo_branch_and_clones
 
     case $1 in
     and_commit_in | when_merge ) "$@" ;;
@@ -151,19 +147,20 @@ function given_repo {
 }
 
 function scenario {
+    trap 'rm -rf $test_root' RETURN
+    # Cater to Linux or Mac
+    test_root=$(mktemp -d 2>/dev/null || mktemp -d -t ${0##*/})
+    cd $test_root
+
     local scenario_text="scenario $@"
-    local test_name='<UNKNOWN>'
+    local test_name='<UNDEFINED>'
 
-    case $# in
-    0 | 1 ) error 'Malformed scenario' ;;
-    * ) test_name="$1" ; shift ;;
-    esac
-
-    case $1 in
-    given_repo ) "$@" ;;
+    case $2 in
+    given_repo ) test_name="$1" ; shift ; "$@" ;;
     * ) error 'No given_repo for scenario' ;;
     esac
 }
+
 
 
 
@@ -175,15 +172,6 @@ function commit_on_trunk_only {
     git svn dcommit
     popd
 }
-commit_on_trunk_only
-
-function setup_git_branch {
-    pushd git
-    git svn fetch --fetch-all
-    git checkout develop remotes/origin/develop
-    popd
-}
-setup_git_branch
 
 function commit_on_branch_only {
     pushd git
@@ -194,7 +182,6 @@ function commit_on_branch_only {
     git svn dcommit
     popd
 }
-commit_on_branch_only
 
 function commit_conflict {
     pushd git
@@ -209,7 +196,6 @@ function commit_conflict {
     git svn dcommit
     popd
 }
-commit_conflicts
 
 function commit_trunk_only_again {
     pushd git
@@ -219,7 +205,6 @@ function commit_trunk_only_again {
     git svn dcommit
     popd
 }
-commit_trunk_only_again
 
 function commit_branch_only_again {
     pushd git
@@ -228,8 +213,3 @@ function commit_branch_only_again {
     git svn dcommit
     popd
 }
-commit_trunk_only_again
-
-
-merge_develop_from_master
-bash

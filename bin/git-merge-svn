@@ -8,7 +8,7 @@ program=${program/git-/git }
 
 function print_usage {
     cat <<EOU
-Usage: $program [--abort][--continue][-d|--debug][-h|--help][-i|--interactive][-n|--dry-run][-r|--svn-remote=<remote>][--show-details][-v|--verbose] [branch]
+Usage: $program [--abort][--continue][-d|--debug][-h|--help][-i|--interactive][-m <message>][-n|--dry-run][-r|--svn-remote=<remote>][--show-details][-v|--verbose] [branch]
 EOU
 }
 
@@ -30,6 +30,7 @@ Flags:
   -d,--debug                Print debug output (implies verbose)
   -h,--help                 Print help and exit normally
   -i,--interactive          Resolve merge conflicts manually
+  -m <message>              Merge message when no conflicts
   -r,--svn-remote=<remote>  Change svn remote (default: $svn_remote)
   --show-details            Print interactive merge details after failure
   -v,--verbose              Print verbose output
@@ -67,7 +68,7 @@ merge_continue=false
 show_details=false
 svn_remote=$(config_setting svn-remote svn)
 verbose=$(config_setting verbose false)
-while getopts :hinr:v-: opt
+while getopts :him:nr:v-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
@@ -76,6 +77,7 @@ do
     d | debug ) turn_on_debugging ;;
     h | help ) print_help ; exit 0 ;;
     i | interactive ) interactive=true ;;
+    m ) message=$OPTARG ;;
     n | dry-run ) git='echo git' ;;
     r | svn-remote ) svn_remote=$OPTARG ;;
     show-details ) show_details=true ;;
@@ -256,7 +258,18 @@ EOM
     sed 's/^\([^=]*=\)/  - \1/' <$lock
 }
 
-if ! $git_merged && ! $git merge --no-ff $from_branch
+function merge_maybe_with_message {
+    local from_branch=$1
+
+    if [[ -z $message ]]
+    then
+        $git merge --no-ff $from_branch
+    else
+        $git merge --no-ff -m "$message" $from_branch
+    fi
+}
+
+if ! $git_merged && ! merge_maybe_with_message $from_branch
 then
     echo "$program: Cannot automatically merge" >&2
     if $interactive

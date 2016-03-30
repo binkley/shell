@@ -1,7 +1,7 @@
 #!/bin/bash
 
-. $(dirname $0)/testing-functions
-. $(dirname $0)/git-svn-merge-functions
+. $(dirname $0)/../lib/git-merge-svn-functions
+. $(dirname $0)/../lib/testing-functions  # cd's to tmpdir
 
 scenario 'Merge with only common commits' \
     given_repo \
@@ -9,21 +9,22 @@ scenario 'Merge with only common commits' \
         then_exit 0 \
             and_no_changes
 
-scenario 'Merge with only trunk commits and no conflicts'
+
+: scenario 'Merge with only trunk commits and no conflicts'
     given_repo \
             and_commit_in git_trunk 'bar' 'Trunk version' 'apple' \
         when_merge \
         then_exit 0 \
             and_file_contains 'bar' 'apple'
 
-scenario 'Merge with only branch commits and no conflicts'
+: scenario 'Merge with only branch commits and no conflicts'
     given_repo \
             and_commit_in git_branch 'bar' 'Brank version' 'apple' \
         when_merge \
         then_exit 0 \
             and_no_changes
 
-scenario 'Conflict fails and rolls back in automatic merge' \
+: scenario 'Conflict fails and rolls back in automatic merge' \
     given_repo \
             and_commit_in git_trunk 'bar' 'Trunk version' 'apple' \
             and_commit_in git_branch 'bar' 'Branch version' 'banana' \
@@ -31,7 +32,7 @@ scenario 'Conflict fails and rolls back in automatic merge' \
         then_exit 1 \
             and_rollback
 
-scenario 'Conflict resolved in interactive merge'
+: scenario 'Conflict resolved in interactive merge'
     given_repo \
             and_commit_in git_trunk 'bar' 'Trunk version' 'apple' \
             and_commit_in git_branch 'bar' 'Branch version' 'banana' \
