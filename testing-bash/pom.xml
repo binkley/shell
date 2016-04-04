@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>tw.eg</groupId>
+    <artifactId>testing-bash</artifactId>
+    <version>0-SNAPSHOT</version>
+
+    <properties>
+        <!-- @formatter:off -->
+        <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
+        <jar.skipIfEmpty>true</jar.skipIfEmpty>
+        <java.charset>UTF-8</java.charset>
+        <jgitflow-maven-plugin.version>1.0-m5.1</jgitflow-maven-plugin.version>
+        <project.build.outputEncoding>${java.charset}</project.build.outputEncoding>
+        <project.build.sourceEncoding>${java.charset}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${java.charset}</project.reporting.outputEncoding>
+        <project.reporting.sourceEncoding>${java.charset}</project.reporting.sourceEncoding>
+        <surefire.printSummary>false</surefire.printSummary>
+        <!-- @formatter:on -->
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>${jgitflow-maven-plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${exec-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>test-run-java</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>bash</executable>
+                    <arguments>
+                        <argument>
+                            ${project.build.testOutputDirectory}/test-run-java.sh
+                        </argument>
+                        <argument>--quiet</argument>
+                        <argument>
+                            ${project.build.outputDirectory}/run-java.sh
+                        </argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
