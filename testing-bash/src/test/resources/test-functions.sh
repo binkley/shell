@@ -97,7 +97,7 @@ function also_jar()
     given_jar "$@"
 }
 
-function with_tasks()
+function with_jobs()
 {
     mkdir -p $tmpdir/META-INF $tmpdir/lib
 
@@ -105,20 +105,20 @@ function with_tasks()
     also_jar | when_run )
         next=$1
         shift
-        cat >$tmpdir/META-INF/tasks
+        cat >$tmpdir/META-INF/jobs
         ;;
     * ) case $2 in
         also_jar | when_run )
-            echo "$1" >$tmpdir/META-INF/tasks
+            echo "$1" >$tmpdir/META-INF/jobs
             next=$2
             shift 2
             ;;
-        * ) _bad_functions with_tasks also_jar when_run ;;
+        * ) _bad_functions with_jobs also_jar when_run ;;
         esac
         ;;
     esac
 
-    (cd $tmpdir ; jar cf lib/$jar META-INF/tasks)
+    (cd $tmpdir ; jar cf lib/$jar META-INF/jobs)
     $next "$@"
 }
 
@@ -128,8 +128,8 @@ function given_jar()
     shift
 
     case $1 in
-    with_tasks ) "$@" ;;
-    * ) _bad_functions given_jar with_tasks ;;
+    with_jobs ) "$@" ;;
+    * ) _bad_functions given_jar with_jobs ;;
     esac
 }
 

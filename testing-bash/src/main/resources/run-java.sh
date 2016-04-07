@@ -3,32 +3,32 @@
 set -o errexit
 set -o pipefail
 
-task_file=META-INF/tasks
+job_file=META-INF/jobs
 
-trap 'rm -f $all_tasks' EXIT
-all_tasks=$(mktemp)
+trap 'rm -f $all_jobs' EXIT
+all_jobs=$(mktemp)
 
 rootdir=$(dirname $0)
 for jar in $rootdir/lib/*.jar
 do
     if [[ $jar == "$rootdir/lib/*.jar" ]]
     then
-        echo "$0: No jars to search for tasks" >&2
+        echo "$0: No jars to search for jobs" >&2
         exit 2
     fi
 
-    unzip -qc $jar $task_file \
+    unzip -qc $jar $job_file \
         | sed -e 's/#.*//' -e '/^$/d' -e "s;^;$jar ;"
-done | sort -k1,2 >$all_tasks
+done | sort -k1,2 >$all_jobs
 
 function print_usage()
 {
     cat <<EOU
-Usage: $0 [-J-jvm_flag ...][-h|--help][--health][-n|--dry-run][-v|--verbose] [--] [-task_flag ...] [task_arg ...]
+Usage: $0 [-J-jvm_flag ...][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 EOU
 }
 
-function format_task()
+function format_job()
 {
     sed -e 's/-D\([^=]*\)=\$[1-9][0-9]*/<\1>/g'
 }
@@ -40,15 +40,16 @@ function print_help()
 
 Flags:
   -J-*           JVM flags prefixed with J
-  -h, --help     Print help and exit
-  --health       Check task health and exit
+  -h, --help     Print help and exit normally
+  --health       Check job health and exit
+  -j, --jobs     List jobs and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
   -v, --verbose  Verbose output
 
-Tasks:
+Jobs:
 EOH
     last_jar=''
-    while read jar task_defn
+    while read jar job_defn
     do
         if [[ $jar != $last_jar ]]
         then
@@ -56,8 +57,13 @@ EOH
             echo "  * ${jar##*/}:"
         fi
         echo -n "    - "
-        echo "$task_defn" | format_task
-    done <$all_tasks
+        echo "$job_defn" | format_job
+    done <$all_jobs
+}
+
+function list_jobs()
+{
+    cut -d' ' -f2- <$all_jobs | sort
 }
 
 health=false
@@ -71,6 +77,7 @@ do
     J ) java_flags=("${java_flags[@]}" "$OPTARG") ;;
     h | help ) print_help ; exit 0 ;;
     health ) health=true ;;
+    j | jobs ) list_jobs ; exit 0 ;;
     n | dry-run ) java='echo java' ;;
     v | verbose ) verbose=true ;;
     * ) print_usage >&2 ; exit 2 ;;
@@ -82,34 +89,34 @@ case $# in
 0 ) print_usage >&2 ; exit 2 ;;
 esac
 
-while read jar task_defn task_rest
+while read jar job_defn job_rest
 do
-    case $task_defn in
-    $1 ) task=$1 ; break ;;
+    case $job_defn in
+    $1 ) job=$1 ; break ;;
     esac
-done <$all_tasks
+done <$all_jobs
 
-if [[ -z "$task" ]]
+if [[ -z "$job" ]]
 then
-    echo "$0: No definition for task: $1 (try -h)"
+    echo "$0: No definition for job: $1 (try -h)"
     echo "Definitions:"
-    sed 's/^/  /' <$all_tasks
+    sed 's/^/  /' <$all_jobs
     exit 2
 fi
 shift
 
 if $health
 then
-    exec $java "${java_flags[@]}" -jar $jar --health $task
+    exec $java "${java_flags[@]}" -jar $jar --health $job
 fi
 
-task_args=()
-for arg in $(eval echo $task_rest)
+job_args=()
+for arg in $(eval echo $job_rest)
 do
     case $arg in
     -D* ) java_flags=("${java_flags[@]}" "$arg") ;;
-    * ) task_args=("${task_args[@]}" "$arg") ;;
+    * ) job_args=("${job_args[@]}" "$arg") ;;
     esac
 done
 
-exec $java "${java_flags[@]}" -jar $jar $task "${task_args[@]}"
+exec $java "${java_flags[@]}" -jar $jar $job "${job_args[@]}"

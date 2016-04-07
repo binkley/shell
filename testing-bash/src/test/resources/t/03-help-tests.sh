@@ -1,61 +1,64 @@
 # Source me - do not execute
 
 scenario "Short option help" \
-    given_jar a.jar with_tasks 'simple-task' \
-        also_jar b.jar with_tasks 'trivial-task' \
+    given_jar a.jar with_jobs 'simple-job' \
+        also_jar b.jar with_jobs 'trivial-job' \
     when_run '-h' \
     then_expect <<'EOE'
-Usage: ./run-java.sh [-J-jvm_flag ...][-h|--help][--health][-n|--dry-run][-v|--verbose] [--] [-task_flag ...] [task_arg ...]
+Usage: ./run-java.sh [-J-jvm_flag ...][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 
 Flags:
   -J-*           JVM flags prefixed with J
-  -h, --help     Print help and exit
-  --health       Check task health and exit
+  -h, --help     Print help and exit normally
+  --health       Check job health and exit
+  -j, --jobs     List jobs and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
   -v, --verbose  Verbose output
 
-Tasks:
+Jobs:
   * a.jar:
-    - simple-task
+    - simple-job
   * b.jar:
-    - trivial-task
+    - trivial-job
 EOE
 
 scenario "Long option help" \
-    given_jar a.jar with_tasks 'simple-task' \
-        also_jar b.jar with_tasks 'trivial-task' \
+    given_jar a.jar with_jobs 'simple-job' \
+        also_jar b.jar with_jobs 'trivial-job' \
     when_run '--help' \
     then_expect <<'EOE'
-Usage: ./run-java.sh [-J-jvm_flag ...][-h|--help][--health][-n|--dry-run][-v|--verbose] [--] [-task_flag ...] [task_arg ...]
+Usage: ./run-java.sh [-J-jvm_flag ...][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 
 Flags:
   -J-*           JVM flags prefixed with J
-  -h, --help     Print help and exit
-  --health       Check task health and exit
+  -h, --help     Print help and exit normally
+  --health       Check job health and exit
+  -j, --jobs     List jobs and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
   -v, --verbose  Verbose output
 
-Tasks:
+Jobs:
   * a.jar:
-    - simple-task
+    - simple-job
   * b.jar:
-    - trivial-task
+    - trivial-job
 EOE
 
-scenario "Complext tasks help" \
-    given_jar a.jar with_tasks 'complex-task -Dfile=$1 $2' \
+scenario "Complext jobs help" \
+    given_jar a.jar with_jobs 'complex-job -Dfile=$1 $2' \
     when_run '--help' \
     then_expect <<'EOE'
-Usage: ./run-java.sh [-J-jvm_flag ...][-h|--help][--health][-n|--dry-run][-v|--verbose] [--] [-task_flag ...] [task_arg ...]
+Usage: ./run-java.sh [-J-jvm_flag ...][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 
 Flags:
   -J-*           JVM flags prefixed with J
-  -h, --help     Print help and exit
-  --health       Check task health and exit
+  -h, --help     Print help and exit normally
+  --health       Check job health and exit
+  -j, --jobs     List jobs and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
   -v, --verbose  Verbose output
 
-Tasks:
+Jobs:
   * a.jar:
-    - complex-task <file> $2
+    - complex-job <file> $2
 EOE
