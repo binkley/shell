@@ -33,6 +33,8 @@ function _assert()
 FAILED $test_name
 Expected $expected
 Got $actual
+Difference:
+$(diff <(echo "$expected") <(echo "$actual"))
 EOM
         return 1
     fi
