@@ -15,10 +15,10 @@ Fluent coding relies on several BASH features:
   so are visible to other functions called within that scope, directly or
   indirectly through further function calls
 
-Together with [Builder pattern](https://en.wikipedia.org/wiki/Builder_pattern),
-it's easy to write given/when/then tests.  (Builder pattern here solves the
-problem not of telescoping constructors, but massive, arbitrary argument
-lists.)
+Together with
+[Builder pattern](https://en.wikipedia.org/wiki/Builder_pattern), it's easy
+to write given/when/then tests.  (Builder pattern here solves the problem
+not of telescoping constructors, but long, arbitrary argument lists.)
 
 So when you run:
 
