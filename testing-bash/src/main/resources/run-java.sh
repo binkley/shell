@@ -1,5 +1,19 @@
 #!/bin/bash
 
+function enable_debug()
+{
+    export debug=true
+    export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+    set -o functrace
+    set -o pipefail
+    set -o xtrace
+}
+
+if ${debug-false}
+then
+    enable_debug
+fi
+
 set -o errexit
 set -o pipefail
 
@@ -24,7 +38,7 @@ done | sort -k1,2 >$all_jobs
 function print_usage()
 {
     cat <<EOU
-Usage: $0 [-J-jvm_flag ...][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
+Usage: $0 [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 EOU
 }
 
@@ -40,6 +54,7 @@ function print_help()
 
 Flags:
   -J-*           JVM flags prefixed with J
+  -d, --debug    Print debug output while running
   -h, --help     Print help and exit normally
   --health       Check job health and exit
   -j, --jobs     List jobs and exit normally
@@ -66,15 +81,17 @@ function list_jobs()
     cut -d' ' -f2- <$all_jobs | sort
 }
 
+debug=false
 health=false
 java=java
 java_flags=()
 verbose=false
-while getopts :J:hnv-: opt
+while getopts :J:dhnv-: opt
 do
     [[ - == $opt ]] && opt=$OPTARG
     case $opt in
     J ) java_flags=("${java_flags[@]}" "$OPTARG") ;;
+    d | debug ) enable_debug ;;
     h | help ) print_help ; exit 0 ;;
     health ) health=true ;;
     j | jobs ) list_jobs ; exit 0 ;;

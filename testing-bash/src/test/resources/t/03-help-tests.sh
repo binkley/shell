@@ -5,10 +5,11 @@ scenario "Short option help" \
         also_jar b.jar with_jobs 'trivial-job' \
     when_run '-h' \
     then_expect <<'EOE'
-Usage: ./run-java.sh [-J-jvm_flag ...][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
+Usage: ./run-java.sh [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 
 Flags:
   -J-*           JVM flags prefixed with J
+  -d, --debug    Print debug output while running
   -h, --help     Print help and exit normally
   --health       Check job health and exit
   -j, --jobs     List jobs and exit normally
@@ -27,10 +28,11 @@ scenario "Long option help" \
         also_jar b.jar with_jobs 'trivial-job' \
     when_run '--help' \
     then_expect <<'EOE'
-Usage: ./run-java.sh [-J-jvm_flag ...][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
+Usage: ./run-java.sh [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 
 Flags:
   -J-*           JVM flags prefixed with J
+  -d, --debug    Print debug output while running
   -h, --help     Print help and exit normally
   --health       Check job health and exit
   -j, --jobs     List jobs and exit normally
@@ -48,10 +50,11 @@ scenario "Complext jobs help" \
     given_jar a.jar with_jobs 'complex-job -Dfile=$1 $2' \
     when_run '--help' \
     then_expect <<'EOE'
-Usage: ./run-java.sh [-J-jvm_flag ...][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
+Usage: ./run-java.sh [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 
 Flags:
   -J-*           JVM flags prefixed with J
+  -d, --debug    Print debug output while running
   -h, --help     Print help and exit normally
   --health       Check job health and exit
   -j, --jobs     List jobs and exit normally

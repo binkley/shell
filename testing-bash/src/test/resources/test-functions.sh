@@ -45,6 +45,18 @@ EOM
     fi
 }
 
+function _read_stderr()
+{
+    # Ignore debug output
+    local err=$1
+    if $debug
+    then
+        grep '^[^+]' $err
+    else
+        cat $err
+    fi
+}
+
 function then_expect()
 {
     case $# in
@@ -60,7 +72,8 @@ function then_expect()
     cd $tmpdir
     ./$run_script -n "${command_line[@]}" >$tmpdir/out 2>$tmpdir/err
 
-    error="$(<$tmpdir/err)"
+    # Ignore debugging output
+    error="$(_read_stderr $tmpdir/err)"
     if [[ -n "$error" ]]
     then
         echo "ERROR $test_name: $error"
@@ -140,7 +153,7 @@ function _maybe_debug_if_not_passed()
     if $debug
     then
         pushd $tmpdir
-        bash
+        $SHELL -i
         popd
     fi
 }
@@ -168,19 +181,20 @@ function scenario()
     [0-7] ) _bad_clauses "Not enough clauses" ;;
     esac
 
-    local test_name="$1" ; shift
+    local test_name="$1"
+    shift
 
     case $1 in
     given_jar | given_existing_jars ) "$@" ;;
     * ) _bad_functions scenario given_jar given_existing_jars ;;
     esac
 
-    exit_code=$?
+    export exit_code=$?
     case $exit_code in
     0 ) let ++passed ;;
     1 ) _maybe_debug_if_not_passed ; let ++failed  ;;
-    2 ) _maybe_debug_if_not_passed ; let ++died  ;;
-    * ) _maybe_debug_if_not_passed ; exit $? ;;
+    2 ) _maybe_debug_if_not_passed ; let ++errored  ;;
+    * ) _maybe_debug_if_not_passed ; exit $exit_code ;;
     esac
 
     return $exit_code
