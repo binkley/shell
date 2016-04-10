@@ -3,7 +3,7 @@
 function _setup_repo_branch_and_clones {
     svnadmin create mergey
 
-    svn co file://$PWD/mergey svn
+    svn checkout -q file://$PWD/mergey svn
     pushd svn
     svn mkdir trunk tags branches
     svn commit -m 'Standard layout'
@@ -103,7 +103,7 @@ function and_commit_in {
 }
 
 function and_no_changes {
-    pass 'TODO: Check git HEAD hashes that nothing happened'
+    pass # TODO: Check git HEAD hashes that nothing happened
 }
 
 function then_exit {

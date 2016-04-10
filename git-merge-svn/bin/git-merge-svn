@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Disable color, etc, if pipe
+[[ ! -t 1 ]] && export TERM=dumb
+
 tree_root=$(git rev-parse --show-toplevel)
 program=${0##*/}
 lock=$tree_root/.git/svn/$program.lock
