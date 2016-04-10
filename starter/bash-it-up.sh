@@ -8,11 +8,10 @@ function enable_debug()
     set -o pipefail
     set -o xtrace
 }
+${debug-false} && enable_debug
 
-if ${debug-false}
-then
-    enable_debug
-fi
+# Disable color, etc., if a pipe
+[[ ! -t 1 ]] && export TERM=dumb
 
 function print_usage()
 {
