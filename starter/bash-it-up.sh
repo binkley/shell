@@ -35,6 +35,7 @@ EOH
 }
 
 debug=false
+pwd=pwd
 verbose=false
 while getopts :J:dhnv-: opt
 do
@@ -42,7 +43,7 @@ do
     case $opt in
     d | debug ) enable_debug ;;
     h | help ) print_help ; exit 0 ;;
-    n | dry-run ) java='echo java' ;;
+    n | dry-run ) pwd='echo pwd' ;;
     v | verbose ) verbose=true ;;
     * ) print_usage >&2 ; exit 2 ;;
     esac
@@ -53,3 +54,5 @@ case $# in
 0 ) ;;
 * ) print_usage >&2 ; exit 2 ;;
 esac
+
+$pwd
