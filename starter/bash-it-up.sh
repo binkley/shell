@@ -51,5 +51,5 @@ shift $((OPTIND - 1))
 
 case $# in
 0 ) ;;
-0 ) print_usage >&2 ; exit 2 ;;
+* ) print_usage >&2 ; exit 2 ;;
 esac
