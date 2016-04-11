@@ -19,7 +19,15 @@ scenario 'Merge with only common commits' \
 
 : scenario 'Merge with only branch commits and no conflicts'
     given_repo \
-            and_commit_in git_branch 'bar' 'Brank version' 'apple' \
+            and_commit_in git_branch 'bar' 'Branch version' 'apple' \
+        when_merge \
+        then_exit 0 \
+            and_no_changes
+
+: scenario 'Merge with only multiple branch commits and no conflicts'
+    given_repo \
+            and_commit_in git_branch 'bar' 'Branch version' 'apple' \
+            and_commit_in git_branch 'bar' 'Branch version, #2' 'pear' \
         when_merge \
         then_exit 0 \
             and_no_changes
