@@ -86,4 +86,5 @@ with other, similar functions) work the same way.  Keep this in mind.
 * [test-functions.sh](src/test/resources/test-functions.sh) - BDD testing
   functions
 * [t/*](src/test/resources/t/) - BDD-style tests
-* [pom.xml](pom.xml) - Maven glue to run shell unit tests during `test` phase
+* [pom.xml](pom.xml) - Maven glue to run shell unit tests during `test` phase.
+  Note respect given to `skipTests`
