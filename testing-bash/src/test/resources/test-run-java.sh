@@ -3,7 +3,7 @@
 function print_usage()
 {
     cat <<EOU
-Usage: $0 [-d|--debug]|[-q|--quiet] <script>
+Usage: $0 [-d|--debug]|[-q|--quiet] <script> <test_dir>
 EOU
 }
 
@@ -29,7 +29,7 @@ done
 shift $((OPTIND - 1))
 
 case $# in
-1 ) script=$1 ;;
+2 ) script=$1 test_dir=$2 ;;
 * ) print_usage >&2 ; exit 3 ;;
 esac
 
@@ -38,11 +38,11 @@ rootdir=$(dirname $0)
 . $rootdir/test-functions.sh
 
 let passed=0 failed=0 errored=0
-for t in $rootdir/t/*.sh
+for t in $test_dir/*.sh
 do
     if ! $quiet
     then
-        echo t/${t##*/}:
+        echo ${test_dir##*/}/${t##*/}:
     fi
     . $t
 done

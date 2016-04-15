@@ -35,6 +35,10 @@ Expected $expected
 Got $actual
 Difference:
 $(diff <(echo "$expected") <(echo "$actual"))
+Standard out:
+$(<$tmpdir/out)
+Standard err:
+$(<$tmpdir/err)
 EOM
         return 1
     fi
@@ -57,20 +61,43 @@ function _read_stderr()
     fi
 }
 
+function _run_script()
+{
+    local run_script=${script##*/}
+    cp $script $tmpdir/$run_script
+    chmod a+rx $tmpdir/$run_script
+
+    cd $tmpdir
+    ./$run_script "$@" "${command_line[@]}" >$tmpdir/out 2>$tmpdir/err
+
+    return $?
+}
+
+function then_exit()
+{
+    local expected_exit=$1
+    shift
+
+    _run_script
+
+    _assert $expected_exit $?
+}
+
 function then_expect()
 {
     case $# in
     0 ) expected=$(</dev/stdin) ;;
     1 ) expected="$1" ;;
-    * ) _bad_classes "Too many clauses" ;;
+    * ) _bad_clauses "Too many clauses" ;;
     esac
 
-    run_script=${script##*/}
-    cp $script $tmpdir/$run_script
-    chmod a+rx $tmpdir/$run_script
+    _run_script -n
 
-    cd $tmpdir
-    ./$run_script -n "${command_line[@]}" >$tmpdir/out 2>$tmpdir/err
+    case $? in
+    0 ) ;;
+    * ) echo "ERROR $test_name: Did not exit normally"
+        return 2 ;;
+    esac
 
     # Ignore debugging output
     error="$(_read_stderr $tmpdir/err)"
@@ -91,20 +118,12 @@ function when_run()
     for arg
     do
         case $arg in
-        then_expect ) "$@" ; return $? ;;
+        then_expect | then_exit ) "$@" ; return $? ;;
         * ) command_line=("${command_line[@]}" "$arg") ; shift ;;
         esac
     done
 
-    _bad_functions when_run then_expect
-}
-
-function given_existing_jars()
-{
-    case $1 in
-    also_jar | when_run ) "$@" ;;
-    * ) _bad_functions given_existing_jars also_jar when_run ;;
-    esac
+    _bad_functions when_run then_expect then_exit
 }
 
 function also_jar()
@@ -114,7 +133,7 @@ function also_jar()
 
 function with_jobs()
 {
-    mkdir -p $tmpdir/META-INF $tmpdir/lib
+    mkdir -p $tmpdir/META-INF
 
     case $1 in
     also_jar | when_run )
@@ -144,13 +163,16 @@ function given_jar()
 
     case $1 in
     with_jobs ) "$@" ;;
-    * ) _bad_functions given_jar with_jobs ;;
+    when_run )
+        cp ${project.build.directory}/$jar $tmpdir/lib
+        "$@" ;;
+    * ) _bad_functions given_jar with_jobs when_run ;;
     esac
 }
 
 function _maybe_debug_if_not_passed()
 {
-    if $debug
+    if $debug && [[ -t 0 ]]
     then
         pushd $tmpdir
         $SHELL -i
@@ -165,7 +187,7 @@ let test_number=0 && true
 function scenario()
 {
     local tmpdir=$root_tmpdir/$((++test_number))
-    mkdir $tmpdir
+    mkdir -p $tmpdir/lib
 
     local scenario='scenario'
     for arg
@@ -185,8 +207,8 @@ function scenario()
     shift
 
     case $1 in
-    given_jar | given_existing_jars ) "$@" ;;
-    * ) _bad_functions scenario given_jar given_existing_jars ;;
+    given_jar ) "$@" ;;
+    * ) _bad_functions scenario given_jar ;;
     esac
 
     export exit_code=$?
