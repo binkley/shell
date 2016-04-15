@@ -5,7 +5,7 @@ scenario "Short option help" \
         also_jar b.jar with_jobs 'trivial-job' \
     when_run '-h' \
     then_expect <<'EOE'
-Usage: ./run-java.sh [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
+Usage: ./run-java.sh [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][--resume][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 
 Flags:
   -J-*           JVM flags prefixed with J
@@ -14,6 +14,7 @@ Flags:
   --health       Check job health and exit
   -j, --jobs     List jobs and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
+  --resume       Resume previously failed job
   -v, --verbose  Verbose output
 
 Jobs:
@@ -28,7 +29,7 @@ scenario "Long option help" \
         also_jar b.jar with_jobs 'trivial-job' \
     when_run '--help' \
     then_expect <<'EOE'
-Usage: ./run-java.sh [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
+Usage: ./run-java.sh [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][--resume][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 
 Flags:
   -J-*           JVM flags prefixed with J
@@ -37,6 +38,7 @@ Flags:
   --health       Check job health and exit
   -j, --jobs     List jobs and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
+  --resume       Resume previously failed job
   -v, --verbose  Verbose output
 
 Jobs:
@@ -50,7 +52,7 @@ scenario "Complext jobs help" \
     given_jar a.jar with_jobs 'complex-job -Dfile=$1 $2' \
     when_run '--help' \
     then_expect <<'EOE'
-Usage: ./run-java.sh [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
+Usage: ./run-java.sh [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][--resume][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 
 Flags:
   -J-*           JVM flags prefixed with J
@@ -59,6 +61,7 @@ Flags:
   --health       Check job health and exit
   -j, --jobs     List jobs and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
+  --resume       Resume previously failed job
   -v, --verbose  Verbose output
 
 Jobs:

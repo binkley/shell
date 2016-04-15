@@ -39,22 +39,33 @@ public final class Main {
         }
 
         switch (jobName) {
-        case "real-job":
+        case "healthy-job":
+        case "unhealthy-job":
+        case "resumable-job":
+        case "unresumable-job":
             break;
         default:
             err.println(format("test-program: Not a job: %s", jobName));
             exit(2);
         }
 
-        if (options.has(healthFlag))
-            exit(0);
+        if (options.has(healthFlag)) {
+            switch (jobName) {
+            case "unhealthy-job":
+                err.println(format("%s: I am sad", jobName));
+                exit(1);
+            default:
+                exit(0);
+            }
+        }
 
         if (options.has(resumeFlag)) {
             switch (jobName) {
-            default:
-                err.println(
-                        format("test-program: Does not resume: %s", jobName));
+            case "unresumable-job":
+                err.println(format("%s: Resume not supported", jobName));
                 exit(2);
+            default:
+                exit(0);
             }
         }
     }

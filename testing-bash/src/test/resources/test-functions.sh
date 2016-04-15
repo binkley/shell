@@ -31,6 +31,8 @@ function _assert()
     then
         cat <<EOM
 FAILED $test_name
+Scenario:
+$scenario
 Expected $expected
 Got $actual
 Difference:
@@ -175,6 +177,7 @@ function _maybe_debug_if_not_passed()
     if $debug && [[ -t 0 ]]
     then
         pushd $tmpdir
+        echo ">> Dropping into shell (exited $exit_code): $scenario"
         $SHELL -i
         popd
     fi

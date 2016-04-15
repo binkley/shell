@@ -38,7 +38,7 @@ done | sort -k1,2 >$all_jobs
 function print_usage()
 {
     cat <<EOU
-Usage: $0 [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
+Usage: $0 [-J-jvm_flag ...][-d|--debug][-h|--help][--health][-j|--jobs][-n|--dry-run][--resume][-v|--verbose] [--] [-job_flag ...] [job_arg ...]
 EOU
 }
 
@@ -59,6 +59,7 @@ Flags:
   --health       Check job health and exit
   -j, --jobs     List jobs and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
+  --resume       Resume previously failed job
   -v, --verbose  Verbose output
 
 Jobs:
@@ -85,6 +86,7 @@ debug=false
 health=false
 java=java
 java_flags=()
+resume=false
 verbose=false
 while getopts :J:dhnv-: opt
 do
@@ -96,6 +98,7 @@ do
     health ) health=true ;;
     j | jobs ) list_jobs ; exit 0 ;;
     n | dry-run ) java='echo java' ;;
+    resume ) resume=true ;;
     v | verbose ) verbose=true ;;
     * ) print_usage >&2 ; exit 2 ;;
     esac
@@ -122,13 +125,20 @@ then
 fi
 shift
 
+job_defn=($job $job_rest)
+
 if $health
 then
-    exec $java "${java_flags[@]}" -jar $jar --health $job
+    job_defn=(--health $job)
+fi
+
+if $resume
+then
+    job_defn=(--resume "${job_defn[@]}")
 fi
 
 job_args=()
-for arg in $(eval echo $job_rest)
+for arg in "${job_defn[@]}"
 do
     case $arg in
     -D* ) java_flags=("${java_flags[@]}" "$arg") ;;
@@ -136,4 +146,4 @@ do
     esac
 done
 
-exec $java "${java_flags[@]}" -jar $jar $job "${job_args[@]}"
+eval $java "${java_flags[@]}" -jar $jar "${job_args[@]}"
