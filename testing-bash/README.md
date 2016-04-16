@@ -6,6 +6,8 @@ This demonstrates [fluent](https://en.wikipedia.org/wiki/Fluent_interface)
 
 ## Techniques
 
+### BASH fluent coding
+
 Fluent coding relies on several BASH features:
 
 * Variable expansion happens before executing commands
@@ -46,7 +48,7 @@ You see the output:
 Bob's your uncle
 ```
 
-### How does this work?
+#### How does this work?
 
 First BASH expands variables.  In function `a` this means that after the first
 argument is remembered and removed from the argument list, `"$@"` expands
@@ -75,6 +77,13 @@ Bob's your uncle
 
 So the test functions for `given_jar`, `when_run` and `then_expect` (along
 with other, similar functions) work the same way.  Keep this in mind.
+
+### Maven testing
+
+Maven does not support BASH, however it does support calling arbitrary
+programs with `maven-exec-plugin`.  Assigning this to `test` (unit) and
+`integration-test` (integration) testing phases let's us call BASH BDD scripts
+and fail the Maven build if they don't pass.  Bonanza!
 
 ## Key files
 
