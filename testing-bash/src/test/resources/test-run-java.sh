@@ -1,9 +1,24 @@
 #!/bin/bash
 
+function setup_colors()
+{
+    [[ ! -t 1 ]] && export TERM=dumb
+    # TODO: Should test that 'tput color' > 0?
+    pred=$(tput setaf 1)
+    pgreen=$(tput setaf 2)
+    pyellow=$(tput setaf 3)
+    pblue=$(tput setaf 4)
+    pmagenta=$(tput setaf 5)
+    pcyan=$(tput setaf 6)
+    pwhite=$(tput setaf 7)
+    pbold=$(tput bold)
+    preset=$(tput sgr0)
+}
+
 function print_usage()
 {
     cat <<EOU
-Usage: $0 [-d|--debug]|[-q|--quiet] <script> <test_dir>
+Usage: $0 [-c|--color][-d|--debug]|[-q|--quiet] <script> [test_scripts]
 EOU
 }
 
@@ -17,10 +32,11 @@ function enable_debug()
 }
 
 quiet=false
-while getopts :dq-: opt
+while getopts :cdq-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
+    c | color ) setup_colors ;;
     d | debug ) enable_debug ;;
     q | quiet ) quiet=true ;;
     * ) print_usage >&2 ; exit 3 ;;
@@ -29,8 +45,8 @@ done
 shift $((OPTIND - 1))
 
 case $# in
-2 ) script=$1 test_dir=$2 ;;
-* ) print_usage >&2 ; exit 3 ;;
+0 ) print_usage >&2 ; exit 3 ;;
+* ) script=$1 ; shift ;;
 esac
 
 rootdir=$(dirname $0)
@@ -38,18 +54,20 @@ rootdir=$(dirname $0)
 . $rootdir/test-functions.sh
 
 let passed=0 failed=0 errored=0
-for t in $test_dir/*.sh
+for t in "$@"
 do
     if ! $quiet
     then
-        echo ${test_dir##*/}/${t##*/}:
+        echo "${pbold}Test script${preset} ${t##*/}:"
     fi
     . $t
 done
 
 if ! $quiet
 then
-    echo "Summary: $passed PASSED, $failed FAILED, $errored ERROR"
+    cat <<EOS
+${pbold}Summary${preset}: $passed PASSED, $failed FAILED, $errored ERROR
+EOS
 fi
 
 if (( 0 < errored ))

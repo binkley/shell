@@ -97,7 +97,7 @@
                                     ${project.build.outputDirectory}/run-java.sh
                                 </argument>
                                 <argument>
-                                    ${project.build.testOutputDirectory}/t
+                                    ${project.build.testOutputDirectory}/t/*.sh
                                 </argument>
                             </arguments>
                         </configuration>
@@ -120,7 +120,7 @@
                                     ${project.build.outputDirectory}/run-java.sh
                                 </argument>
                                 <argument>
-                                    ${project.build.testOutputDirectory}/int-t
+                                    ${project.build.testOutputDirectory}/int-t/*.sh
                                 </argument>
                             </arguments>
                         </configuration>

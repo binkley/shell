@@ -30,7 +30,7 @@ function _assert()
     if [[ "$expected" != "$actual" ]]
     then
         cat <<EOM
-FAILED $test_name
+${pred}FAILED${preset} $test_name
 Scenario:
 $scenario
 Expected $expected
@@ -47,7 +47,7 @@ EOM
 
     if ! $quiet
     then
-        echo "PASS $test_name"
+        echo "${pgreen}PASS${preset} $test_name"
     fi
 }
 
