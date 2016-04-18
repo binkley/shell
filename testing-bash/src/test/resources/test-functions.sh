@@ -22,12 +22,18 @@ function _bad_functions()
     exit 3
 }
 
-function _assert()
+function _print_result
 {
-    local expected=$1
-    local actual=$2
+    local result=$1
+    shift
 
-    if [[ "$expected" != "$actual" ]]
+    if (( 0 == result ))
+    then
+        if ! $quiet
+        then
+            echo "${pgreen}PASS${preset} $test_name"
+        fi
+    elif (( 1 == result ))
     then
         cat <<EOM
 ${pred}FAILED${preset} $test_name
@@ -42,25 +48,9 @@ $(<$tmpdir/out)
 Standard err:
 $(<$tmpdir/err)
 EOM
-        return 1
     fi
 
-    if ! $quiet
-    then
-        echo "${pgreen}PASS${preset} $test_name"
-    fi
-}
-
-function _read_stderr()
-{
-    # Ignore debug output
-    local err=$1
-    if $debug
-    then
-        grep '^[^+]' $err
-    else
-        cat $err
-    fi
+    return $result
 }
 
 function _run_script()
@@ -69,10 +59,57 @@ function _run_script()
     cp $script $tmpdir/$run_script
     chmod a+rx $tmpdir/$run_script
 
-    cd $tmpdir
-    ./$run_script "$@" "${command_line[@]}" >$tmpdir/out 2>$tmpdir/err
+    cd $tmpdir  # No matching uncd
+    3>&1 1>/dev/null 2>&3 3>&1 | sed 's/X //'
+    # Filter out shell debugging
+    ./$run_script "${command_line[@]}" 3>&1 >$tmpdir/out 2>&3 3>&- \
+        sed '^[^+]' >$tmpdir/err
 
     return $?
+}
+
+function with_out()
+{
+    case $# in
+    0 ) expected=$(</dev/stdin) ;;
+    1 ) expected="$1" ; shift ;;
+    esac
+
+    actual="$(<$tmpdir/out)"
+
+    [[ "$expected" == "$actual" ]]
+    exit_code=$?
+
+    case $exit_code in
+    0 ) case $# in
+        0 ) return $exit_code ;;
+        * ) "$@" ;;
+        esac ;;
+    * ) _print_result $exit_code
+        return ;;
+    esac
+}
+
+function with_err()
+{
+    case $# in
+    0 ) expected=$(</dev/stdin) ;;
+    1 ) expected="$1" ; shift ;;
+    esac
+
+    actual="$(<$tmpdir/err)"
+
+    [[ "$expected" == "$actual" ]]
+    exit_code=$?
+
+    case $exit_code in
+    0 ) case $# in
+        0 ) return $exit_code ;;
+        * ) "$@" ;;
+        esac ;;
+    * ) _print_result $exit_code
+        return ;;
+    esac
 }
 
 function then_exit()
@@ -82,36 +119,17 @@ function then_exit()
 
     _run_script
 
-    _assert $expected_exit $?
-}
+    (( $expected_exit == $? ))
+    exit_code=$?
 
-function then_expect()
-{
-    case $# in
-    0 ) expected=$(</dev/stdin) ;;
-    1 ) expected="$1" ;;
-    * ) _bad_clauses "Too many clauses" ;;
+    case $exit_code in
+    0 ) case $# in
+        0 ) return $exit_code ;;
+        * ) "$@" ;;
+        esac ;;
+    * ) _print_result $exit_code
+        return ;;
     esac
-
-    _run_script -n
-
-    case $? in
-    0 ) ;;
-    * ) echo "ERROR $test_name: Did not exit normally"
-        return 2 ;;
-    esac
-
-    # Ignore debugging output
-    error="$(_read_stderr $tmpdir/err)"
-    if [[ -n "$error" ]]
-    then
-        echo "ERROR $test_name: $error"
-        return 2
-    fi
-
-    actual="$(<$tmpdir/out)"
-
-    _assert "$expected" "$actual"
 }
 
 function when_run()
