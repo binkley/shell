@@ -10,9 +10,10 @@ function _bad_clauses()
 
 function _bad_functions()
 {
-    local previous=$1
-    local next=$2
-    shift 2
+    local stack=($(caller 1))
+    local previous=${stack[1]}
+    local next=$1
+    shift
     for more
     do
         next="$next or $more"
@@ -60,12 +61,13 @@ function _run_script()
     chmod a+rx $tmpdir/$run_script
 
     cd $tmpdir  # No matching uncd
-    3>&1 1>/dev/null 2>&3 3>&1 | sed 's/X //'
     # Filter out shell debugging
-    ./$run_script "${command_line[@]}" 3>&1 >$tmpdir/out 2>&3 3>&- \
-        sed '^[^+]' >$tmpdir/err
+    ./$run_script "${command_line[@]}" >$tmpdir/out 2>$tmpdir/err
+    local exit_code=$?
+    grep '^[^+]' $tmpdir/err >$tmpdir/tmp-err
+    mv $tmpdir/tmp-err $tmpdir/err
 
-    return $?
+    return $exit_code
 }
 
 function with_out()
@@ -138,12 +140,12 @@ function when_run()
     for arg
     do
         case $arg in
-        then_expect | then_exit ) "$@" ; return $? ;;
+        then_exit ) "$@" ; return $? ;;
         * ) command_line=("${command_line[@]}" "$arg") ; shift ;;
         esac
     done
 
-    _bad_functions when_run then_expect then_exit
+    _bad_functions then_exit
 }
 
 function also_jar()
@@ -167,7 +169,7 @@ function with_jobs()
             next=$2
             shift 2
             ;;
-        * ) _bad_functions with_jobs also_jar when_run ;;
+        * ) _bad_functions also_jar when_run ;;
         esac
         ;;
     esac
@@ -186,7 +188,7 @@ function given_jar()
     when_run )
         cp ${project.build.directory}/$jar $tmpdir/lib
         "$@" ;;
-    * ) _bad_functions given_jar with_jobs when_run ;;
+    * ) _bad_functions with_jobs when_run ;;
     esac
 }
 
@@ -229,7 +231,7 @@ function scenario()
 
     case $1 in
     given_jar ) "$@" ;;
-    * ) _bad_functions scenario given_jar ;;
+    * ) _bad_functions given_jar ;;
     esac
 
     export exit_code=$?

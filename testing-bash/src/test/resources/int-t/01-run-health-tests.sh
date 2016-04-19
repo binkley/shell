@@ -8,4 +8,5 @@ scenario 'Healthy job' \
 scenario 'Unhealthy job' \
     given_jar testing-bash-${project.version}.jar \
     when_run '--health' 'unhealthy-job' \
-    then_exit 1   # and_no_output
+    then_exit 1 \
+        with_err 'unhealthy-job: I am sad'
