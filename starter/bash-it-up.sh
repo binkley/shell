@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
 
+function setup_colors()
+{
+    [[ ! -t 1 ]] && export TERM=dumb
+    # TODO: Should test that 'tput color' > 0?
+    pred=$(tput setaf 1)
+    pgreen=$(tput setaf 2)
+    pyellow=$(tput setaf 3)
+    pblue=$(tput setaf 4)
+    pmagenta=$(tput setaf 5)
+    pcyan=$(tput setaf 6)
+    pwhite=$(tput setaf 7)
+    pbold=$(tput bold)
+    preset=$(tput sgr0)
+}
+
 function enable_debug()
 {
     export debug=true
@@ -16,7 +31,7 @@ ${debug-false} && enable_debug
 function print_usage()
 {
     cat <<EOU
-Usage: $0 [-d|--debug][-h|--help][-n|--dry-run][-v|--verbose]
+Usage: $0 [-c|--color][-d|--debug][-h|--help][-n|--dry-run][-v|--verbose]
 EOU
 }
 
@@ -26,6 +41,7 @@ function print_help()
     cat <<EOH
 
 Flags:
+  -c, --color    Print in color
   -d, --debug    Print debug output while running
   -h, --help     Print help and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
@@ -40,6 +56,7 @@ while getopts :J:dhnv-: opt
 do
     [[ - == $opt ]] && opt=$OPTARG
     case $opt in
+    c | color ) setup_colors ;;
     d | debug ) enable_debug ;;
     h | help ) print_help ; exit 0 ;;
     n | dry-run ) pwd='echo pwd' ;;
