@@ -85,6 +85,30 @@ programs with `maven-exec-plugin`.  Assigning this to `test` (unit) and
 `integration-test` (integration) testing phases let's us call BASH BDD scripts
 and fail the Maven build if they don't pass.  Bonanza!
 
+### Special sauces
+
+#### Running one test at a time
+
+The test runner can run the whole suite of tests (and Maven does), or just
+one at a time, which is handy when you're working on just one file of tests.
+
+#### Color!
+
+Yes, if you use the `-c` (`--color`) flag, you get pretty console colors.
+Offer limited; not available in Maven (which doesn't run tests in a
+terminal context.)
+
+#### Debugging
+
+Of course the test runner takes a `-d` (`--debug`) flag!  So you can looks
+at reams of Bash execution.  Some folks like that.
+
+#### More debugging
+
+When running from the command line (not Maven!) and a test fails, the test
+runner automatically drops into a shell in the test execution directory.
+You can poke about and decide why the test failed.
+
 ## Key files
 
 * [run-java.sh](src/main/resources/run-java.sh) - The script to test.  It is

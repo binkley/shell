@@ -29,6 +29,7 @@ function enable_debug()
     set -o functrace
     set -o pipefail
     set -o xtrace
+    echo "$0: Called with $@"
 }
 
 quiet=false
@@ -37,7 +38,7 @@ do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     c | color ) setup_colors ;;
-    d | debug ) enable_debug ;;
+    d | debug ) enable_debug "$@" ;;
     q | quiet ) quiet=true ;;
     * ) print_usage >&2 ; exit 3 ;;
     esac
@@ -52,6 +53,13 @@ esac
 rootdir=$(dirname $0)
 
 . $rootdir/test-functions.sh
+
+scenarios=()
+for t in "$@"
+do
+    scenarios=("${scenarios[@]}" $t)
+done
+set -- "${scenarios[@]}"
 
 let passed=0 failed=0 errored=0
 for t in "$@"

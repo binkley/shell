@@ -9,5 +9,5 @@ scenario 'Simple job health' \
 scenario 'Complex job health' \
     given_jar a.jar with_jobs 'complex-job -Dfoo=$1 $2 arg' \
     when_run -n --health 'complex-job' \
-    then_exit \
+    then_exit 0 \
         with_out 'java -jar ./lib/a.jar --health complex-job'

@@ -3,7 +3,7 @@
 scenario 'Healthy job' \
     given_jar testing-bash-${project.version}.jar \
     when_run '--health' 'healthy-job' \
-    then_exit 0   # and_no_output
+    then_exit 0
 
 scenario 'Unhealthy job' \
     given_jar testing-bash-${project.version}.jar \

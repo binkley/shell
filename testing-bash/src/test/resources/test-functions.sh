@@ -10,14 +10,15 @@ function _bad_clauses()
 
 function _bad_functions()
 {
-    local stack=($(caller 1))
-    local previous=${stack[1]}
     local next=$1
     shift
     for more
     do
         next="$next or $more"
     done
+
+    local stack=($(caller 1))
+    local previous=${stack[1]}
 
     echo "$0: Bad scenario: No $next after $previous: $scenario" >&2
     exit 3
@@ -27,6 +28,9 @@ function _print_result
 {
     local result=$1
     shift
+
+    local stack=($(caller 1))
+    local previous=${stack[1]}
 
     if (( 0 == result ))
     then
@@ -40,8 +44,8 @@ function _print_result
 ${pred}FAILED${preset} $test_name
 Scenario:
 $scenario
-Expected $expected
-Got $actual
+$previous expected ${pcyan}$expected${preset}
+But got ${pcyan}$actual${preset}
 Difference:
 $(diff <(echo "$expected") <(echo "$actual"))
 Standard out:
@@ -73,8 +77,13 @@ function _run_script()
 function with_out()
 {
     case $# in
-    0 ) expected=$(</dev/stdin) ;;
-    1 ) expected="$1" ; shift ;;
+    0 ) expected="$(</dev/stdin)"
+        set -- with_err '' ;;
+    * ) case $1 in
+        with_err ) expected="$(</dev/stdin)" ;;
+        * ) expected="$1"
+            shift ;;
+        esac ;;
     esac
 
     actual="$(<$tmpdir/out)"
@@ -83,10 +92,7 @@ function with_out()
     exit_code=$?
 
     case $exit_code in
-    0 ) case $# in
-        0 ) return $exit_code ;;
-        * ) "$@" ;;
-        esac ;;
+    0 ) "$@" ;;
     * ) _print_result $exit_code
         return ;;
     esac
@@ -97,21 +103,14 @@ function with_err()
     case $# in
     0 ) expected=$(</dev/stdin) ;;
     1 ) expected="$1" ; shift ;;
+    * ) _bad_clauses "Too many clauses" ;;
     esac
 
     actual="$(<$tmpdir/err)"
 
     [[ "$expected" == "$actual" ]]
-    exit_code=$?
 
-    case $exit_code in
-    0 ) case $# in
-        0 ) return $exit_code ;;
-        * ) "$@" ;;
-        esac ;;
-    * ) _print_result $exit_code
-        return ;;
-    esac
+    _print_result $?
 }
 
 function then_exit()
@@ -126,7 +125,7 @@ function then_exit()
 
     case $exit_code in
     0 ) case $# in
-        0 ) return $exit_code ;;
+        0 ) with_out '' with_err '' ;;
         * ) "$@" ;;
         esac ;;
     * ) _print_result $exit_code
