@@ -11,4 +11,4 @@ do
     then
         (cd $d ; mvn clean verify)
     fi
-done
+done >/dev/null
