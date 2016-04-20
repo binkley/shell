@@ -90,7 +90,7 @@ resume=false
 verbose=false
 while getopts :J:dhnv-: opt
 do
-    [[ - == $opt ]] && opt=$OPTARG
+    [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG%*=}
     case $opt in
     J ) java_flags=("${java_flags[@]}" "$OPTARG") ;;
     d | debug ) enable_debug ;;
