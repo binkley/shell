@@ -57,7 +57,12 @@ rootdir=$(dirname $0)
 scenarios=()
 for t in "$@"
 do
-    scenarios=("${scenarios[@]}" $t)
+    if [[ -d "$t" ]]
+    then
+        scenarios=("${scenarios[@]}" $t/*.sh)
+    else
+        scenarios=("${scenarios[@]}" $t)
+    fi
 done
 set -- "${scenarios[@]}"
 
