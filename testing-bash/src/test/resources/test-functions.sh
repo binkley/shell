@@ -26,44 +26,42 @@ function _bad_functions()
 
 function _print_result
 {
-    local result=$1
-    shift
-
     local stack=($(caller 1))
     local previous=${stack[1]}
 
-    if (( 0 == result ))
+    if (( 0 == exit_code ))
     then
         if ! $quiet
         then
             echo "${pgreen}PASS${preset} $test_name"
         fi
-    elif (( 1 == result ))
+    elif (( 1 == exit_code ))
     then
         cat <<EOM
-${pred}FAILED${preset} $test_name
-Scenario:
-$scenario
-$previous expected ${pcyan}$expected${preset}
-But got ${pcyan}$actual${preset}
-Difference:
+${pred}FAIL${preset} $test_name
+- Scenario: $scenario
+- $previous expected ${pcyan}$expected${preset}
+- But got ${pcyan}$actual${preset}
+- Difference:
 $(diff <(echo "$expected") <(echo "$actual"))
-Standard out:
+- Standard out:
 $(<$tmpdir/out)
-Standard err:
+- Standard err:
 $(<$tmpdir/err)
 EOM
     else
         cat <<EOE
 ${pmagenta}ERROR${preset} $test_name
-Scenario: $scenario
-Exit code: $result
-Standard err:
+- Scenario: $scenario
+- Exit code: $exit_code
+- Standard out:
+$(<$tmpdir/out)
+- Standard err:
 $(<$tmpdir/err)
 EOE
     fi
 
-    return $result
+    return $exit_code
 }
 
 function _run_script()
@@ -85,62 +83,61 @@ function _run_script()
     return $exit_code
 }
 
-function with_out()
-{
-    case $# in
-    0 ) expected="$(</dev/stdin)"
-        set -- with_err '' ;;
-    * ) case $1 in
-        with_err ) expected="$(</dev/stdin)" ;;
-        * ) expected="$1"
-            shift ;;
-        esac ;;
-    esac
-
-    actual="$(<$tmpdir/out)"
-
-    [[ "$expected" == "$actual" ]]
-    exit_code=$?
-
-    case $exit_code in
-    0 ) "$@" ;;
-    * ) _print_result $exit_code
-        return ;;
-    esac
-}
-
 function with_err()
 {
     case $# in
-    0 ) expected=$(</dev/stdin) ;;
-    1 ) expected="$1" ; shift ;;
+    0 ) local expected=$(</dev/stdin) ;;
+    1 ) local expected="$1" ; shift ;;
     * ) _bad_clauses "Too many clauses" ;;
     esac
 
-    actual="$(<$tmpdir/err)"
+    local actual="$(<$tmpdir/err)"
 
     [[ "$expected" == "$actual" ]]
+    local exit_code=$?
 
-    _print_result $?
+    _print_result
+}
+
+function with_out()
+{
+    case $# in
+    0 ) local expected="$(</dev/stdin)" ;;
+    * ) case $1 in
+        with_err ) local expected="$(</dev/stdin)" ;;
+        * ) local expected="$1" ; shift ;;
+        esac ;;
+    esac
+
+    (( 0 == $# )) && set -- with_err ''
+
+    local actual="$(<$tmpdir/out)"
+
+    [[ "$expected" == "$actual" ]]
+    local exit_code=$?
+
+    case $exit_code in
+    0 ) "$@" ;;
+    * ) _print_result ;;
+    esac
 }
 
 function then_exit()
 {
-    local expected_exit=$1
+    local expected=$1
     shift
 
-    _run_script
+    (( 0 == $# )) && set -- with_out '' with_err ''
 
-    (( $expected_exit == $? ))
-    exit_code=$?
+    _run_script
+    local actual=$?
+
+    (( expected == actual ))
+    local exit_code=$?
 
     case $exit_code in
-    0 ) case $# in
-        0 ) with_out '' with_err '' ;;
-        * ) "$@" ;;
-        esac ;;
-    * ) _print_result $exit_code
-        return ;;
+    0 ) "$@" ;;
+    * ) _print_result ;;
     esac
 }
 
