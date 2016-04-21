@@ -19,7 +19,6 @@ function enable_debug()
 {
     export debug=true
     export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
-    set -o functrace
     set -o pipefail
     set -o xtrace
 }
