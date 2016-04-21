@@ -7,15 +7,15 @@ scenario 'Bad job name' \
         with_err <<'EOE'
 ./run-java.sh: no-such-job: No definition (try -h)
 Definitions:
-  ./lib/some.jar simple-job
+  simple-job
 EOE
 
-false && scenario 'Wrong argument count' \
+scenario 'Wrong argument count' \
     given_jar some.jar with_jobs 'complex-job $1' \
     when_run -n 'complex-job' \
     then_exit 2 \
         with_err <<'EOE'
-./run-java.sh: complex-job: Not enough arguments (try -h)
+./run-java.sh: complex-job: Wrong argument count; expected 1, got 0 (try -h)
 Definitions:
-  ./lib/some.jar complex-job $1
+  complex-job $1
 EOE

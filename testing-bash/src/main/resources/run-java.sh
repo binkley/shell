@@ -117,21 +117,36 @@ done <$all_jobs
 
 if [[ -z "$job" ]]
 then
-    echo "$0: $1: No definition (try -h)" >&2
-    echo "Definitions:" >&2
-    sed 's/^/  /' <$all_jobs >&2
+    cat <<EOE >&2
+$0: $1: No definition (try -h)
+Definitions:
+EOE
+    sed 's/^[^ ]* /  /' <$all_jobs >&2
     exit 2
 fi
 shift
 
-job_defn=($job $job_rest)
+let arg_count=0 && true
+for arg in $job_rest
+do
+    case $arg in
+    *\$* ) let ++arg_count ;;
+    esac
+done
 
+job_defn=($job $job_rest)
 if $health
 then
     job_defn=(--health $job)
-fi
-
-if $resume
+elif (( arg_count != $# ))
+then
+    cat <<EOE >&2
+$0: $job: Wrong argument count; expected $arg_count, got $# (try -h)
+Definitions:
+EOE
+    sed 's/^[^ ]* /  /' <$all_jobs | egrep "^  $job(\$| )" >&2
+    exit 2
+elif $resume
 then
     job_defn=(--resume "${job_defn[@]}")
 fi
