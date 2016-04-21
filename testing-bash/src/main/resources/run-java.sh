@@ -118,7 +118,7 @@ done <$all_jobs
 
 if [[ -z "$job" ]]
 then
-    echo "$0: No definition for job: $1 (try -h)" >&2
+    echo "$0: $1: No definition (try -h)" >&2
     echo "Definitions:" >&2
     sed 's/^/  /' <$all_jobs >&2
     exit 2

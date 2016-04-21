@@ -53,6 +53,14 @@ $(<$tmpdir/out)
 Standard err:
 $(<$tmpdir/err)
 EOM
+    else
+        cat <<EOE
+${pmagenta}ERROR${preset} $test_name
+Scenario: $scenario
+Exit code: $result
+Standard err:
+$(<$tmpdir/err)
+EOE
     fi
 
     return $result
@@ -196,7 +204,7 @@ function given_jar()
 
 function _maybe_debug_if_not_passed()
 {
-    if $debug && [[ -t 0 ]]
+    if $debug && [[ -t 1 ]]
     then
         trap 'cd $old_pwd' RETURN
         local old_pwd=$PWD
