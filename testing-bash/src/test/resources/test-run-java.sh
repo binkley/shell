@@ -2,8 +2,8 @@
 
 function setup_colors()
 {
-    [[ ! -t 1 ]] && export TERM=dumb
     # TODO: Should test that 'tput color' > 0?
+    pblack=$(tput setaf 0)
     pred=$(tput setaf 1)
     pgreen=$(tput setaf 2)
     pyellow=$(tput setaf 3)
@@ -11,8 +11,23 @@ function setup_colors()
     pmagenta=$(tput setaf 5)
     pcyan=$(tput setaf 6)
     pwhite=$(tput setaf 7)
+    prev=$(tput rev)
     pbold=$(tput bold)
     preset=$(tput sgr0)
+}
+
+function setup_diff()
+{
+    if [[ -n $(which dwdiff 2>/dev/null) ]]
+    then
+        shopt -s expand_aliases
+        if $color
+        then
+            alias diff='dwdiff -c -l -A best'
+        else
+            alias diff='dwdiff -A best'
+        fi
+    fi
 }
 
 function print_usage()
@@ -26,18 +41,18 @@ function enable_debug()
 {
     export debug=true
     export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
-    set -o functrace
     set -o pipefail
     set -o xtrace
     echo "$0: Called with $@"
 }
 
+color=false
 quiet=false
 while getopts :cdq-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
-    c | color ) setup_colors ;;
+    c | color ) color=true ; setup_colors ;;
     d | debug ) enable_debug "$@" ;;
     q | quiet ) quiet=true ;;
     * ) print_usage >&2 ; exit 3 ;;
@@ -49,6 +64,8 @@ case $# in
 0 ) print_usage >&2 ; exit 3 ;;
 * ) script=$1 ; shift ;;
 esac
+
+setup_diff
 
 rootdir=$(dirname $0)
 
