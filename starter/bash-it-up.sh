@@ -2,8 +2,8 @@
 
 function setup_colors()
 {
-    [[ ! -t 1 ]] && export TERM=dumb
     # TODO: Should test that 'tput color' > 0?
+    pblack=$(tput setaf 0)
     pred=$(tput setaf 1)
     pgreen=$(tput setaf 2)
     pyellow=$(tput setaf 3)
@@ -11,6 +11,7 @@ function setup_colors()
     pmagenta=$(tput setaf 5)
     pcyan=$(tput setaf 6)
     pwhite=$(tput setaf 7)
+    prev=$(tput rev)
     pbold=$(tput bold)
     preset=$(tput sgr0)
 }
