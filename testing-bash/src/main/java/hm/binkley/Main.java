@@ -43,6 +43,7 @@ public final class Main {
         case "unhealthy-job":
         case "resumable-job":
         case "unresumable-job":
+        case "takes-arg-job":
             break;
         default:
             err.println(format("test-program: Not a job: %s", jobName));

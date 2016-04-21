@@ -17,6 +17,7 @@
         <java.version>8</java.version>
         <jopt-simple.version>5.0.1</jopt-simple.version>
         <main.class>hm.binkley.Main</main.class>
+        <maven-assembly-plugin.version>2.5.5</maven-assembly-plugin.version>
         <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
         <project.build.outputEncoding>${java.charset}</project.build.outputEncoding>
@@ -126,6 +127,23 @@
                         </configuration>
                         <goals>
                             <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven-assembly-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>make-dir</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <descriptor>src/assembly/testing-bash.xml
+                            </descriptor>
+                        </configuration>
+                        <goals>
+                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>

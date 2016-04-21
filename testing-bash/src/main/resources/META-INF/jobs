@@ -2,3 +2,4 @@ healthy-job
 unhealthy-job
 resumable-job
 unresumable-job
+takes-arg-job $1
