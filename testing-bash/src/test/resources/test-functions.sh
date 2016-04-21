@@ -64,7 +64,10 @@ function _run_script()
     cp $script $tmpdir/$run_script
     chmod a+rx $tmpdir/$run_script
 
-    cd $tmpdir  # No matching uncd
+    trap 'cd $old_pwd' RETURN
+    local old_pwd=$PWD
+    cd $tmpdir
+
     # Filter out shell debugging
     ./$run_script "${command_line[@]}" >$tmpdir/out 2>$tmpdir/err
     local exit_code=$?
@@ -195,20 +198,18 @@ function _maybe_debug_if_not_passed()
 {
     if $debug && [[ -t 0 ]]
     then
-        pushd $tmpdir
+        trap 'cd $old_pwd' RETURN
+        local old_pwd=$PWD
+        cd $tmpdir
         echo ">> Dropping into shell (exited $exit_code): $scenario"
         $SHELL -i
-        popd
     fi
 }
 
-trap 'rm -rf "$root_tmpdir"' EXIT
-root_tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t ${0##*/})
-let test_number=0 && true
-
 function scenario()
 {
-    local tmpdir=$root_tmpdir/$((++test_number))
+    trap 'rm -rf $tmpdir' RETURN
+    local tmpdir=$(mktemp -d 2>/dev/null || mktemp -d -t ${0##*/})
     mkdir -p $tmpdir/lib
 
     local scenario='scenario'
