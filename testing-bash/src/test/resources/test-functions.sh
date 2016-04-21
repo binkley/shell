@@ -155,9 +155,19 @@ function when_run()
     _bad_functions then_exit
 }
 
-function also_jar()
+function also_existing_jar()
 {
-    given_jar "$@"
+    given_project_jar "$@"
+}
+
+function given_project_jar()
+{
+    case $1 in
+    when_run )
+        cp ${project.build.directory}/${project.build.finalName}.jar $tmpdir/lib
+        "$@" ;;
+    * ) _bad_functions given_existing_jar when_run ;;
+    esac
 }
 
 function with_jobs()
@@ -183,6 +193,11 @@ function with_jobs()
 
     (cd $tmpdir ; jar cf lib/$jar META-INF/jobs)
     $next "$@"
+}
+
+function also_jar()
+{
+    given_jar "$@"
 }
 
 function given_jar()
@@ -227,24 +242,21 @@ function scenario()
         esac
     done
 
-    case $# in
-    [0-7] ) _bad_clauses "Not enough clauses" ;;
-    esac
-
     local test_name="$1"
     shift
 
     case $1 in
-    given_jar ) "$@" ;;
+    given_jar | given_project_jar ) "$@" ;;
     * ) _bad_functions given_jar ;;
     esac
+    local exit_code=$?
 
-    export exit_code=$?
+    (( 0 != exit_code )) && _maybe_debug_if_not_passed
+
     case $exit_code in
     0 ) let ++passed ;;
-    1 ) _maybe_debug_if_not_passed ; let ++failed  ;;
-    2 ) _maybe_debug_if_not_passed ; let ++errored  ;;
-    * ) _maybe_debug_if_not_passed ; exit $exit_code ;;
+    1 ) let ++failed  ;;
+    * ) let ++errored  ;;
     esac
 
     return $exit_code

@@ -5,25 +5,25 @@ scenario "Short option jobs" \
         also_jar b.jar with_jobs 'trivial-job' \
     when_run '-j' \
     then_exit 0 \
-        with_out <<'EOE'
+        with_out <<'EOO'
 simple-job
 trivial-job
-EOE
+EOO
 
 scenario "Long option jobs" \
     given_jar a.jar with_jobs 'simple-job' \
         also_jar b.jar with_jobs 'trivial-job' \
     when_run '--jobs' \
     then_exit 0 \
-        with_out <<'EOE'
+        with_out <<'EOO'
 simple-job
 trivial-job
-EOE
+EOO
 
 scenario "Complex jobs help" \
     given_jar a.jar with_jobs 'complex-job -Dfile=$1 $2' \
     when_run '--jobs' \
     then_exit 0 \
-        with_out <<'EOE'
+        with_out <<'EOO'
 complex-job -Dfile=$1 $2
-EOE
+EOO
