@@ -18,7 +18,7 @@ Flags:
   -v, --verbose  Verbose output
 
 Jobs:
-  * testing-bash-0-SNAPSHOT.jar:
+  * testing-with-bash-0-SNAPSHOT.jar:
     - healthy-job
     - resumable-job
     - takes-arg-job $1
