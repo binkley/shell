@@ -26,7 +26,6 @@ Jobs:
     - unresumable-job
 EOO
 
-
 scenario 'Jobs lists project jar' \
     given_project_jar \
     when_run '--jobs' \
