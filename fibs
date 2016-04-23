@@ -1,0 +1,61 @@
+#!/bin/bash
+
+case $# in
+1 ) ;;
+* ) echo "Usage: $0 n" >&2 ; exit 2 ;;
+esac
+
+function row {
+    local offset=$((2 * $1))
+    local a=(${!2})
+
+    for i in 0 1
+    do
+        echo ${a[i + offset]}
+    done
+}
+
+function col {
+    local offset=$1
+    local a=(${!2})
+
+    for j in 0 2
+    do
+        echo ${a[j + offset]}
+    done
+}
+
+function dot {
+    local a=(${!1})
+    local b=(${!2})
+
+    let dot=0
+    for i in 0 1
+    do
+        let dot=$((dot + a[i] * b[i]))
+    done
+    echo $dot
+}
+
+function mult {
+    local a=(${!1})
+    local b=(${!2})
+
+    for i in 0 1
+    do
+        row=($(row $i a[@]))
+        for j in 0 1
+        do
+            col=($(col $j b[@]))
+            dot row[@] col[@]
+        done
+    done
+}
+
+fib0=(0 1 1 1)
+fibn=(1 0 0 1)
+for n in $(seq 0 $1)
+do
+    fibn=($(mult fibn[@] fib0[@]))
+    echo ${fibn[@]}
+done
