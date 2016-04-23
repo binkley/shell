@@ -1,8 +1,15 @@
 #!/bin/bash
 
+function usage {
+    echo "Usage: $0 n"
+}
+
 case $# in
-1 ) ;;
-* ) echo "Usage: $0 n" >&2 ; exit 2 ;;
+1 ) case $1 in
+    '' | *[!0-9]* ) usage >&2 ; exit 2 ;;
+    * ) let n=$1 ;;
+    esac ;;
+* ) usage >&2 ; exit 2 ;;
 esac
 
 function row {
@@ -52,10 +59,23 @@ function mult {
     done
 }
 
+function format {
+    local a=(${!1})
+    local f0
+    printf -v f0 "%'d" ${a[1]}
+    local len0=${#f0}
+    local f1
+    printf -v f1 "%'d" ${a[3]}
+    local len1=${#f1}
+
+    printf "[%'${len0}d %'${len1}d\n %'${len0}d %'${len1}d]\n" ${a[@]}
+}
+
 fib0=(0 1 1 1)
-fibn=(1 0 0 1)
-for n in $(seq 0 $1)
+format fib0[@]
+fibn=(${fib0[@]})
+for n in $(seq 1 $1)
 do
     fibn=($(mult fibn[@] fib0[@]))
-    echo ${fibn[@]}
+    format fibn[@]
 done
