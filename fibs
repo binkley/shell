@@ -4,11 +4,16 @@ function usage {
     echo "Usage: $0 n"
 }
 
+int_re='-?(0|[1-9][0-9]*)'
+
 case $# in
-1 ) case $1 in
-    '' | *[!0-9]* ) usage >&2 ; exit 2 ;;
-    * ) let n=$1 ;;
-    esac ;;
+1 ) if [[ $1 =~ $int_re ]]
+    then
+        let n=$1
+    else
+        usage >&2
+        exit 2
+    fi ;;
 * ) usage >&2 ; exit 2 ;;
 esac
 
@@ -79,10 +84,21 @@ function format {
 }
 
 fib0=(0 1 1 1)
-format fib0[@]
+if (( 0 > n ))
+then
+    let start=-1
+    let step=-1
+    m=(-1 1 1 0)
+else
+    let start=1
+    let step=1
+    m=(${fib0[@]})
+fi
 fibn=(${fib0[@]})
-for n in $(seq 1 $1)
+
+format fib0[@]
+for n in $(seq $start $step $1)
 do
-    fibn=($(mult fibn[@] fib0[@]))
+    fibn=($(mult fibn[@] m[@]))
     format fibn[@]
 done
