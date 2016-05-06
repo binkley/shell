@@ -65,15 +65,13 @@ echo "$original" >$tmp
 echo "$flavor_text" >>$tmp
 echo >>$tmp
 svn log -r $revision -v \
-    | grep '^   ' \
-    | while read action path
-do
-    echo "$action    $path"
-done >>$tmp
+    | sed -n 's/^   \([ADMR]\) \(.*\)/\1    \2/p' >>$tmp
 
 ${VISUAL=${EDITOR-vi}} $tmp
 read -r -d '' replacement < <(sed "/^$flavor_text\$/,\$d" $tmp) && true
 
-[[ -n "$replacement" && "$original" != "$replacement" ]] \
-    && exec svn propset --revprop -r $revision svn:log \
-    "$replacement" >/dev/null
+if [[ -n "$replacement" && "$original" != "$replacement" ]]
+then
+    svn propset --revprop -r $revision svn:log "$replacement"
+    svn update  # Refresh commit messages in local checkout
+fi >/dev/null
