@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -e
+set -u
+
 function setup_colors()
 {
     # TODO: Should test that 'tput color' > 0?
