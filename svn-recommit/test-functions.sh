@@ -116,7 +116,7 @@ function when_recommit {
 
 function with_message {
     case ${FUNCNAME[1]} in
-    and_add_file )
+    and_add_file | and_move_file )
         local original="$1"
         shift
         (set -e
@@ -134,6 +134,23 @@ function with_message {
         then_editor_was ) "$@" ;;
         * ) _bad_functions then_editor_was ;;
         esac ;;
+    esac
+}
+
+function and_move_file {
+    (set -e
+        file='a-file'
+        cd $clientdir
+        echo OK >$file
+        svn add $file
+        svn commit -m "added $file"
+        svn move $file b-file) >>$tmpdir/out
+
+    local revision=3
+
+    case $1 in
+    with_message ) "$@" ;;
+    * ) _bad_functions with_message ;;
     esac
 }
 
@@ -166,7 +183,7 @@ function given_repo {
         svn commit -m 'Standard layout') >>$tmpdir/out
 
      case $1 in
-     and_add_file ) "$@" ;;
+     and_add_file | and_move_file ) "$@" ;;
      * ) _bad_functions and_add_file ;;
      esac
 }
