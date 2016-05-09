@@ -117,7 +117,8 @@ function when_recommit {
 
 function with_message {
     case ${FUNCNAME[1]} in
-    and_add_file | and_move_file | and_delete_file )
+    and_add_file | and_move_file | and_delete_file \
+            | and_add_directory | and_move_directory | and_delete_directory )
         local original="$1"
         shift
         (set -e
@@ -140,14 +141,60 @@ function with_message {
     esac
 }
 
+function and_delete_directory {
+    (set -e
+        directory='x'
+        cd $clientdir
+        svn mkdir $directory
+        svn commit -m "Added $directory"
+        svn delete $directory) >>$tmpdir/out 2>>$tmpdir/err
+
+    local revision=3
+
+    case $1 in
+    with_message ) "$@" ;;
+    * ) _bad_functions with_message ;;
+    esac
+}
+
+function and_move_directory {
+    (set -e
+        directory='x'
+        cd $clientdir
+        svn mkdir $directory
+        svn commit -m "Added $directory"
+        svn move $directory y) >>$tmpdir/out 2>>$tmpdir/err
+
+    local revision=3
+
+    case $1 in
+    with_message ) "$@" ;;
+    * ) _bad_functions with_message ;;
+    esac
+}
+
+function and_add_directory {
+    (set -e
+        directory='x'
+        cd $clientdir
+        svn mkdir $directory) >>$tmpdir/out 2>>$tmpdir/err
+
+    local revision=2
+
+    case $1 in
+    with_message ) "$@" ;;
+    * ) _bad_functions with_message ;;
+    esac
+}
+
 function and_delete_file {
     (set -e
         file='a-file'
         cd $clientdir
         echo OK >$file
         svn add $file
-        svn commit -m "added $file"
-        svn delete $file) >>$tmpdir/out
+        svn commit -m "Added $file"
+        svn delete $file) >>$tmpdir/out 2>>$tmpdir/err
 
     local revision=3
 
@@ -163,8 +210,8 @@ function and_move_file {
         cd $clientdir
         echo OK >$file
         svn add $file
-        svn commit -m "added $file"
-        svn move $file b-file) >>$tmpdir/out
+        svn commit -m "Added $file"
+        svn move $file b-file) >>$tmpdir/out 2>>$tmpdir/err
 
     local revision=3
 
@@ -179,7 +226,7 @@ function and_add_file {
         file='a-file'
         cd $clientdir
         echo OK >$file
-        svn add $file) >>$tmpdir/out
+        svn add $file) >>$tmpdir/out 2>>$tmpdir/err
 
     local revision=2
 
@@ -200,11 +247,13 @@ function given_repo {
         svn checkout file://$tmpdir/repo client
         cd client
         svn mkdir trunk branches tags
-        svn commit -m 'Standard layout') >>$tmpdir/out
+        svn commit -m 'Standard layout') >>$tmpdir/out 2>>$tmpdir/err
 
      case $1 in
-     and_add_file | and_move_file | and_delete_file ) "$@" ;;
-     * ) _bad_functions and_add_file and_move_file and_delete_file ;;
+     and_add_file | and_move_file | and_delete_file \
+            | and_add_directory | and_move_directory | and_delete_directory ) "$@" ;;
+     * ) _bad_functions and_add_file and_move_file and_delete_file \
+            and_add_dirctory and_move_directory and_delete_directory ;;
      esac
 }
 

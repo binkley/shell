@@ -81,7 +81,7 @@ done
 if ! $quiet
 then
     cat <<EOS
-${pbold}Summary${preset}: $passed PASSED, $failed FAILED, $errored ERROR
+${pbold}Summary${preset}: $passed PASSED, $failed FAILED, $errored ERRORED
 EOS
 fi
 
