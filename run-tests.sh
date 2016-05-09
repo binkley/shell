@@ -9,6 +9,6 @@ do
         (cd $d ; make)
     elif [[ -f $d/pom.xml ]]
     then
-        (cd $d ; mvn clean verify)
+        (cd $d ; mvn -q clean verify)
     fi
-done >/dev/null
+done

@@ -1,2 +1,2 @@
 test:
-	./test-svn-recommit.sh t/
+	@./test-svn-recommit.sh -c -q t/
