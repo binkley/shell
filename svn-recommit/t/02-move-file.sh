@@ -1,4 +1,4 @@
-scenario "Add a file and edit commit message" \
+scenario " Move a file and edit commit message" \
     given_repo \
         and_move_file with_message "A commit" \
     when_recommit with_message "B commit" \

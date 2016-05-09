@@ -9,10 +9,6 @@ case $# in
 esac
 
 file=$1
-cat $file
+mv $file $BUFFER
 
-trap 'rm -rf $tmp' EXIT
-tmp=$(mktemp 2>/dev/null || mktemp -t ${0##*/})
-
-sed "1s/.*/$MESSAGE/" $file >$tmp
-mv $tmp $file
+sed "1s/.*/$MESSAGE/" <$BUFFER >$file

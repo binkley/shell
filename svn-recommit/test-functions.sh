@@ -68,8 +68,9 @@ function _run_script {
     (set -e
         cd $clientdir
         export VISUAL=$rootdir/testing-editor.sh
+        export BUFFER=$tmpdir/buffer
         export MESSAGE="$replacement"
-        $run_script $revision >$tmpdir/buffer 2>>$tmpdir/err)
+        $run_script $revision >>$tmpdir/out 2>>$tmpdir/err)
 }
 
 function and_first_line_replaced {
@@ -116,7 +117,7 @@ function when_recommit {
 
 function with_message {
     case ${FUNCNAME[1]} in
-    and_add_file | and_move_file )
+    and_add_file | and_move_file | and_delete_file )
         local original="$1"
         shift
         (set -e
@@ -134,6 +135,25 @@ function with_message {
         then_editor_was ) "$@" ;;
         * ) _bad_functions then_editor_was ;;
         esac ;;
+    * ) echo "$0: ${pred}Bad scenario: with_message after ${FUNCNAME[1]}:${preset} ${pmagenta}$scenario${preset}" >&2
+        exit 3 ;;
+    esac
+}
+
+function and_delete_file {
+    (set -e
+        file='a-file'
+        cd $clientdir
+        echo OK >$file
+        svn add $file
+        svn commit -m "added $file"
+        svn delete $file) >>$tmpdir/out
+
+    local revision=3
+
+    case $1 in
+    with_message ) "$@" ;;
+    * ) _bad_functions with_message ;;
     esac
 }
 
@@ -183,8 +203,8 @@ function given_repo {
         svn commit -m 'Standard layout') >>$tmpdir/out
 
      case $1 in
-     and_add_file | and_move_file ) "$@" ;;
-     * ) _bad_functions and_add_file ;;
+     and_add_file | and_move_file | and_delete_file ) "$@" ;;
+     * ) _bad_functions and_add_file and_move_file and_delete_file ;;
      esac
 }
 
