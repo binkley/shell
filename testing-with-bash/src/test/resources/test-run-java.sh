@@ -18,15 +18,12 @@ function setup_colors()
 
 function setup_diff()
 {
-    if [[ -n $(which dwdiff 2>/dev/null) ]]
+    shopt -s expand_aliases
+    if $color
     then
-        shopt -s expand_aliases
-        if $color
-        then
-            alias diff='dwdiff -c -l -A best'
-        else
-            alias diff='dwdiff -A best'
-        fi
+        alias diff='git diff --color-words --word-diff=plain'
+    else
+        alias diff='git diff --no-color --word-diff=plain'
     fi
 }
 
@@ -71,32 +68,33 @@ rootdir=$(dirname $0)
 
 . $rootdir/test-functions.sh
 
-scenarios=()
 for t in "$@"
 do
     if [[ -d "$t" ]]
     then
-        scenarios=("${scenarios[@]}" $t/*.sh)
+        set -- $t/*.sh
     else
-        scenarios=("${scenarios[@]}" $t)
+        set -- $t
     fi
 done
-set -- "${scenarios[@]}"
 
 let passed=0 failed=0 errored=0
 for t in "$@"
 do
     if ! $quiet
     then
-        echo "${pbold}Test script${preset} ${t##*/}:"
+        echo "${pbold}Script${preset} ${t##*/}:"
     fi
     . $t
 done
 
 if ! $quiet
 then
+    (( 0 == passed )) && ppassed= || ppassed=${pgreen}
+    (( 0 == failed )) && pfailed= || pfailed=${pred}
+    (( 0 == errored )) && perrored= || perrored=${pred}
     cat <<EOS
-${pbold}Summary${preset}: $passed PASSED, $failed FAILED, $errored ERRORED
+${pbold}Summary${preset}: ${ppassed}$passed PASSED${preset}, ${pfailed}$failed FAILED${preset}, ${perrored}$errored ERRORED${preset}
 EOS
 fi
 
