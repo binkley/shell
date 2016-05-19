@@ -49,8 +49,18 @@ echo Done
 : ${X11_RGB_TXT:=/usr/share/X11/rgb.txt}
 [[ -r $X11_RGB_TXT ]] || X11_RGB_TXT=$root_dir/rgb.txt
 
-truecolor=false
-declare -A fg_colors 2>/dev/null && cached_colors=true || cached_colors=false
+readonly truecolor=false
+if declare -A fg_colors 2>/dev/null
+then
+    readonly cached_colors=true
+    declare -A bg_colors
+else
+    readonly cached_colors=false
+fi
+
+function _copy_f {
+    eval function $2 "$(declare -f $1 | sed 1d)"
+}
 
 function _truecolor_fg {
     printf '\e[38;2;%d;%d;%dm' $1 $2 $3
@@ -60,77 +70,71 @@ function _truecolor_bg {
     printf '\e[48;2;%d;%d;%dm' $1 $2 $3
 }
 
-function _256color_fg {
+function _256color_d {
     local -r r=$(( 5 * $1 / 255 ))
     local -r g=$(( 5 * $2 / 255 ))
     local -r b=$(( 5 * $3 / 255 )) 
-    local -r rgb=$(( (36 * r) + (6 * g) + b + 16 ))
+    return $(( (36 * r) + (6 * g) + b + 16 ))
+}
+
+function _256color_fg {
+    _256color_d $1 $2 $3
+    local -r rgb=$?
     printf '\e[38;5;%dm' $rgb
 }
 
 function _256color_bg {
-    local -r r=$(( 5 * $1 / 255 ))
-    local -r g=$(( 5 * $2 / 255 ))
-    local -r b=$(( 5 * $3 / 255 )) 
-    local -r rgb=$(( (36 * r) + (6 * g) + b + 16 ))
+    _256color_d $1 $2 $3
+    local -r rgb=$?
     printf '\e[48;5;%dm' $rgb
 }
 
-if $cached_colors
-then
-    declare -A bg_colors 2>/dev/null
-    declare -A colors 2>/dev/null
+function _to_rgb {
     while read r g b name
     do
         [[ -z "$name" ]] && name="$b" b=0
-        colors[$name]="$r $g $b"
-        if $truecolor
+        if [[ "$name" == "$1" ]]
         then
-            fg_colors[$name]=$(_truecolor_fg $r $g $b)
-            bg_colors[$name]=$(_truecolor_bg $r $g $b)
-        else
-            fg_colors[$name]=$(_256color_fg $r $g $b)
-            bg_colors[$name]=$(_256color_bg $r $g $b)
-        fi
-    done <$X11_RGB_TXT
-    function _to_rgb {
-        local -r p="${colors[$1]}"
-        if [[ -n "$p" ]]
-        then
-            echo $p
+            echo $r $g $b
             return
         fi
-        echo "$0: $FUNCNAME: Unknown color: $1" >&2
-        return 2
-    }
+    done <$X11_RGB_TXT
+    echo "$0: $FUNCNAME: Unknown color: $1" >&2
+    exit 2
+}
+
+if $truecolor
+then
+    _copy_f _truecolor_fg _fg
+    _copy_f _truecolor_bg _bg
 else
-    function _to_rgb {
-        while read r g b name
-        do
-            [[ -z "$name" ]] && name="$b" b=0
-            if [[ "$name" == "$1" ]]
-            then
-                echo $r $g $b
-                return
-            fi
-        done <$X11_RGB_TXT
-        echo "$0: $FUNCNAME: Unknown color: $1" >&2
-        return 2
-    }
+    _copy_f _256color_fg _fg
+    _copy_f _256color_bg _bg
+fi
+unset -f _truecolor_fg _truecolor_bg _256color_fg _256color_bg
+
+if $cached_colors
+then
+    while read r g b name
+    do
+        [[ -z "$name" ]] && name="$b" b=0
+        fg_colors[$name]=$(_fg $r $g $b)
+        bg_colors[$name]=$(_bg $r $g $b)
+    done <$X11_RGB_TXT
 fi
 
 function c {
     case $# in
     1 | 3 ) set -- fg "$@" ;;
-    2 | 4 ) ;;
-    * ) echo "Usage: $0: $FUNCNAME <fg|bg> <named-color|red8 green8 blue8>" >&2
+    2 | 4 ) case $1 in
+        fg | bg ) ;;
+        * ) echo "Usage: $0: $FUNCNAME [fg|bg] <named-color|red8 green8 blue8>" >&2
+            exit 2 ;;
+        esac ;;
+    * ) echo "Usage: $0: $FUNCNAME [fg|bg] <named-color|red8 green8 blue8>" >&2
         exit 2 ;;
     esac
-    case $1 in
-    fg | bg ) ;;
-    * ) echo "Usage: $0: $FUNCNAME <fg|bg> <named-color|red8 green8 blue8>" >&2
-        exit 2 ;;
-    esac
+
     local r g b
     case $2 in
     [0-9]* ) r=$2 g=$3 b=$3 ;;
@@ -145,9 +149,10 @@ function c {
             read r g b < <(_to_rgb "$2")
         fi ;;
     esac
+    readonly r g b
     case $1 in
-    fg ) $truecolor && _truecolor_fg $r $g $b || _256color_fg $r $g $b ;;
-    bg ) $truecolor && _truecolor_bg $r $g $b || _256color_bg $r $g $b ;;
+    fg ) _fg $r $g $b ;;
+    bg ) _bg $r $g $b ;;
     esac
 }
 
