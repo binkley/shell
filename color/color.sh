@@ -42,6 +42,8 @@ else
     declare -a __fg_colors __fg_values __bg_colors __bg_values
 fi
 
+: ${c_truecolor:=true}
+
 if $c_truecolor
 then
     function _fg {
