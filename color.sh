@@ -121,6 +121,7 @@ fi
 
 function c {
     case $# in
+    1 | 3 ) set -- fg "$@" ;;
     2 | 4 ) ;;
     * ) echo "Usage: $0: $FUNCNAME <fg|bg> <named-color|red8 green8 blue8>" >&2
         exit 2 ;;
@@ -141,7 +142,7 @@ function c {
             esac
             return
         else
-            read r g b < <(_to_rgb $2)
+            read r g b < <(_to_rgb "$2")
         fi ;;
     esac
     case $1 in
@@ -150,17 +151,14 @@ function c {
     esac
 }
 
-if true
-then
-    for r in $(seq 5 10 255)
-    do
-        c bg $r 0 0
-        printf '  '
-    done
-    printf '\e[0m\n'
-fi
+for r in $(seq 5 10 255)
+do
+    c bg $r 0 0
+    printf '  '
+done
+printf '\e[0m\n'
 
 for color
 do
-    printf "$(c fg $color)$color$preset\n"
+    printf "$(c $color)$color$preset\n"
 done
