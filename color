@@ -2,6 +2,17 @@
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
+truecolor=true
+while getopts :68-: opt
+do
+    [[ - == $opt ]] && opt="${OPTARG%%=*}" OPTARG="${OPTARG#*=}"
+    case $opt in
+    6 | 256-color ) truecolor=false ;;
+    8 | truecolor ) truecolor=true ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+
 pbold=$(printf '\e[1m')
 plight=$(printf '\e[2m')
 pitalic=$(printf '\e[3m')
@@ -49,7 +60,6 @@ echo Done
 : ${X11_RGB_TXT:=/usr/share/X11/rgb.txt}
 [[ -r $X11_RGB_TXT ]] || X11_RGB_TXT=$root_dir/rgb.txt
 
-readonly truecolor=false
 if declare -A fg_colors 2>/dev/null
 then
     readonly cached_colors=true
@@ -118,8 +128,19 @@ then
     while read r g b name
     do
         [[ -z "$name" ]] && name="$b" b=0
-        fg_colors[$name]=$(_fg $r $g $b)
-        bg_colors[$name]=$(_bg $r $g $b)
+        # Inline _fg and _bg for performance
+        if $truecolor
+        then
+            fg_colors[$name]="\e[38;2;$r;$g;${b}m"
+            bg_colors[$name]="\e[48;2;$r;$g;${b}m"
+        else
+            r=$(( 5 * r / 255 ))
+            g=$(( 5 * g / 255 ))
+            b=$(( 5 * b / 255 )) 
+            rgb=$(( (36 * r) + (6 * g) + b + 16 ))
+            fg_colors[$name]="\e[38;5;${rgb}m"
+            bg_colors[$name]="\e[48;5;${rgb}m"
+        fi
     done <$X11_RGB_TXT
 fi
 
