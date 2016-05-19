@@ -2,13 +2,22 @@
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
+if declare -A fg_colors 2>/dev/null
+then
+    cached_colors=true
+    declare -A bg_colors
+else
+    cached_colors=false
+fi
+
 truecolor=true
-while getopts :68-: opt
+while getopts :68x-: opt
 do
     [[ - == $opt ]] && opt="${OPTARG%%=*}" OPTARG="${OPTARG#*=}"
     case $opt in
     6 | 256-color ) truecolor=false ;;
     8 | truecolor ) truecolor=true ;;
+    x | no-cache ) cached_colors=false ;;
     esac
 done
 shift $(( OPTIND - 1 ))
@@ -60,45 +69,6 @@ echo Done
 : ${X11_RGB_TXT:=/usr/share/X11/rgb.txt}
 [[ -r $X11_RGB_TXT ]] || X11_RGB_TXT=$root_dir/rgb.txt
 
-if declare -A fg_colors 2>/dev/null
-then
-    readonly cached_colors=true
-    declare -A bg_colors
-else
-    readonly cached_colors=false
-fi
-
-function _copy_f {
-    eval function $2 "$(declare -f $1 | sed 1d)"
-}
-
-function _truecolor_fg {
-    printf '\e[38;2;%d;%d;%dm' $1 $2 $3
-}
-
-function _truecolor_bg {
-    printf '\e[48;2;%d;%d;%dm' $1 $2 $3
-}
-
-function _256color_d {
-    local -r r=$(( 5 * $1 / 255 ))
-    local -r g=$(( 5 * $2 / 255 ))
-    local -r b=$(( 5 * $3 / 255 )) 
-    return $(( (36 * r) + (6 * g) + b + 16 ))
-}
-
-function _256color_fg {
-    _256color_d $1 $2 $3
-    local -r rgb=$?
-    printf '\e[38;5;%dm' $rgb
-}
-
-function _256color_bg {
-    _256color_d $1 $2 $3
-    local -r rgb=$?
-    printf '\e[48;5;%dm' $rgb
-}
-
 function _to_rgb {
     while read r g b name
     do
@@ -115,13 +85,45 @@ function _to_rgb {
 
 if $truecolor
 then
-    _copy_f _truecolor_fg _fg
-    _copy_f _truecolor_bg _bg
+    function _fg {
+        local -r r=$1
+        local -r g=$2
+        local -r b=$3
+        printf '\e[38;2;%d;%d;%dm' $r $g $b
+    }
+
+    function _bg {
+        local -r r=$1
+        local -r g=$2
+        local -r b=$3
+        printf '\e[48;2;%d;%d;%dm' $r $g $b
+    }
 else
-    _copy_f _256color_fg _fg
-    _copy_f _256color_bg _bg
+    function _d {
+        local -r r=$(( 5 * $1 / 255 ))
+        local -r g=$(( 5 * $2 / 255 ))
+        local -r b=$(( 5 * $3 / 255 )) 
+        return $(( (36 * r) + (6 * g) + b + 16 ))
+    }
+
+    function _fg {
+        local -r r=$1
+        local -r g=$2
+        local -r b=$3
+        _d $r $g $b
+        local -r rgb=$?
+        printf '\e[38;5;%dm' $rgb
+    }
+
+    function _bg {
+        local -r r=$1
+        local -r g=$2
+        local -r b=$3
+        _d $r $g $b
+        local -r rgb=$?
+        printf '\e[48;5;%dm' $rgb
+    }
 fi
-unset -f _truecolor_fg _truecolor_bg _256color_fg _256color_bg
 
 if $cached_colors
 then
