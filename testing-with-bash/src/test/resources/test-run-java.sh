@@ -2,7 +2,9 @@
 
 function setup_colors()
 {
-    # TODO: Should test that 'tput color' > 0?
+    [[ -t 1 ]] || return
+    local -r ncolors=$(tput colors)
+    [[ -n "$ncolors" && $ncolors -ge 8 ]] || return
     pblack=$(tput setaf 0)
     pred=$(tput setaf 1)
     pgreen=$(tput setaf 2)
