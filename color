@@ -4,20 +4,20 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
 if declare -A fg_colors 2>/dev/null
 then
-    cached_colors=true
+    hash_cache=true
     declare -A bg_colors
 else
-    cached_colors=false
+    hash_cache=false
+    declare -a fg_colors fg_values bg_colors bg_values
 fi
 
 truecolor=true
-while getopts :68x-: opt
+while getopts :68-: opt
 do
     [[ - == $opt ]] && opt="${OPTARG%%=*}" OPTARG="${OPTARG#*=}"
     case $opt in
     6 | 256-color ) truecolor=false ;;
     8 | truecolor ) truecolor=true ;;
-    x | no-cache ) cached_colors=false ;;
     esac
 done
 shift $(( OPTIND - 1 ))
@@ -126,26 +126,86 @@ else
     }
 fi
 
-if $cached_colors
+if $hash_cache
 then
-    while read r g b name
-    do
-        [[ -z "$name" ]] && name="$b" b=0
-        # Inline _fg and _bg for performance
-        if $truecolor
-        then
-            fg_colors[$name]="\e[38;2;$r;$g;${b}m"
-            bg_colors[$name]="\e[48;2;$r;$g;${b}m"
-        else
-            r=$(( 5 * r / 255 ))
-            g=$(( 5 * g / 255 ))
-            b=$(( 5 * b / 255 )) 
-            rgb=$(( (36 * r) + (6 * g) + b + 16 ))
-            fg_colors[$name]="\e[38;5;${rgb}m"
-            bg_colors[$name]="\e[48;5;${rgb}m"
-        fi
-    done <$X11_RGB_TXT
+    function _fg_cache {
+        local -r name="$1"
+        local -r value="$2"
+        fg_colors[$name]="$value"
+    }
+
+    function _bg_cache {
+        local -r name="$1"
+        local -r value="$2"
+        bg_colors[$name]="$value"
+    }
+
+    function _fg_printf {
+        local -r name="$1"
+        printf ${fg_colors[$name]}
+    }
+
+    function _bg_printf {
+        local -r name="$1"
+        printf ${bg_colors[$name]}
+    }
+else
+    function _fg_cache {
+        local -r name="$1"
+        local -r value="$2"
+        fg_colors+=("$name")
+        fg_values+=("$value")
+    }
+
+    function _bg_cache {
+        local -r name="$1"
+        local -r value="$2"
+        bg_colors+=("$name")
+        bg_values+=("$value")
+    }
+
+    function _fg_printf {
+        local -r name="$1"
+        for i in ${!fg_colors[@]}
+        do
+            if [[ "${fg_colors[i]}" == "$name" ]]
+            then
+                printf ${fg_values[i]}
+                return
+            fi
+        done
+    }
+
+    function _bg_printf {
+        local -r name="$1"
+        for i in ${!bg_colors[@]}
+        do
+            if [[ "${bg_colors[i]}" == "$name" ]]
+            then
+                printf ${bg_values[i]}
+                return
+            fi
+        done
+    }
 fi
+
+while read r g b name
+do
+    [[ -z "$name" ]] && name="$b" b=0
+    # Inline _fg and _bg for performance
+    if $truecolor
+    then
+        _fg_cache "$name" "\e[38;2;$r;$g;${b}m"
+        _bg_cache "$name" "\e[48;2;$r;$g;${b}m"
+    else
+        r=$(( 5 * r / 255 ))
+        g=$(( 5 * g / 255 ))
+        b=$(( 5 * b / 255 )) 
+        rgb=$(( (36 * r) + (6 * g) + b + 16 ))
+        _fg_cache "$name" "\e[38;5;${rgb}m"
+        _bg_cache "$name" "\e[48;5;${rgb}m"
+    fi
+done <$X11_RGB_TXT
 
 function c {
     case $# in
@@ -162,16 +222,11 @@ function c {
     local r g b
     case $2 in
     [0-9]* ) r=$2 g=$3 b=$3 ;;
-    * ) if $cached_colors
-        then
-            case $1 in
-            fg ) printf ${fg_colors[$2]} ;;
-            bg ) printf ${bg_colors[$2]} ;;
-            esac
-            return
-        else
-            read r g b < <(_to_rgb "$2")
-        fi ;;
+    * ) case $1 in
+        fg ) _fg_printf "$2" ;;
+        bg ) _bg_printf "$2" ;;
+        esac
+        return ;;
     esac
     readonly r g b
     case $1 in
