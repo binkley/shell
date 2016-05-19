@@ -10,7 +10,7 @@ echo "This is $(c IndianRed)Indian Red$preset."
 ## Using
 
 1. Define `c_truecolor` to `true` or `false`. There is not (yet) any automatic
-   detection to distinguish 6-bit (256) color terminals from 8-bit (16
+   detection to distinguish 8-bit (256) color terminals from 24-bit (16
    million). The Mac OS X system terminal lags behind most others in this
    respect. The default is `true`.
 2. Optionally set `X11_RGB_TXT` to the full path of your [`rgb.txt`](rgb.txt)
@@ -73,10 +73,10 @@ EOM
 echo "Or you can make $(c 210 30 30)your own red$preset."
 ```
 
-Using an 8-bit color palette, and to a lesser degree 6-bit, you can use around
+Using an 24-bit color palette, and to a lesser degree 8-bit, you can use around
 500 X11-defined colors by name, or provide your own RGB values.
 
 ## TODO
 
-* Detect 8- vs 6-bit color.
+* Detect 24- vs 8-bit color.
 * Detect and handle non-color, e.g., output is not to a terminal.
