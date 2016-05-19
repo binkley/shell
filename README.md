@@ -4,7 +4,7 @@
 
 Helpful shell scripts and programs.
 
-* [color](color) - Working with 6- and 8-bit color in the terminal
+* [color](color/README.md) - Working with 6- and 8-bit color in the terminal
 * [fibs](fibs) - Matrix math with Fibonacci Q-matrix
 * [svn-recommit](svn-recommit/README.md) - Reedit an SVN commit message
 * [starter](starter/README.md) - Starter script for writing commands in BASH

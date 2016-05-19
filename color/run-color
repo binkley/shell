@@ -1,0 +1,48 @@
+#!/bin/bash
+
+export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+
+{
+    pushd $(dirname $0)
+    root_dir=$(pwd -P)
+    popd
+} >/dev/null
+
+: ${X11_RGB_TXT:=/usr/share/X11/rgb.txt}
+[[ -r $X11_RGB_TXT ]] || X11_RGB_TXT=$root_dir/rgb.txt
+
+c_truecolor=true
+while getopts :68-: opt
+do
+    [[ - == $opt ]] && opt="${OPTARG%%=*}" OPTARG="${OPTARG#*=}"
+    case $opt in
+    6 | 256-color ) c_truecolor=false ;;
+    8 | c_truecolor ) c_truecolor=true ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+
+. $root_dir/color.sh
+
+for e in bold light italic underscore blink reverse invisible strikethrough
+do
+    echo This is $e
+    for c in black red green yellow blue magenta cyan white
+    do
+        eval "printf \" \${p$e}\${p$c}$c\$preset\""
+    done
+    echo
+done
+echo Done
+
+for r in $(seq 5 10 255)
+do
+    c bg $r 0 0
+    printf '  '
+done
+printf '\e[0m\n'
+
+for color
+do
+    printf "$(c $color)$color$preset\n"
+done
