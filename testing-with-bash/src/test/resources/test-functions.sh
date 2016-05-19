@@ -37,26 +37,33 @@ function _print_result
         fi
     elif (( 1 == exit_code ))
     then
+        echo "$expected" >$tmpdir/expected
+        (( 1 < $(wc -l $tmpdir/expected | cut -d' ' -f1))) \
+            && local -r expected_sep=$'\n' || local -r expected_sep=' '
+        echo "$actual" >$tmpdir/actual
+        (( 1 < $(wc -l $tmpdir/actual | cut -d' ' -f1))) \
+            && local -r actual_sep=$'\n' || local -r actual_sep=' '
+        $color && local -r color_flag=always || color_flag=never
         cat <<EOM
-${pred}FAIL${preset} $test_name
-- Scenario: $scenario
-- $previous expected ${pcyan}$expected${preset}
-- But got ${pcyan}$actual${preset}
-- Difference:
-$(diff <(echo "$expected") <(echo "$actual"))
-- Standard out:
+${pred}FAIL${preset} $description
+- ${pbold}Scenario:$preset $scenario
+- '$previous' expected${expected_sep}${pcyan}$expected${preset}
+- But got${actual_sep}${pcyan}$actual${preset}
+- ${pbold}Difference:$reset
+$(git --no-pager diff --color=$color_flag --word-diff=plain $tmpdir/expected $tmpdir/actual | sed 1,4d)
+- ${pbold}Standard out:$preset
 $(<$tmpdir/out)
-- Standard err:
+- ${pbold}Standard err:$preset
 $(<$tmpdir/err)
 EOM
     else
         cat <<EOE
-${pmagenta}ERROR${preset} $test_name
-- Scenario: $scenario
-- Exit code: $exit_code
-- Standard out:
+${pmagenta}ERROR${preset} $description
+- ${pbold}Scenario:$preset $scenario
+- $previous exited $exit_code
+- ${pbold}Standard out:$preset
 $(<$tmpdir/out)
-- Standard err:
+- ${pbold}Standard err:$preset
 $(<$tmpdir/err)
 EOE
     fi
