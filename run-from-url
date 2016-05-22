@@ -61,18 +61,8 @@ tmp_dir=$(mktemp -d 2>/dev/null || mktemp -d -t ${0##*/})
 tmp_headers_file=$tmp_dir/headers
 tmp_content_file=$tmp_dir/content
 
-{
-    pushd $(dirname $0)
-    cache_dir=$(pwd -P)/.cache
-    etag_file=$cache_dir/etag
-    popd
-} >/dev/null
-if [[ ! -d $cache_dir ]]
-then
-    mkdir $cache_dir
-    echo 0 >$etag_file
-fi
-
+readonly etag_file=${content_file%/*}/.${content_file##*/}.etag
+[[ -f $etag_file ]] || echo 0 >$etag_file
 readonly old_etag=$(<$etag_file)
 
 read http_code < <(curl -s -D $tmp_headers_file -o $tmp_content_file \
