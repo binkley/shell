@@ -23,7 +23,7 @@ EOH
 
 offline=false
 update=false
-while getopts :ou-: opt
+while getopts :hou-: opt
 do
     [[ - == $opt ]] && opt="${OPtARG%%=*}" OPTARG="${OPTARG#*=}"
     case $opt in
