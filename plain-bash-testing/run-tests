@@ -1,0 +1,161 @@
+#!/bin/bash
+
+export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+
+pgreen=$(printf "\e[32m")
+pred=$(printf "\e[31m")
+pboldred=$(printf "\e[31;1m")
+preset=$(printf "\e[0m")
+pcheckmark=$(printf "\xE2\x9C\x93")
+pballotx=$(printf "\xE2\x9C\x97")
+pinterrobang=$(printf "\xE2\x80\xBD")
+
+function _register {
+    case $# in
+    1 ) local -r name=$1 arity=0 ;;
+    2 ) local -r name=$1 arity=$2 ;;
+    esac
+    case $(type -t $name) in
+    function ) ;;
+    * ) echo "$0: $FUNCNAME: Not a function: $name" >&2
+        exit 3 ;;
+    esac
+    read -d '' -r wrapper <<EOF
+function $name {
+    # Original function
+    $(declare -f $name | sed '1,2d;$d')
+
+    __e=\$?
+    shift $arity
+    if (( 0 < __e || 0 == \$# ))
+    then
+        __tally \$__e
+    else
+        "\$@"
+        __e=\$?
+        __tally \$__e
+    fi
+}
+EOF
+    eval "$wrapper"
+}
+
+let __passed=0 __failed=0 __errored=0
+function __tally {
+    local -r __e=$1
+    $__tallied && return $__e
+    __tallied=true
+    case $__e in
+    0 ) let ++__passed ;;
+    1 ) let ++__failed ;;
+    * ) let ++__errored ;;
+    esac
+    _print_result $__e
+    return $__e
+}
+
+function _print_result {
+    local -r __e=$1
+    case $__e in
+    0 ) echo -e $pgreen$pcheckmark$preset $_scenario_name ;;
+    1 ) echo -e $pred$pballotx$preset $_scenario_name ;;
+    * ) echo -e $pboldred$pinterrobang$preset $_scenario_name ;;
+    esac
+}
+
+function check_exit {
+    (( $? == $1 ))
+}
+
+function make_exit {
+    local -r e=$1
+    shift
+    (exit $e)
+    "$@"
+}
+
+function check_d {
+    [[ $PWD == $1 ]]
+}
+
+function push_d {
+    pushd $1 >/dev/null
+}
+
+function change_d {
+    cd $1
+}
+
+function variadic {
+    :
+}
+
+function early_return {
+    return $1
+}
+
+function normal_return {
+    (exit $1)
+}
+
+function dynamic_scope {
+    [[ "$bob" == nancy ]]
+}
+
+function f {
+    local -r bob=nancy
+}
+
+function AND {
+    "$@"
+}
+
+function SCENARIO {
+    local -r _scenario_name="$1"
+    shift
+    local __tallied=false
+    local __e=0
+    pushd $PWD >/dev/null
+    "$@"
+    __tally $?
+    while popd >/dev/null 2>&1 ; do : ; done
+}
+
+_register f
+_register normal_return 1
+_register variadic 1
+_register dynamic_scope
+_register early_return 1
+_register change_d 1
+_register push_d 1
+_register check_exit 1
+
+echo "Expect 12 passes, 4 failures and 4 errors:"
+SCENARIO "Normal return pass direct" normal_return 0
+SCENARIO "Normal return fail direct" normal_return 1
+SCENARIO "Normal return error direct" normal_return 2
+SCENARIO "Normal return pass indirect" f AND normal_return 0
+SCENARIO "Normal return fail indirect" f AND normal_return 1
+SCENARIO "Normal return error indirect" f AND normal_return 2
+SCENARIO "Early return pass indirect" f AND early_return 0
+SCENARIO "Early return fail indirect" f AND early_return 1
+SCENARIO "Early return error indirect" f AND early_return 2
+SCENARIO "Early return pass direct" early_return 0
+SCENARIO "Early return fail direct" early_return 1
+SCENARIO "Early return error direct" early_return 2
+SCENARIO "Variadic with none" f AND variadic
+SCENARIO "Variadic with one" f AND variadic apple
+SCENARIO "Dynamic scope" f AND dynamic_scope
+here=$PWD
+SCENARIO "Change directory" change_d /tmp
+SCENARIO "Check directory cd" check_d $here
+SCENARIO "Push directory" push_d /etc
+SCENARIO "Check directory pushd" check_d $here
+SCENARIO "Check exit" make_exit 1 AND check_exit 1
+
+(( 0 == __passed )) || ppassed=$pgreen
+(( 0 == __failed )) || pfailed=$pred
+(( 0 == __errored )) || perrored=$pboldred
+cat <<EOS
+$ppassed$__passed PASSED$preset, $pfailed$__failed FAILED$preset, $perrored$__errored ERRORED$preset
+EOS
