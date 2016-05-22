@@ -95,22 +95,22 @@ function __tally {
     return $__e
 }
 
-[[ -t 1 ]] && color=true || color=false
-quiet=false
+[[ -t 1 ]] && _color=true || _color=false
+_quiet=false
 while getopts :cdhq-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
-    c | color ) color=true ;;
+    c | _color ) _color=true ;;
     d | debug ) __enable_debug "$@" ;;
     h | help ) __print_help ; exit 0 ;;
-    q | quiet ) quiet=true ;;
+    q | _quiet ) _quiet=true ;;
     * ) __print_usage >&2 ; exit 3 ;;
     esac
 done
 shift $((OPTIND - 1))
 
-$color && __setup_colors
+$_color && __setup_colors
 
 case $# in
 0 ) __print_usage >&2 ; exit 3 ;;
@@ -139,7 +139,7 @@ done
 
 for t in "$@"
 do
-    if ! $quiet
+    if ! $_quiet
     then
         s=${t##*/}
         s=${s%.sh}
@@ -154,7 +154,7 @@ do
     let __t_passed=$((__passed - __last_passed))
     let __t_failed=$((__failed - __last_failed))
     let __t_errored=$((__errored - __last_errored))
-    if ! $quiet
+    if ! $_quiet
     then
         __all=()
         (( 0 == __t_errored )) || __all+=("$__t_errored errored")
@@ -165,7 +165,7 @@ do
     fi
 done
 
-if ! $quiet
+if ! $_quiet
 then
     (( 0 == __passed )) && ppassed= || ppassed=${pgreen}
     (( 0 == __failed )) && pfailed= || pfailed=${pred}
