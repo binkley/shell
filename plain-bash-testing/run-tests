@@ -7,13 +7,10 @@ function __setup_colors()
     [[ -t 1 ]] || return
     local -r ncolors=$(tput colors)
     [[ -n "$ncolors" && ncolors -ge 8 ]] || return
-    pgreen=$(printf "\e[32m")
-    pred=$(printf "\e[31m")
-    pboldred=$(printf "\e[31;1m")
-    pcheckmark=$(printf "\xE2\x9C\x93")
-    pballotx=$(printf "\xE2\x9C\x97")
-    pinterrobang=$(printf "\xE2\x80\xBD")
-    preset=$(printf "\e[0m")
+    readonly pgreen=$(printf "\e[32m")
+    readonly pred=$(printf "\e[31m")
+    readonly pboldred=$(printf "\e[31;1m")
+    readonly preset=$(printf "\e[0m")
 }
 
 function __print_usage {
