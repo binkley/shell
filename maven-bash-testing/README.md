@@ -1,4 +1,4 @@
-# Testing BASH
+# Maven Bash Testing
 
 This demonstrates [fluent](https://en.wikipedia.org/wiki/Fluent_interface)
 [BDD-style unit testing](http://martinfowler.com/bliki/GivenWhenThen.html)
