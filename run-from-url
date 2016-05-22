@@ -1,0 +1,111 @@
+#!/bin/bash
+
+function print_usage {
+    cat <<EOU
+Usage: $0 [-ou] -- <url> <content_file> [...]
+EOU
+}
+
+function print_help {
+    print_usage
+    cat <<'EOH'
+
+Arguments:
+  url             URL to update from
+  content_file    Local copy to run
+
+Options:
+  -h,--help       Print help and exit normally
+  -o,--offline    Run local copy, do not update
+  -u,--update     Update local copy, do not run
+EOH
+}
+
+offline=false
+update=false
+while getopts :ou-: opt
+do
+    case $opt in
+    h | help ) print_help ; exit 0 ;;
+    o | offline ) offline=true ;;
+    u | update ) update=true ;;
+    * ) print_usage >&2 ; exit 2 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+if $offline && $update
+then
+    echo "$0: Both -o and -u" >&2
+    exit 2
+fi
+
+case $# in
+0 | 1 ) print_usage >&2 ; exit 2 ;;
+* ) url=$1 content_file=$2
+    case $content_file in
+    /* ) ;;
+    * ) content_file=$PWD/$content_file ;;
+    esac
+    readonly content_file url ;;
+esac
+shift 2
+
+if $offline
+then
+    exec $content_file "$@"
+fi
+
+trap 'rm -rf $tmp_dir' EXIT
+tmp_dir=$(mktemp -d 2>/dev/null || mktemp -d -t ${0##*/})
+tmp_headers_file=$tmp_dir/headers
+tmp_content_file=$tmp_dir/content
+
+{
+    pushd $(dirname $0)
+    cache_dir=$(pwd -P)/.cache
+    etag_file=$cache_dir/etag
+    popd
+} >/dev/null
+if [[ ! -d $cache_dir ]]
+then
+    mkdir $cache_dir
+    echo 0 >$etag_file
+fi
+
+readonly old_etag=$(<$etag_file)
+
+read http_code < <(curl -s -D $tmp_headers_file -o $tmp_content_file \
+    -w '%{http_code}\n' \
+    -H "If-None-Match: \"$old_etag\"" \
+    $url)
+readonly http_code
+
+case $http_code in
+304 ) exec $content_file "$@" ;;
+200 ) ;;
+* ) echo "$0: Reponse $http_code for $url" >&2
+    exit 3 ;;
+esac
+
+while read header value
+do
+    [[ ETag: == $header ]] || continue
+    new_etag=${value%$'\r'}
+    new_etag=${new_etag#\"}
+    new_etag=${new_etag%\"}
+    break
+done <$tmp_headers_file
+readonly new_etag
+
+if [[ -z "$new_etag" ]]
+then
+    echo "$0: No ETag for $url" >&2
+    exit 2
+fi
+
+mv $tmp_content_file $content_file
+chmod +x $content_file
+echo $new_etag >$etag_file
+
+exec $content_file "$@"
