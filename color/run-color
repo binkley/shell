@@ -29,7 +29,7 @@ do
     echo This is $e
     for c in black red green yellow blue magenta cyan white
     do
-        eval "printf \" \${p$e}\${p$c}$c\$preset\""
+        eval "echo -n \" \${p$e}\${p$c}$c\$preset\""
     done
     echo
 done
@@ -40,7 +40,7 @@ do
     c bg $r 0 0
     printf '  '
 done
-printf '\e[0m\n'
+echo "$preset"
 
 for color
 do
