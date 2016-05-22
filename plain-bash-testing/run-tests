@@ -2,13 +2,45 @@
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
-pgreen=$(printf "\e[32m")
-pred=$(printf "\e[31m")
-pboldred=$(printf "\e[31;1m")
-preset=$(printf "\e[0m")
-pcheckmark=$(printf "\xE2\x9C\x93")
-pballotx=$(printf "\xE2\x9C\x97")
-pinterrobang=$(printf "\xE2\x80\xBD")
+function __setup_colors()
+{
+    [[ -t 1 ]] || return
+    local -r ncolors=$(tput colors)
+    [[ -n "$ncolors" && ncolors -ge 8 ]] || return
+    pgreen=$(printf "\e[32m")
+    pred=$(printf "\e[31m")
+    pboldred=$(printf "\e[31;1m")
+    pcheckmark=$(printf "\xE2\x9C\x93")
+    pballotx=$(printf "\xE2\x9C\x97")
+    pinterrobang=$(printf "\xE2\x80\xBD")
+    preset=$(printf "\e[0m")
+}
+
+function __print_usage {
+    cat <<EOU
+Usage: $0 [-c|--color][-d|--debug]|[-q|--quiet] <tests ...>
+EOU
+}
+
+function __print_help {
+    __print_usage
+    cat <<'EOH'
+
+Options:
+  -c,--color    Print in color
+  -d,--debug    Print extra output
+  -q,--quiet    Print minimal output
+EOH
+}
+
+function __enable_debug()
+{
+    export debug=true
+    export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+    set -o pipefail
+    set -o xtrace
+    echo "$0: Called with $@"
+}
 
 function _register {
     case $# in
@@ -54,108 +86,90 @@ function __tally {
     return $__e
 }
 
-function _print_result {
-    local -r __e=$1
-    case $__e in
-    0 ) echo -e $pgreen$pcheckmark$preset $_scenario_name ;;
-    1 ) echo -e $pred$pballotx$preset $_scenario_name ;;
-    * ) echo -e $pboldred$pinterrobang$preset $_scenario_name ;;
+[[ -t 1 ]] && color=true || color=false
+quiet=false
+while getopts :cdhq-: opt
+do
+    [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
+    case $opt in
+    c | color ) color=true ;;
+    d | debug ) __enable_debug "$@" ;;
+    h | help ) __print_help ; exit 0 ;;
+    q | quiet ) quiet=true ;;
+    * ) __print_usage >&2 ; exit 3 ;;
     esac
-}
+done
+shift $((OPTIND - 1))
 
-function check_exit {
-    (( $? == $1 ))
-}
+$color && __setup_colors
 
-function make_exit {
-    local -r e=$1
-    shift
-    (exit $e)
-    "$@"
-}
+case $# in
+0 ) __print_usage >&2 ; exit 3 ;;
+esac
 
-function check_d {
-    [[ $PWD == $1 ]]
-}
+{
+    pushd $(dirname $0)
+    root_dir=$(pwd -P)
+    popd
+} >/dev/null
 
-function push_d {
-    pushd $1 >/dev/null
-}
+for f in $root_dir/f/*.sh
+do
+    . $f
+done
 
-function change_d {
-    cd $1
-}
+for t in "$@"
+do
+    if [[ -d "$t" ]]
+    then
+        set -- $(find $t -type f -name \*.sh)
+    else
+        set -- $t
+    fi
+done
 
-function variadic {
-    :
-}
-
-function early_return {
-    return $1
-}
-
-function normal_return {
-    (exit $1)
-}
-
-function dynamic_scope {
-    [[ "$bob" == nancy ]]
-}
-
-function f {
-    local -r bob=nancy
-}
-
-function AND {
-    "$@"
-}
-
-function SCENARIO {
-    local -r _scenario_name="$1"
-    shift
-    local __tallied=false
-    local __e=0
+for t in "$@"
+do
+    if ! $quiet
+    then
+        s=${t##*/}
+        s=${s%.sh}
+        echo "${pbold}Script $s:${preset}"
+    fi
+    let __last_passed=$__passed
+    let __last_failed=$__failed
+    let __last_errorer=$__errored
     pushd $PWD >/dev/null
-    "$@"
-    __tally $?
+    . $t
     while popd >/dev/null 2>&1 ; do : ; done
-}
+    let __t_passed=$((__passed - __last_passed))
+    let __t_failed=$((__failed - __last_failed))
+    let __t_errored=$((__errored - __last_errored))
+    if ! $quiet
+    then
+        __all=()
+        (( 0 == __t_errored )) || __all+=("$__t_errored errored")
+        (( 0 == __t_failed )) || __all+=("$__t_failed failed")
+        (( 0 == __t_passed )) || __all+=("$__t_passed passed")
+        IFS=, eval '__s="${__all[*]}"'
+        echo "${__s//,/, }"
+    fi
+done
 
-_register f
-_register normal_return 1
-_register variadic 1
-_register dynamic_scope
-_register early_return 1
-_register change_d 1
-_register push_d 1
-_register check_exit 1
-
-echo "Expect 12 passes, 4 failures and 4 errors:"
-SCENARIO "Normal return pass direct" normal_return 0
-SCENARIO "Normal return fail direct" normal_return 1
-SCENARIO "Normal return error direct" normal_return 2
-SCENARIO "Normal return pass indirect" f AND normal_return 0
-SCENARIO "Normal return fail indirect" f AND normal_return 1
-SCENARIO "Normal return error indirect" f AND normal_return 2
-SCENARIO "Early return pass indirect" f AND early_return 0
-SCENARIO "Early return fail indirect" f AND early_return 1
-SCENARIO "Early return error indirect" f AND early_return 2
-SCENARIO "Early return pass direct" early_return 0
-SCENARIO "Early return fail direct" early_return 1
-SCENARIO "Early return error direct" early_return 2
-SCENARIO "Variadic with none" f AND variadic
-SCENARIO "Variadic with one" f AND variadic apple
-SCENARIO "Dynamic scope" f AND dynamic_scope
-here=$PWD
-SCENARIO "Change directory" change_d /tmp
-SCENARIO "Check directory cd" check_d $here
-SCENARIO "Push directory" push_d /etc
-SCENARIO "Check directory pushd" check_d $here
-SCENARIO "Check exit" make_exit 1 AND check_exit 1
-
-(( 0 == __passed )) || ppassed=$pgreen
-(( 0 == __failed )) || pfailed=$pred
-(( 0 == __errored )) || perrored=$pboldred
-cat <<EOS
-$ppassed$__passed PASSED$preset, $pfailed$__failed FAILED$preset, $perrored$__errored ERRORED$preset
+if ! $quiet
+then
+    (( 0 == __passed )) && ppassed= || ppassed=${pgreen}
+    (( 0 == __failed )) && pfailed= || pfailed=${pred}
+    (( 0 == __errored )) && perrored= || perrored=${pboldred}
+    cat <<EOS
+${pbold}Summary${preset}: ${ppassed}$__passed PASSED${preset}, ${pfailed}$__failed FAILED${preset}, ${perrored}$__errored ERRORED${preset}
 EOS
+fi
+
+if (( 0 < __errored ))
+then
+    exit 2
+elif (( 0 < __failed ))
+then
+    exit 1
+fi

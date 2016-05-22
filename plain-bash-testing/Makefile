@@ -1,2 +1,2 @@
 test:
-	@./run-tests
+	@./run-tests t
