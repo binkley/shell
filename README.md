@@ -8,6 +8,7 @@ Helpful shell scripts and programs.
 * [fibs](fibs) - Matrix math with Fibonacci Q-matrix
 * [maven-bash-testing](maven-bash-testing/README.md) - Maven driving Bash
 * [plain-bash-testing](plain-bash-testing/README.md) - Bash test framework
+* [run-from-url](run-from-url) - Fetch and run script, keep up to date
 * [svn-recommit](svn-recommit/README.md) - Reedit an SVN commit message
 * [starter](starter/README.md) - Starter script for writing commands in BASH
 
