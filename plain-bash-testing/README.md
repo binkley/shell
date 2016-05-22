@@ -91,7 +91,7 @@ function _print_result {
 
 More interesting might be:
 
-```
+```bash
 function _print_result {
     local -r exit_code=$1
     $_quiet && return $exit_code
