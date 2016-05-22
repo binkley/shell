@@ -72,6 +72,15 @@ EOF
     eval "$wrapper"
 }
 
+function _start {
+    local __tallied=false
+    local __e=0
+    pushd $PWD >/dev/null
+    "$@"
+    __tally $?
+    while popd >/dev/null 2>&1 ; do : ; done
+}
+
 let __passed=0 __failed=0 __errored=0
 function __tally {
     local -r __e=$1

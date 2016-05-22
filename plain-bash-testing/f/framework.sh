@@ -18,10 +18,5 @@ function AND {
 function SCENARIO {
     local -r _scenario_name="$1"
     shift
-    local __tallied=false
-    local __e=0
-    pushd $PWD >/dev/null
-    "$@"
-    __tally $?
-    while popd >/dev/null 2>&1 ; do : ; done
+    _start "$@"
 }
