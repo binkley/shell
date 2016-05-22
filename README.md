@@ -20,3 +20,8 @@ $ make
 
 On success exits 0 and prints no output.  On failures, should be noisy and
 in color (when run on a suitable terminal).
+
+## Tools in this directory
+
+* `fibs` - Shows off the Fibonacci Q matrix with Bash integer math
+* `run-from-url` - Keeps my local, running copy of a Github script up to date

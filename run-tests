@@ -6,9 +6,9 @@ for d in *
 do
     if [[ -f $d/Makefile ]]
     then
-        (cd $d ; make)
+        (cd $d >/dev/null ; make -s)
     elif [[ -f $d/pom.xml ]]
     then
-        (cd $d ; mvn -q clean verify)
+        (cd $d >/dev/null ; mvn -q clean verify)
     fi
 done
