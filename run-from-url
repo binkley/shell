@@ -1,8 +1,13 @@
 #!/bin/bash
 
+export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+
+set -e
+
 function print_usage {
     cat <<EOU
-Usage: $0 [-hou] <url> <content_file> [...]
+Usage: $0 [-hou] <url> <file> [...]
+Usage: $0 -i [-hou] [--] [...]
 EOU
 }
 
@@ -10,24 +15,36 @@ function print_help {
     print_usage
     cat <<'EOH'
 
+Runs a local copy of a script fetched from the Internet, caching based on
+ETag.
+
 Arguments:
   url             URL to update from
-  content_file    Local copy to run
+  file            Local copy to run
 
 Options:
   -h,--help       Print help and exit normally
+  -i,--inplace    Run inplace
   -o,--offline    Run local copy, do not update
   -u,--update     Update local copy, do not run
+
+If <name> is the script name, caches the ETag for <url> in .<name>.etag.
+
+If run inplace and <name> is the script name, the local copy is .<name> and
+the URL is read from .<name>.url.  Use -- to distinguish flags for this script
+from flags for the local copy.
 EOH
 }
 
+inplace=false
 offline=false
 update=false
-while getopts :hou-: opt
+while getopts :hiou-: opt
 do
     [[ - == $opt ]] && opt="${OPtARG%%=*}" OPTARG="${OPTARG#*=}"
     case $opt in
     h | help ) print_help ; exit 0 ;;
+    i | inplace ) inplace=true ;;
     o | offline ) offline=true ;;
     u | update ) update=true ;;
     * ) print_usage >&2 ; exit 2 ;;
@@ -41,14 +58,25 @@ then
     exit 2
 fi
 
+name=$(basename $0)
+if $inplace
+then
+    pushd $(dirname $0)
+    url_file=$PWD/.$name.url
+    url=$(<$url_file)
+    content_file=$PWD/.$name
+    popd
+    set -- $url $content_file "$@"
+fi >/dev/null
+
 case $# in
 0 | 1 ) print_usage >&2 ; exit 2 ;;
-* ) url=$1 content_file=$2
-    case $content_file in
-    /* ) ;;
-    * ) content_file=$PWD/$content_file ;;
+* ) url=$1
+    case $2 in
+    /* ) content_file=$2 ;;
+    * ) content_file=$PWD/$2 ;;
     esac
-    readonly content_file url ;;
+    readonly url content_file ;;
 esac
 shift 2
 
@@ -57,9 +85,9 @@ then
     exec $content_file "$@"
 fi
 
-case ${content_file##*/} in
-    .* ) etag_file=${content_file%/*}/${content_file##*/}.etag ;;
-    * ) etag_file=${content_file%/*}/.${content_file##*/}.etag ;;
+case $name in
+    .* ) etag_file=$(dirname $content_file)/$name.etag ;;
+    * ) etag_file=$(dirname $content_file)/.$name.etag ;;
 esac
 readonly etag_file
 [[ -s $etag_file ]] || echo 0 >$etag_file
