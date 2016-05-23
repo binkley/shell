@@ -6,7 +6,7 @@ for d in *
 do
     if [[ -f $d/Makefile ]]
     then
-        (cd $d >/dev/null ; make -s)
+        (cd $d >/dev/null ; make -s test)
     elif [[ -f $d/pom.xml ]]
     then
         (cd $d >/dev/null ; mvn -q clean verify)

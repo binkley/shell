@@ -1,5 +1,4 @@
 SHELL=/bin/bash
 
 test:
-	@[ -t 1 ] && flags=-c ; \
-	./test-fruit $$flags t
+	@./test-fruit 2>&1 | grep 'Summary: 2 PASSED, 2 FAILED, 1 ERRORED' >/dev/null
