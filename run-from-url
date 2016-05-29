@@ -108,7 +108,7 @@ case $http_code in
 304 ) rm -rf $tmp_dir ; exec $content_file "$@" ;;
 200 ) ;;
 * ) echo "$0: Reponse $http_code for $url" >&2
-    exit 3 ;;
+    exit 1 ;;
 esac
 
 while read header value
@@ -124,7 +124,7 @@ readonly new_etag
 if [[ -z "$new_etag" ]]
 then
     echo "$0: No ETag for $url" >&2
-    exit 2
+    exit 1
 fi
 
 mv $tmp_content_file $content_file
