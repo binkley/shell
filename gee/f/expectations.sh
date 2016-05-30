@@ -34,4 +34,4 @@ function on_stdout {
 
     [[ "$expected" == "$actual" ]]
 }
-_register on_stdout
+_register on_stdout 1

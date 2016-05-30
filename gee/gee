@@ -92,15 +92,19 @@ else
     [[ -s $message_file ]] || echo "$@" >$message_file
 fi
 
+function prepend_existing_message {
+    export GIT_EDITOR='bash -c "{ echo ; cat '$message_file' ; } >>$1"'
+    amend=--amend
+}
+
 set -e
 
 cd .gee
 no_changes=''
 new_file='??'
-case $(git status --porcelain $out_file) in
-"$no_changes" ) amend=--amend
-    # Append message to HEAD
-    export GIT_EDITOR='bash -c "{ echo ; cat '$message_file' ; } >>$1"' ;;
+read status _ < <(git status --porcelain $out_file)
+case $status in
+"$no_changes" ) prepend_existing_message ;;
 "$new_file" ) git add $out_file ;;
 * ) ;;
 esac

@@ -24,7 +24,7 @@ function run_echo {
 }
 
 function with_program {
-    ./gee "${command[@]}" >$stdout >$stderr
+    ./gee "${command[@]}" >$stdout 2>$stderr
 }
 _register with_program
 
