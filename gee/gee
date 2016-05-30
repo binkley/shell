@@ -1,0 +1,110 @@
+#!/bin/bash
+
+function print_help {
+    cat <<EOH | fold -s -w $(tput cols)
+Usage: ${0##*/} [-h|-F FILE|-m MESSAGE|-o FILE] [PROGRAM ...]
+Usage: ${0##*/} [-h] -g PROGRAM [...]
+Commit standard input or PROGRAM output, and also copy to standard output.
+
+With no PROGRAM read standard input and name default out file '\$1.out', otherwise name default out file '${0##*/}.out'.
+
+When '-g' run PROGRAM in the '.gee' repository and do not commit output.
+
+  -h, --help              print help and exit normally
+  -F, --file FILE         take the commit message from FILE
+  -g, --in-repository     run PROGRAM in .gee
+  -m, --message MESSAGE   commit using MESSAGE.  Multiple -m options are catenated as separate paragraphs
+  -o, --out-file FILE     tee output to FILE relative to .gee
+
+Examples:
+  make test | gee -o test.out -m 'make test'
+  gee make
+  gee -g git log
+EOH
+}
+
+trap 'rm -f $message_file' EXIT
+readonly message_file=$(mktemp 2>/dev/null || mktemp -t ${0##*/})
+
+in_repository=false
+while getopts :hF:gm:o:-: opt
+do
+    [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
+    case $opt in
+    h | help ) print_help ; exit 0 ;;
+    F | file ) cp $OPTARG $message_file ;;
+    g | in-repository ) in_repository=true ;;
+    m | message ) if [[ ! -s $message_file ]]
+        then
+            echo "$OPTARG" >$message_file
+        else {
+            echo
+            echo "$message"
+            } >>$message_file
+        fi ;;
+    o | out-file ) out_file=$OPTARG ;;
+    : ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: option requires an argument -- '$OPTARG'
+Try '${0##*/} --help' for more information.
+EOE
+    ? ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: invalid option -- '$OPTARG'
+Try '${0##*/} --help' for more information.
+EOE
+    esac
+done
+shift $((OPTIND - 1))
+
+if $in_repository && [[ -s $message_file ]]
+then
+    cat <<EOE >&2
+${0##*/}: both -g and -m or -F
+Try '${0##*/} --help' for more information.
+EOE
+    exit 2
+fi
+
+if [[ ! -d .gee ]]
+then
+    git init .gee >/dev/null || exit
+    echo '.gee/' >>.gitignore
+    readonly top_level=$(git rev-parse --show-toplevel)
+    if [[ -n $top_level ]]
+    then
+        git add .gitignore
+        git commit .gitignore -m 'Ignore .gee' >/dev/null
+    fi
+fi
+
+if $in_repository
+then
+    cd .gee
+    "$@"
+    exit
+elif (( 0 == $# ))
+then
+    : ${out_file:=${0##*/}.out}
+    tee .gee/$out_file
+else
+    : ${out_file:=${1##*/}.out}
+    ("$@") | tee .gee/$out_file
+    exit_code=${PIPESTATUS[0]}
+    [[ -s $message_file ]] || echo "$@" >$message_file
+fi
+
+set -e
+
+cd .gee
+no_changes=''
+new_file='??'
+case $(git status --porcelain $out_file) in
+"$no_changes" ) amend=--amend
+    # Append message to HEAD
+    export GIT_EDITOR='bash -c "{ echo ; cat '$message_file' ; } >>$1"' ;;
+"$new_file" ) git add $out_file ;;
+* ) ;;
+esac
+
+git commit $amend -F $message_file $out_file >/dev/null
+
+exit $exit_code

@@ -1,0 +1,153 @@
+#!/bin/bash
+
+export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+
+set -e
+
+function print_help {
+    local -r width=$(( $(tput cols) - 2 ))
+    cat <<EOH | fold -s -w $width
+Usage: $0 [-houv] URL FILE [...]
+Usage: $0 -i [-houv] [--] [...]
+Runs a local copy of a BASH script fetched from the Internet, caching based on ETag.
+
+Arguments:
+  URL              URL to update from
+  FILE             local copy to run
+
+Options:
+  -h, --help       print help and exit normally
+  -i, --inplace    run inplace
+  -o, --offline    run local copy, do not update
+  -u, --update     update local copy, do not run
+  -v, --verbose    print verbose output
+
+If NAME is the script name, caches the ETag for URL in .NAME.etag.
+
+If run inplace and NAME is the script name, the local copy is .NAME and the URL is read from .NAME.url.  Use -- to distinguish flags for this script from flags for the local copy.
+EOH
+}
+
+inplace=false
+offline=false
+update=false
+verbose=false
+while getopts :hiouv-: opt
+do
+    [[ - == $opt ]] && opt="${OPtARG%%=*}" OPTARG="${OPTARG#*=}"
+    case $opt in
+    h | help ) print_help ; exit 0 ;;
+    i | inplace ) inplace=true ;;
+    o | offline ) offline=true ;;
+    u | update ) update=true ;;
+    v | verbose ) verbose=true ;;
+    : ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: option requires an argument -- '$OPTARG'
+Try '${0##*/} --help' for more information.
+EOE
+    ? ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: invalid option -- '$OPTARG'
+Try '${0##*/} --help' for more information.
+EOE
+
+    esac
+done
+shift $((OPTIND - 1))
+
+if $offline && $update
+then
+    cat <<EOE >&2
+${0##*/}: both -o and -u
+Try '${0##*/} --help' for more information.
+EOE
+    exit 2
+fi
+
+name=${0##*/}
+if $inplace
+then
+    pushd ${0%/*}
+    url_file=$PWD/.$name.url
+    url=$(<$url_file)
+    content_file=$PWD/.$name
+    popd
+    set -- $url $content_file "$@"
+fi >/dev/null
+
+case $# in
+0 | 1 ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: missing arguments
+Try '${0##*/} --help' for more information.
+EOE
+* ) url=$1
+    case $2 in
+    /* ) content_file=$2 ;;
+    * ) content_file=$PWD/$2 ;;
+    esac
+    readonly url content_file ;;
+esac
+shift 2
+
+if $offline
+then
+    exec $content_file "$@"
+fi
+
+case $name in
+    .* ) etag_file=$(dirname $content_file)/$name.etag ;;
+    * ) etag_file=$(dirname $content_file)/.$name.etag ;;
+esac
+readonly etag_file
+[[ -s $etag_file ]] || echo 0 >$etag_file
+readonly old_etag=$(<$etag_file)
+
+trap 'rm -rf $tmp_dir' EXIT
+tmp_dir=$(mktemp -d 2>/dev/null || mktemp -d -t ${0##*/})
+tmp_headers_file=$tmp_dir/headers
+tmp_content_file=$tmp_dir/content
+
+read http_code < <(curl -s -D $tmp_headers_file -o $tmp_content_file \
+    -w '%{http_code}\n' \
+    -H "If-None-Match: \"$old_etag\"" \
+    $url)
+readonly http_code
+
+readonly no_update=304
+readonly updated=200
+case $http_code in
+$no_update ) if $verbose
+    then
+        echo "${0##*/}: no update" >&2
+    fi
+    rm -rf $tmp_dir
+    exec $content_file "$@" ;;
+$updated ) if $verbose
+    then
+        echo "${0##*/}: updated" >&2
+    fi ;;
+* ) echo "${0##*/}: reponse $http_code for $url" >&2
+    exit 1 ;;
+esac
+
+while read header value
+do
+    [[ ETag: == $header ]] || continue
+    new_etag=${value%$'\r'}
+    new_etag=${new_etag#\"}
+    new_etag=${new_etag%\"}
+    break
+done <$tmp_headers_file
+readonly new_etag
+
+if [[ -z "$new_etag" ]]
+then
+    echo "$0: no ETag for $url" >&2
+    exit 1
+fi
+
+mv $tmp_content_file $content_file
+chmod +x $content_file
+echo $new_etag >$etag_file
+
+rm -rf $tmp_dir
+exec $content_file "$@"
