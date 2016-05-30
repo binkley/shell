@@ -4,42 +4,35 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
 set -e
 
-function print_usage {
-    cat <<EOU
-Usage: $0 [-hou] <url> <file> [...]
-Usage: $0 -i [-hou] [--] [...]
-EOU
-}
-
 function print_help {
-    print_usage
-    cat <<'EOH'
-
-Runs a local copy of a script fetched from the Internet, caching based on
-ETag.
+    local -r width=$(( $(tput cols) - 2 ))
+    cat <<EOH | fold -s -w $width
+Usage: $0 [-houv] URL FILE [...]
+Usage: $0 -i [-houv] [--] [...]
+Runs a local copy of a BASH script fetched from the Internet, caching based on ETag.
 
 Arguments:
-  url             URL to update from
-  file            Local copy to run
+  URL              URL to update from
+  FILE             local copy to run
 
 Options:
-  -h,--help       Print help and exit normally
-  -i,--inplace    Run inplace
-  -o,--offline    Run local copy, do not update
-  -u,--update     Update local copy, do not run
+  -h, --help       print help and exit normally
+  -i, --inplace    run inplace
+  -o, --offline    run local copy, do not update
+  -u, --update     update local copy, do not run
+  -v, --verbose    print verbose output
 
-If <name> is the script name, caches the ETag for <url> in .<name>.etag.
+If NAME is the script name, caches the ETag for URL in .NAME.etag.
 
-If run inplace and <name> is the script name, the local copy is .<name> and
-the URL is read from .<name>.url.  Use -- to distinguish flags for this script
-from flags for the local copy.
+If run inplace and NAME is the script name, the local copy is .NAME and the URL is read from .NAME.url.  Use -- to distinguish flags for this script from flags for the local copy.
 EOH
 }
 
 inplace=false
 offline=false
 update=false
-while getopts :hiou-: opt
+verbose=false
+while getopts :hiouv-: opt
 do
     [[ - == $opt ]] && opt="${OPtARG%%=*}" OPTARG="${OPTARG#*=}"
     case $opt in
@@ -47,14 +40,26 @@ do
     i | inplace ) inplace=true ;;
     o | offline ) offline=true ;;
     u | update ) update=true ;;
-    * ) print_usage >&2 ; exit 2 ;;
+    v | verbose ) verbose=true ;;
+    : ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: option requires an argument -- '$OPTARG'
+Try '${0##*/} --help' for more information.
+EOE
+    ? ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: invalid option -- '$OPTARG'
+Try '${0##*/} --help' for more information.
+EOE
+
     esac
 done
 shift $((OPTIND - 1))
 
 if $offline && $update
 then
-    echo "$0: Both -o and -u" >&2
+    cat <<EOE >&2
+${0##*/}: both -o and -u
+Try '${0##*/} --help' for more information.
+EOE
     exit 2
 fi
 
@@ -70,7 +75,10 @@ then
 fi >/dev/null
 
 case $# in
-0 | 1 ) print_usage >&2 ; exit 2 ;;
+0 | 1 ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: missing arguments
+Try '${0##*/} --help' for more information.
+EOE
 * ) url=$1
     case $2 in
     /* ) content_file=$2 ;;
@@ -105,9 +113,17 @@ read http_code < <(curl -s -D $tmp_headers_file -o $tmp_content_file \
 readonly http_code
 
 case $http_code in
-304 ) rm -rf $tmp_dir ; exec $content_file "$@" ;;
-200 ) ;;
-* ) echo "$0: Reponse $http_code for $url" >&2
+304 ) if $verbose
+    then
+        echo "${0##*/}: updated" >&2
+    fi
+    rm -rf $tmp_dir
+    exec $content_file "$@" ;;
+200 ) if $verbose
+    then
+        echo "${0##*/}: no update" >&2
+    fi ;;
+* ) echo "${0##*/}: reponse $http_code for $url" >&2
     exit 1 ;;
 esac
 
@@ -123,7 +139,7 @@ readonly new_etag
 
 if [[ -z "$new_etag" ]]
 then
-    echo "$0: No ETag for $url" >&2
+    echo "$0: no ETag for $url" >&2
     exit 1
 fi
 
