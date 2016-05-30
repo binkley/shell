@@ -35,4 +35,4 @@ Examples:
 
 ## Tests
 
-In progress.
+Run `make`.
