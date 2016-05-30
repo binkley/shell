@@ -60,6 +60,7 @@ $(declare -f $name | sed '1,2d;$d')
     then
         __tally \$__e
     else
+        true  # Reset exit code
         "\$@"
         __e=\$?
         __tally \$__e
