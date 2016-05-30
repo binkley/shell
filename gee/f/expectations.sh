@@ -35,3 +35,16 @@ function on_stdout {
     [[ "$expected" == "$actual" ]]
 }
 _register on_stdout 1
+
+function git_log_message {
+    local expected
+    case $1 in
+    - ) read -d '' -r expected || true ;;
+    * ) expected="$1" ;;
+    esac
+
+    local actual="$(./gee -g git log -1 --pretty=format:%s)"
+
+    [[ "$expected" == "$actual" ]]
+}
+_register git_log_message 1
