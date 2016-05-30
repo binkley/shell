@@ -112,16 +112,18 @@ read http_code < <(curl -s -D $tmp_headers_file -o $tmp_content_file \
     $url)
 readonly http_code
 
+readonly no_update=304
+readonly updated=200
 case $http_code in
-304 ) if $verbose
+$no_update ) if $verbose
     then
-        echo "${0##*/}: updated" >&2
+        echo "${0##*/}: no update" >&2
     fi
     rm -rf $tmp_dir
     exec $content_file "$@" ;;
-200 ) if $verbose
+$updated ) if $verbose
     then
-        echo "${0##*/}: no update" >&2
+        echo "${0##*/}: updated" >&2
     fi ;;
 * ) echo "${0##*/}: reponse $http_code for $url" >&2
     exit 1 ;;
