@@ -98,10 +98,10 @@ while getopts :cdhq-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
-    c | _color ) _color=true ;;
+    c | color ) _color=true ;;
     d | debug ) __enable_debug "$@" ;;
     h | help ) __print_help ; exit 0 ;;
-    q | _quiet ) _quiet=true ;;
+    q | quiet ) _quiet=true ;;
     * ) __print_usage >&2 ; exit 3 ;;
     esac
 done
@@ -124,27 +124,43 @@ do
     . $f
 done
 
+__tests=()
 for t in "$@"
 do
     if [[ -d "$t" ]]
     then
-        set -- $(find $t -type f -name \*.sh)
+        __found_tests+=($(find $t -type f -name \*.sh))
+        if (( 0 == ${#__found_tests[*]} ))
+        then
+            echo "${0##*/}: No tests found in '$t'" >&2
+            exit 2
+        fi
+        __tests+=("${__found_tests[@]}")
+    elif [[ -f "$t" ]]
+    then
+        __tests+=($t)
     else
-        set -- $t
+        echo "${0##*/}: Not a test or directory: $t" >&2
+        exit 2
     fi
 done
+set -- $(echo "${__tests[@]}" | sort -u)
+
+if (( 0 == $# ))
+then
+    echo "${0##*/}: No tests" >&2
+    exit 2
+fi
 
 for t in "$@"
 do
     if ! $_quiet
     then
-        s=${t##*/}
-        s=${s%.sh}
-        echo "${pbold}Script $s:${preset}"
+        echo "${pbold}Script $t:${preset}"
     fi
     let __last_passed=$__passed
     let __last_failed=$__failed
-    let __last_errorer=$__errored
+    let __last_errored=$__errored
     pushd $PWD >/dev/null
     . $t
     while popd >/dev/null 2>&1 ; do : ; done
