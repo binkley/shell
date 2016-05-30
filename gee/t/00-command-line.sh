@@ -8,3 +8,10 @@ SCENARIO 'Run echo on command line' \
     THEN exit_with 0 \
         AND on_stdout 'Uncle Bob'
 
+SCENARIO 'Run echo in pipeline' \
+    GIVEN first_time_in_repo \
+    WHEN run_echo 'Uncle Bob' \
+        in_pipe 'First time' \
+    THEN exit_with 0 \
+        AND on_stdout 'Uncle Bob'
+

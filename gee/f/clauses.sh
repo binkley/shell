@@ -30,6 +30,6 @@ _register with_program
 
 function in_pipe {
     local -r message="$1"
-    "${command[@]}" | ./gee -m "$message"
+    "${command[@]}" | ./gee -m "$message" >$stdout 2>$stderr
 }
 _register in_pipe 1
