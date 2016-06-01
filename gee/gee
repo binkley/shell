@@ -8,6 +8,8 @@ Commit standard input or PROGRAM output, and also copy to standard output.
 
 With no PROGRAM read standard input and name default out file '\$1.out', otherwise name default out file '${0##*/}.out'.
 
+When '-l' commit output to local git, not '.gee' directory.
+
 When '-g' run PROGRAM in the '.gee' repository and do not commit output.
 
   -h, --help              print help and exit normally
