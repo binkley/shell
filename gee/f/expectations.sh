@@ -43,7 +43,8 @@ function git_log_message {
     * ) expected="$1" ;;
     esac
 
-    local actual="$(./gee -g git log -1 --pretty=format:%s)"
+    [[ -z $local_git ]] && local -r gee_g='./gee -g'
+    local actual="$($gee_g git log -1 --pretty=format:%s)"
 
     [[ "$expected" == "$actual" ]]
 }
