@@ -19,10 +19,29 @@ function first_time_in_repo {
 }
 _register first_time_in_repo
 
+function _gee {
+    # TODO: More elegant approach than multi-step and tmp file
+    local -r tmp_stderr=$tmpdir/tmp_stderr
+    ./gee $local_git $log_unchanged "${message[@]}" "$@" >$stdout 2>$tmp_stderr
+    grep '^+' $tmp_stderr >&2
+    grep -v '^+' $tmp_stderr >$stderr
+    rm -f $tmp_stderr
+}
+
 function local_git {
     local -r local_git=-l
 }
 _register local_git
+
+function having_message {
+    local -r message=(-m "$1")
+}
+_register having_message 1
+
+function log_unchanged {
+    local -r log_unchanged=-u
+}
+_register log_unchanged
 
 function run_echo {
     local -r command=(echo "$1")
@@ -30,12 +49,11 @@ function run_echo {
 _register run_echo 1
 
 function with_program {
-    ./gee $local_git "${command[@]}" >$stdout 2>$stderr
+    _gee "${command[@]}"
 }
 _register with_program
 
 function in_pipe {
-    local -r message="$1"
-    "${command[@]}" | ./gee $local_git -m "$message" >$stdout 2>$stderr
+    "${command[@]}" | _gee
 }
-_register in_pipe 1
+_register in_pipe

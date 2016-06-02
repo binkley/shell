@@ -2,15 +2,15 @@
 
 function print_help {
     cat <<EOH | fold -s -w $(tput cols)
-Usage: ${0##*/} [-F FILE|-hl|-m MESSAGE|-o FILE] [PROGRAM ...]
+Usage: ${0##*/} [-F FILE|-hl|-m MESSAGE|-o FILE][-u] [PROGRAM ...]
 Usage: ${0##*/} [-h] -g PROGRAM [...]
 Commit standard input or PROGRAM output, and also copy to standard output.
 
-With no PROGRAM read standard input and name default out file '\$1.out', otherwise name default out file '${0##*/}.out'.
+With no PROGRAM, read standard input and name default out file '${0##*/}.out', otherwise name default out file 'PROGRAM.out'.
 
-When '-l' commit output to local git, not '.gee' directory.
+With '-l', commit output to local git, not '.gee' directory.
 
-When '-g' run PROGRAM in the '.gee' repository and do not commit output.
+With '-g', run PROGRAM in the '.gee' repository and do not commit output.
 
   -h, --help              print help and exit normally
   -l, --local             use local .git, not .gee
@@ -18,11 +18,12 @@ When '-g' run PROGRAM in the '.gee' repository and do not commit output.
   -g, --in-repository     run PROGRAM in .gee
   -m, --message MESSAGE   commit using MESSAGE.  Multiple -m options are catenated as separate paragraphs
   -o, --out-file FILE     tee output to FILE relative to .gee
+  -u, --log-unchanged     update commit even when there are no changes
 
 Examples:
   make test | gee -o test.out -m 'make test'
-  gee make
-  gee -g git log
+  gee make test
+  gee -g git diff HEAD^
 EOH
 }
 
@@ -30,8 +31,9 @@ trap 'rm -f $message_file' EXIT
 readonly message_file=$(mktemp 2>/dev/null || mktemp -t ${0##*/})
 
 in_repository=false
+log_unchanged=false
 use_local_git=false
-while getopts :F:ghlm:o:-: opt
+while getopts :F:ghlm:o:u-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
@@ -48,6 +50,7 @@ do
             } >>$message_file
         fi ;;
     o | out-file ) out_file=$OPTARG ;;
+    u | log-unchanged ) log_unchanged=true ;;
     : ) cat <<EOE >&2 ; exit 2 ;;
 ${0##*/}: option requires an argument -- '$OPTARG'
 Try '${0##*/} --help' for more information.
@@ -112,9 +115,10 @@ else
     [[ -s $message_file ]] || echo "$@" >$message_file
 fi
 
+commit="commit -F $message_file"
 function prepend_existing_message {
     export GIT_EDITOR='bash -c "{ echo ; cat '$message_file' ; } >>$1"'
-    amend=--amend
+    commit='commit --amend'
 }
 
 set -e
@@ -122,13 +126,13 @@ set -e
 cd $gee_dir
 no_changes=''
 new_file='??'
-read status _ < <(git status --porcelain $out_file)
+read status file < <(git status --porcelain $out_file) || true
 case $status in
-"$no_changes" ) prepend_existing_message ;;
+"$no_changes" ) $log_unchanged && prepend_existing_message ;;
 "$new_file" ) git add $out_file ;;
 * ) ;;
 esac
 
-git commit $amend -F $message_file $out_file >/dev/null
+git $commit $out_file >/dev/null
 
 exit $exit_code
