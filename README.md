@@ -9,6 +9,7 @@ Helpful shell scripts and programs.
 * [gee](gee/README.md) - Git and tee
 * [maven-bash-testing](maven-bash-testing/README.md) - Maven driving Bash
 * [plain-bash-testing](plain-bash-testing/README.md) - Bash test framework
+* [md2man](md2man) - Convert markdown to man and view
 * [run-from-url](run-from-url) - Fetch and run script, keep up to date
 * [svn-recommit](svn-recommit/README.md) - Reedit an SVN commit message
 * [starter](starter/README.md) - Starter script for writing commands in BASH
