@@ -95,7 +95,8 @@ function __tally {
 
 [[ -t 1 ]] && _color=true || _color=false
 _quiet=false
-while getopts :cdhq-: opt
+_verbose=false
+while getopts :cdhqv-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
@@ -103,6 +104,7 @@ do
     d | debug ) __enable_debug "$@" ;;
     h | help ) __print_help ; exit 0 ;;
     q | quiet ) _quiet=true ;;
+    v | verbose ) _verbose=true ;;
     * ) __print_usage >&2 ; exit 3 ;;
     esac
 done
