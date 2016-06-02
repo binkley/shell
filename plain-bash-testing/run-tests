@@ -4,7 +4,6 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
 function __setup_colors()
 {
-    [[ -t 1 ]] || return
     local -r ncolors=$(tput colors)
     [[ -n "$ncolors" && ncolors -ge 8 ]] || return
     readonly pgreen=$(printf "\e[32m")
@@ -110,7 +109,10 @@ do
 done
 shift $((OPTIND - 1))
 
-$_color && __setup_colors
+if [[ -t 1 ]] || $_color
+then
+    __setup_colors
+fi
 
 case $# in
 0 ) __print_usage >&2 ; exit 3 ;;
