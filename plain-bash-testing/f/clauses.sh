@@ -28,10 +28,21 @@ function change_d {
 }
 _register change_d 1
 
-function variadic {
+function terminal_variadic {
     :
 }
-_register variadic 1
+_register terminal_variadic 1
+
+function interior_variadic {
+    for arg
+    do
+        case $arg in
+        - ) shift ; break ;;
+        * ) shift ;;
+        esac
+    done
+}
+_register interior_variadic
 
 function early_return {
     return $1
@@ -52,4 +63,3 @@ function f {
     local -r bob=nancy
 }
 _register f
-
