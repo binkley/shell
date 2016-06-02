@@ -1,6 +1,10 @@
 # vi: ft=bash
 # Source me
 
+readonly pcheckmark=$(printf "\xE2\x9C\x93")
+readonly pballotx=$(printf "\xE2\x9C\x97")
+readonly pinterrobang=$(printf "\xE2\x80\xBD")
+
 function _bad_syntax {
     local -r order=$1
     shift
