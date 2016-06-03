@@ -50,7 +50,9 @@ Examples:
 
 ## Tests
 
-Run `make`.  This runs `test-gee -i -- -c t`  Interestingly, this is not a
+Run `make`.
+
+This runs `test-gee -i -- -c t`  Interestingly, this is not a
 test script!  It's a copy of
 [run-from-url](https://github.com/binkley/shell/blob/master/run-from-url)
 which runs a cached copy of
