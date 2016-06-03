@@ -12,20 +12,17 @@ function __setup_colors()
     readonly preset=$(printf "\e[0m")
 }
 
-function __print_usage {
-    cat <<EOU
-Usage: $0 [-c|--color][-d|--debug]|[-q|--quiet] <tests ...>
-EOU
-}
-
 function __print_help {
-    __print_usage
-    cat <<'EOH'
+    local -r width=$(( $(tput cols) - 2 ))
+    cat <<EOH | fold -s -w $width
+Usage: $0 [-c|--color][-d|--debug]|[-q|--quiet][-v|--verbose] TEST [TEST...]
+Runs BASH test(s).
 
-Options:
-  -c,--color    Print in color
-  -d,--debug    Print extra output
-  -q,--quiet    Print minimal output
+TEST can be either a single test file or a directory of test path files.
+
+  -c, --color   Print in color
+  -d, --debug   Print extra output
+  -q, --quiet   Print minimal output
 EOH
 }
 
@@ -104,7 +101,10 @@ do
     h | help ) __print_help ; exit 0 ;;
     q | quiet ) _quiet=true ;;
     v | verbose ) _verbose=true ;;
-    * ) __print_usage >&2 ; exit 3 ;;
+    * ) cat <<EOE >&2 ; exit 3 ;;
+${0##*/}: unrecognized option '-$OPTARG'
+Try 'cat --help' for more information.
+EOE
     esac
 done
 shift $((OPTIND - 1))
@@ -115,7 +115,10 @@ then
 fi
 
 case $# in
-0 ) __print_usage >&2 ; exit 3 ;;
+0 ) cat <<EOE >&2 ; exit 3 ;;
+${0##*/}: missing TEST(s)
+Try 'cat --help' for more information.
+EOE
 esac
 
 {
