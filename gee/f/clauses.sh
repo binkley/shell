@@ -13,7 +13,7 @@ function first_time_in_repo {
     local -r repo_dir=$tmpdir/git
     git init $repo_dir >$stdout 2>$stderr
     cp gee $repo_dir
-    cd $repo_dir
+    cd $repo_dir >/dev/null
     git add gee
     git commit gee -m 'First commit' >/dev/null
 }

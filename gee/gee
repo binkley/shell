@@ -101,7 +101,7 @@ fi
 
 if $in_repository
 then
-    cd $gee_dir
+    cd $gee_dir >/dev/null
     "$@"
     exit
 elif (( 0 == $# ))
@@ -123,7 +123,7 @@ function prepend_existing_message {
 
 set -e
 
-cd $gee_dir
+cd $gee_dir >/dev/null
 no_changes=''
 new_file='??'
 read status file < <(git status --porcelain $out_file) || true

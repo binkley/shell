@@ -88,9 +88,9 @@ function GIVEN {
 function _maybe_debug_if_not_passed {
     if $debug && [[ -t 0 && -t 1 ]]
     then
-        trap 'cd $old_pwd' RETURN
+        trap 'cd $old_pwd >/dev/null' RETURN
         local -r old_pwd=$PWD
-        cd $tmpdir
+        cd $tmpdir >/dev/null
         echo ">> Dropping into shell (exited $exit_code): $scenario"
         $SHELL -i
     fi
