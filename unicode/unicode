@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Check lastest UNICODE data
+curl -s -z UnicodeData.txt -o UnicodeData.txt -R http://www.unicode.org/Public/UNIDATA/UnicodeData.txt
+
+shopt -s nocasematch
+
+while IFS=';' read code_value character_name general_category \
+    canonical_combining_classes bidirectional_category \
+    character_decomposition_mapping decimal_digit_value digit_value \
+    numeric_value mirrored unicode_1_0_name comment_field_10646 \
+    uppercase_mapping lowercase_mapping titlecase_mapping
+do
+    for pattern
+    do
+        [[ $character_name =~ $pattern ]] && echo "$character_name"
+    done
+done <UnicodeData.txt

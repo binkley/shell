@@ -13,6 +13,7 @@ Helpful shell scripts and programs.
 * [run-from-url](run-from-url) - Fetch and run script, keep up to date
 * [svn-recommit](svn-recommit/README.md) - Reedit an SVN commit message
 * [starter](starter/README.md) - Starter script for writing commands in BASH
+* [unicode](unicode/README.md) - Work with UNICODE data
 
 ## Building
 
