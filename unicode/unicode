@@ -1,7 +1,102 @@
 #!/bin/bash
 
+export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+
+readonly unicode_data=UnicodeData.txt
+url=http://www.unicode.org/Public/UNIDATA/$unicode_data
+
+function print_help {
+    local -r width=$(( $(tput cols) - 2 ))
+    cat <<EOH | fold -s -w $width
+Usage: ${0##*/} [OPTION]... PATTERN [PATTERN]...
+Finds matching UNICODE characters.
+
+PATTERN is a BASH regular expression.  Matching is case-insensitive.
+
+Automatically downloads $unicode_data, caching for next execution.
+
+  -U, --unidata-url URL   use UNICODE data from URL (default: $url)
+  -h, --help              print help and exit normally
+  -o, --offline           run local copy, do not update
+  -v, --verbose           print verbose output
+
+Examples:
+  ${0##*/} SMILE
+EOH
+}
+
+function readable_file {
+    local -r program=$1
+    local -r file=$2
+    if [[ ! -e $file ]]
+    then
+        cat <<EOE >&2 ; exit 2
+$program: $file: No such file or directory
+EOE
+    fi
+
+    if [[ ! -r $file ]]
+    then
+        cat <<EOE >&2 ; exit 2
+$program: $file: Permission denied
+EOE
+    fi
+
+    if [[ -d $file ]]
+    then
+        cat <<EOE >&2 ; exit 2
+$program: $file: Is a directory
+EOE
+    fi
+}
+
+
+offline=false
+while getopts :U:hov-: opt
+do
+    [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG%*=}
+    case $opt in
+    U | unidata-url ) url=$OPTARG ;;
+    h | help ) print_help ; exit 0 ;;
+    o | offline ) offline=true ;;
+    v | verbose ) verbose=true ;;
+    : ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: option requires an argument -- '$OPTARG'
+Try '${0##*/} --help' for more information.
+EOE
+    ? ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: invalid option -- '$OPTARG'
+Try '${0##*/} --help' for more information.
+EOE
+    esac
+done
+shift $((OPTIND - 1))
+
+case $# in
+0 ) cat <<EOE >&2 ; exit 2 ;;
+${0##*/}: missing operand
+Try '${0##*/} --help' for more information.
+EOE
+esac
+
+trap 'rm -f $tmp' EXIT
+readonly tmp=$(mktemp 2>/dev/null || mktemp -t ${0##*/})
+
 # Check lastest UNICODE data
-curl -s -z UnicodeData.txt -o UnicodeData.txt -R http://www.unicode.org/Public/UNIDATA/UnicodeData.txt
+if $offline
+then
+    :
+elif curl --fail -L -z $unicode_data -O -R $url >/dev/null 2>$tmp
+then
+    :
+else
+    readonly exit_code=$?
+    cat <<EOE ; exit $exit_code
+${0##*/}: $url: $(sed -n 's/.*curl: ([0-9]*) //p' $tmp)
+EOE
+fi
+
+readable_file ${0##*/} $unicode_data
 
 shopt -s nocasematch
 
@@ -15,4 +110,4 @@ do
     do
         [[ $character_name =~ $pattern ]] && echo "$character_name"
     done
-done <UnicodeData.txt
+done <$unicode_data

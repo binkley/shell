@@ -7,8 +7,8 @@ set -e
 function print_help {
     local -r width=$(( $(tput cols) - 2 ))
     cat <<EOH | fold -s -w $width
-Usage: $0 [-houv] URL FILE [...]
-Usage: $0 -i [-houv] [--] [...]
+Usage: ${0##*/} [-houv] URL FILE [...]
+Usage: ${0##*/} -i [-houv] [--] [...]
 Runs a local copy of a BASH script fetched from the Internet, caching based on ETag.
 
 With URL and FILE, wrap the rest of the command line, otherwise run in place.
@@ -24,7 +24,7 @@ If NAME is the script name, caches the ETag for URL in .NAME.etag.
 If run inplace and NAME is the script name, the local copy is .NAME and the URL is read from .NAME.url.  Use -- to distinguish flags for this script from flags for the local copy.
 
 Examples:
-  run-from-url https://github.com/some_one/some_script .some_script -flag arg
+  ${0##*/} https://github.com/some_one/some_script .some_script -flag arg
   some_script -i -- -flag arg
 EOH
 }
