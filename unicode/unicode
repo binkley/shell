@@ -2,8 +2,8 @@
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
-readonly unicode_data=UnicodeData.txt
-url=http://www.unicode.org/Public/UNIDATA/$unicode_data
+url=http://www.unicode.org/Public/UNIDATA/UnicodeData.txt
+unidata=UnicodeData.txt
 
 function print_help {
     local -r width=$(( $(tput cols) - 2 ))
@@ -13,11 +13,12 @@ Finds matching UNICODE characters.
 
 PATTERN is a BASH regular expression.  Matching is case-insensitive.
 
-Automatically downloads $unicode_data, caching for next execution.
+Automatically downloads $unidata, caching for next execution.
 
   -U, --unidata-url URL   use UNICODE data from URL (default: $url)
   -h, --help              print help and exit normally
   -o, --offline           run local copy, do not update
+  -u, --unidata FILE      use UNICODE data from FILE (default: $unidata)
   -v, --verbose           print verbose output
 
 Examples:
@@ -52,13 +53,14 @@ EOE
 
 
 offline=false
-while getopts :U:hov-: opt
+while getopts :U:hou:v-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG%*=}
     case $opt in
     U | unidata-url ) url=$OPTARG ;;
     h | help ) print_help ; exit 0 ;;
     o | offline ) offline=true ;;
+    u | unidata ) unidata=$OPTARG ;;
     v | verbose ) verbose=true ;;
     : ) cat <<EOE >&2 ; exit 2 ;;
 ${0##*/}: option requires an argument -- '$OPTARG'
@@ -86,7 +88,7 @@ readonly tmp=$(mktemp 2>/dev/null || mktemp -t ${0##*/})
 if $offline
 then
     :
-elif curl --fail -L -z $unicode_data -O -R $url >/dev/null 2>$tmp
+elif curl --fail -L -z $unidata -O -R $url >/dev/null 2>$tmp
 then
     :
 else
@@ -96,7 +98,7 @@ ${0##*/}: $url: $(sed -n 's/.*curl: ([0-9]*) //p' $tmp)
 EOE
 fi
 
-readable_file ${0##*/} $unicode_data
+readable_file ${0##*/} $unidata
 
 shopt -s nocasematch
 
@@ -108,6 +110,9 @@ while IFS=';' read code_value character_name general_category \
 do
     for pattern
     do
-        [[ $character_name =~ $pattern ]] && echo "$character_name"
+        if [[ $character_name =~ $pattern ]]
+        then
+            echo -e "$character_name (U+$code_value) \U$code_value"
+        fi
     done
-done <$unicode_data
+done <$unidata
