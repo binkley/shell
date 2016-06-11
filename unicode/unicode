@@ -2,6 +2,12 @@
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
+case $BASH_VERSION in
+3.* | 4.0.* | 4.1.* ) cat <<EOW >&2 ;;
+${0##*/}: WARNING: BASH $BASH_VERSION does not display UNICODE characters
+EOW
+esac
+
 url=http://www.unicode.org/Public/UNIDATA/UnicodeData.txt
 unidata=UnicodeData.txt
 
