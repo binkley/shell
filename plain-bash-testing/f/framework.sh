@@ -1,9 +1,12 @@
 # vi: ft=bash
 # Source me
 
-readonly pcheckmark=$(printf "\xE2\x9C\x93")
-readonly pballotx=$(printf "\xE2\x9C\x97")
-readonly pinterrobang=$(printf "\xE2\x80\xBD")
+printf -v pcheckmark "\xE2\x9C\x93"
+readonly pcheckmark
+printf -v pballotx "\xE2\x9C\x97"
+readonly pballotx
+printf -v pinterrobang "\xE2\x80\xBD"
+readonly pinterrobang
 
 function _print_result {
     local -r exit_code=$1
