@@ -1,25 +1,25 @@
 # vi: ft=bash
 # Source me
 
-preset=$(printf "\e[0m")
+printf -v preset "\e[0m"
 
-pbold=$(printf "\e[1m")
-plight=$(printf "\e[2m")
-pitalic=$(printf "\e[3m")
-punderscore=$(printf "\e[4m")
-pblink=$(printf "\e[5m")
-preverse=$(printf "\e[7m")
-pinvisible=$(printf "\e[8m")
-pstrikethrough=$(printf "\e[9m")
+printf -v pbold "\e[1m"
+printf -v plight "\e[2m"
+printf -v pitalic "\e[3m"
+printf -v punderscore "\e[4m"
+printf -v pblink "\e[5m"
+printf -v preverse "\e[7m"
+printf -v pinvisible "\e[8m"
+printf -v pstrikethrough "\e[9m"
 
-pblack=$(printf "\e[30m")
-pred=$(printf "\e[31m")
-pgreen=$(printf "\e[32m")
-pyellow=$(printf "\e[33m")
-pblue=$(printf "\e[34m")
-pmagenta=$(printf "\e[35m")
-pcyan=$(printf "\e[36m")
-pwhite=$(printf "\e[37m")
+printf -v pblack "\e[30m"
+printf -v pred "\e[31m"
+printf -v pgreen "\e[32m"
+printf -v pyellow "\e[33m"
+printf -v pblue "\e[34m"
+printf -v pmagenta "\e[35m"
+printf -v pcyan "\e[36m"
+printf -v pwhite "\e[37m"
 
 printf $preset  # Clear changes to help debugging
 
