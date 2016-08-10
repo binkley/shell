@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+last_group=
+last_artifact=
+version=()
+paths=()
+
+while read path group artifact version
+do
+    if [[ $group == $last_group && $artifact == $last_artifact ]]
+    then
+        versions+=($version)
+        paths+=($path)
+    else
+        # TODO: How to sort versions by Maven rules, so can automate?
+        if (( 1 < ${#paths[*]}))
+        then
+            x=$((${#paths[*]} - 1))
+            echo "Duplicate versions for $last_group:$last_artifact.  Keep which?"
+            select keep in SKIP ${versions[*]}
+            do
+                case $keep in
+                SKIP ) ;;
+            * ) for i in $(seq 0 $((${#versions[*]} - 1)))
+                do
+                    if [[ $keep != ${versions[i]} ]]
+                    then
+                        rm -rf ${paths[i]}
+                    fi
+                done
+                esac
+                break
+            done </dev/tty
+        fi
+        last_group=$group
+        last_artifact=$artifact
+        versions=($version)
+        paths=($path)
+    fi
+done

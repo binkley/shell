@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+case $# in
+0 ) : ${M2_REPO:=$HOME/.m2/repository} ;;
+1 ) M2_REPO=$1 ;;
+* ) exit 2 ;;
+esac
+
+cd $M2_REPO
+
+while read d
+do
+    group=${d%/*}
+    group=${group%/*}
+    artifact=${d%/*}
+    artifact=${artifact##*/}
+    version=${d##*/}
+    a=($group/$artifact/$version/$artifact-$version.*)
+    [[ ${a[0]} == "$group/$artifact/$version/$artifact-$version.*" ]] && continue
+    echo $M2_REPO/$group/$artifact/$version ${group//\//.} $artifact $version
+done < <(find * -type d)

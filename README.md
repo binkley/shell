@@ -8,6 +8,7 @@ Helpful shell scripts and programs.
 * [fibs](fibs) - Matrix math with Fibonacci Q-matrix
 * [gee](gee/README.md) - Git and tee
 * [maven-bash-testing](maven-bash-testing/README.md) - Maven driving Bash
+* [maven-tools](maven-tools) - Helper scripts for maven repos
 * [plain-bash-testing](plain-bash-testing/README.md) - Bash test framework
 * [md2man](md2man) - Convert markdown to man and view
 * [run-from-url](run-from-url) - Fetch and run script, keep up to date
