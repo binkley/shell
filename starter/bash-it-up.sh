@@ -56,7 +56,7 @@ debug=false
 dry_run=false
 pwd=pwd
 verbose=false
-while getopts :J:dhnv-: opt
+while getopts :dhnv-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG%*=}
     case $opt in
