@@ -53,7 +53,6 @@ EOH
 }
 
 debug=false
-dry_run=false
 pwd=pwd
 verbose=false
 while getopts :dhnv-: opt
@@ -63,7 +62,7 @@ do
     c | color ) setup_colors ;;
     d | debug ) enable_debug ;;
     h | help ) print_help ; exit 0 ;;
-    n | dry-run ) dry_run=true ;;
+    n | dry-run ) pwd="echo $pwd" ;;
     v | verbose ) verbose=true ;;
     * ) print_usage >&2 ; exit 2 ;;
     esac
@@ -75,9 +74,4 @@ case $# in
 * ) print_usage >&2 ; exit 2 ;;
 esac
 
-if $dry_run
-then
-    printf '%s\n' "$pwd"
-else
-    $pwd
-fi
+$pwd
