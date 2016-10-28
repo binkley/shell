@@ -34,7 +34,7 @@ ${debug-false} && enable_debug
 function print_usage()
 {
     cat <<EOU
-Usage: $0 [-c|--color][-d|--debug][-h|--help][-n|--dry-run][-v|--verbose]
+Usage: $0 [-c|--color][-d|--debug][-h|--help][-n|--dry-run][-o|--override][-v|--verbose]
 EOU
 }
 
@@ -48,21 +48,23 @@ Flags:
   -d, --debug    Print debug output while running
   -h, --help     Print help and exit normally
   -n, --dry-run  Do nothing (dry run); echo actions
+  -o, --override Update command to be run
   -v, --verbose  Verbose output
 EOH
 }
 
 debug=false
-pwd=pwd
+cmd=pwd
 verbose=false
 while getopts :-: opt
 do
-    [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG%*=}
+    [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     c | color ) setup_colors ;;
     d | debug ) enable_debug ;;
     h | help ) print_help ; exit 0 ;;
-    n | dry-run ) pwd="echo $pwd" ;;
+    n | dry-run ) cmd="echo $cmd" ;;
+    o | override ) cmd=$OPTARG ;;
     v | verbose ) verbose=true ;;
     * ) print_usage >&2 ; exit 2 ;;
     esac
@@ -74,4 +76,4 @@ case $# in
 * ) print_usage >&2 ; exit 2 ;;
 esac
 
-$pwd
+$cmd
