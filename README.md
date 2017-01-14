@@ -28,4 +28,5 @@ in color (when run on a suitable terminal).
 ## Tools in this directory
 
 * `fibs` - Shows off the Fibonacci Q matrix with Bash integer math
+* `md2man` - Build man page from markdown
 * `run-from-url` - Keeps my local, running copy of a Github script up to date
