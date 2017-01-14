@@ -57,7 +57,7 @@ pwd=pwd
 verbose=false
 while getopts :-: opt
 do
-    [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG%*=}
+    [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     c | color ) setup_colors ;;
     d | debug ) enable_debug ;;
