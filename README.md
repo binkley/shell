@@ -23,7 +23,7 @@ $ make
 ```
 
 On success exits 0 and prints no output.  On failures, should be noisy and
-in color (when run on a suitable terminal).
+in color (when run on a suitable terminal).  However, parse errors by BASH will not be in color: it is too early to have enabled color support.
 
 ## Tools in this directory
 
