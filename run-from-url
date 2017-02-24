@@ -4,7 +4,7 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
 set -e
 
-function print_help {
+function print-help {
     local -r width=$(( $(tput cols) - 2 ))
     cat <<EOH | fold -s -w $width
 Usage: ${0##*/} [-houv] URL FILE [...]
@@ -35,9 +35,9 @@ update=false
 verbose=false
 while getopts :hiouv-: opt
 do
-    [[ - == $opt ]] && opt="${OPtARG%%=*}" OPTARG="${OPTARG#*=}"
+    [[ - == $opt ]] && opt="${OPTARG%%=*}" OPTARG="${OPTARG#*=}"
     case $opt in
-    h | help ) print_help ; exit 0 ;;
+    h | help ) print-help ; exit 0 ;;
     i | inplace ) inplace=true ;;
     o | offline ) offline=true ;;
     u | update ) update=true ;;
