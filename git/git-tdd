@@ -49,12 +49,20 @@ function init {
     fi
     if ${FIRST_TIME-true}
     then
-        git stash
-        git commit --allow-empty -m "$initial"
-        git stash pop
+        cat <<EOM
+Initial commit message (git config tdd.initMessage): $inital
+Pull before test (git config tdd.pullBeforeTest): true
+Test command (git config --local tdd.testCommand): $(config testCommand)
+Accept command (git config --local tdd.acceptCommand): $(config acceptCommand)
+EOM
+        {
+            git stash
+            git commit --allow-empty -m "$initial"
+            git stash pop
+        } >/dev/null
     else
-        git commit --allow-empty -m "$initial"
-    fi >/dev/null
+        git commit --allow-empty -m "$initial" >/dev/null
+    fi
 }
 
 function test {
