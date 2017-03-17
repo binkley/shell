@@ -13,7 +13,7 @@ function help {
 function required {
     cat >&2 <<EOM
 $0: Missing git config: $1
-Try \`git config --local $1 <value>\` to set for this repository.
+Try \`git config --local $1 <value>\` to set $1 for this repository.
 EOM
     exit 2
 }
@@ -28,7 +28,8 @@ function config {
             * ) break ;;
         esac
     done
-    git config "${opts[@]}" tdd.$1 2>/dev/null || echo "${2-required tdd.$1}"
+    local config=tdd.$1
+    git config "${opts[@]}" $config 2>/dev/null || echo "${2-required $config}"
 }
 
 function init {
