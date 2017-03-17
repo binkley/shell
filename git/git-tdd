@@ -11,7 +11,10 @@ function help {
 }
 
 function required {
-    echo "$0: Missing git config $1" >&2
+    cat >&2 <<EOM
+$0: Missing git config: $1
+Try \`git config --local $1 <value>\` to set for this repository.
+EOM
     exit 2
 }
 
@@ -63,7 +66,10 @@ function test {
     done
     if $(config --bool pullBeforeTest true)
     then
-        git pull --rebase --autostash || return $?
+        # Support older git without `git pull --autostash`
+        # See http://stackoverflow.com/questions/30208928/can-git-pull-automatically-stash-and-pop-pending-changes
+        # TODO: Support even older git (see http://stackoverflow.com/a/31575425)
+        git -c rebase.autoStash=true pull --rebase || return $?
     fi
     $(config testCommand) \
         && git commit -a --amend --no-edit
