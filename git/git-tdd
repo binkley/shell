@@ -54,7 +54,7 @@ function init {
         git stash pop
     else
         git commit --allow-empty -m "$initial"
-    fi
+    fi >/dev/null
 }
 
 function test {
@@ -70,10 +70,10 @@ function test {
         # Support older git without `git pull --autostash`
         # See http://stackoverflow.com/questions/30208928/can-git-pull-automatically-stash-and-pop-pending-changes
         # TODO: Support even older git (see http://stackoverflow.com/a/31575425)
-        git -c rebase.autoStash=true pull --rebase || return $?
-    fi
+        git -c rebase.autoStash=true pull --rebase || return $? 
+    fi >/dev/null
     $(config testCommand) \
-        && git commit -a --amend --no-edit
+        && git commit -a --amend --no-edit >/dev/null
 }
 
 function accept {
