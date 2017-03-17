@@ -43,7 +43,14 @@ function init {
         echo "$0: Already initialized: $current" >&2
         exit 2
     fi
-    git commit --allow-empty -m "$initial"
+    if ${FIRST_TIME-true}
+    then
+        git stash
+        git commit --allow-empty -m "$initial"
+        git stash pop
+    else
+        git commit --allow-empty -m "$initial"
+    fi
 }
 
 function test {
@@ -74,7 +81,7 @@ function accept {
     $(config acceptCommand) \
         && git commit -a --amend ${message+-m "$message"} \
         && git push \
-        && init
+        && FIRST_TIME=false init
 }
 
 while (( 0 < $# ))
