@@ -7,6 +7,7 @@ Helpful shell scripts and programs.
 * [color](color/README.md) - Working with 8- and 24-bit color in the terminal
 * [fibs](fibs) - Matrix math with Fibonacci Q-matrix
 * [gee](gee/README.md) - Git and tee
+* [git](git/README.md) - Git help and extensions
 * [maven-bash-testing](maven-bash-testing/README.md) - Maven driving Bash
 * [maven-tools](maven-tools) - Helper scripts for maven repos
 * [plain-bash-testing](plain-bash-testing/README.md) - Bash test framework

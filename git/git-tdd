@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+
+function usage {
+    echo "Usage: $0 <init|test|accept>"
+}
+
+function help {
+    usage
+}
+
+function required {
+    echo "$0: Missing git config $1" >&2
+    exit 2
+}
+
+function config {
+    local opts=(--get)
+    while (( 0 < $# ))
+    do
+        case $1 in
+            --bool ) opts=("${opts[@]}" $1) ; shift ;;
+            -* ) echo "$0: BUG" >&2 ; exit 3 ;;
+            * ) break ;;
+        esac
+    done
+    git config "${opts[@]}" tdd.$1 2>/dev/null || echo "${2-required tdd.$1}"
+}
+
+function init {
+    while (( 0 < $# ))
+    do
+        case $1 in
+            --help ) usage ; exit 0 ;;
+            * ) usage >&2 ; exit 2 ;;
+        esac
+    done
+    current="$(git log -1 --pretty=%s)"
+    initial="$(config initMessage WIP)"
+    if [[ "$initial" == "$current" ]]
+    then
+        echo "$0: Already initialized: $current" >&2
+        exit 2
+    fi
+    git commit --allow-empty -m "$initial"
+}
+
+function test {
+    while (( 0 < $# ))
+    do
+        case $1 in
+            --help ) usage ; exit 0 ;;
+            * ) usage >&2 ; exit 2 ;;
+        esac
+    done
+    if $(config --bool pullBeforeTest true)
+    then
+        git pull --rebase --autostash || return $?
+    fi
+    $(config testCommand) \
+        && git commit -a --amend --no-edit
+}
+
+function accept {
+    while (( 0 < $# ))
+    do
+        case $1 in
+            --help ) usage ; exit 0 ;;
+            -m ) local message="$2" ; shift 2 ;;
+            * ) usage >&2 ; exit 2 ;;
+        esac
+    done
+    $(config acceptCommand) \
+        && git commit -a --amend ${message+-m "$message"} \
+        && git push \
+        && init
+}
+
+while (( 0 < $# ))
+do
+    case $1 in
+        --help ) exec man ${0##*/} ;;
+        -* ) usage >&2 ; exit 2 ;;
+        * ) break ;;
+    esac
+done
+
+case $# in
+    0 ) usage >&2 ; exit 2 ;;
+esac
+
+case $1 in
+    init | test | accept ) "$@" ;;
+    * ) usage >&2 ; exit 2 ;;
+esac
