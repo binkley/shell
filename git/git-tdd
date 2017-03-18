@@ -100,8 +100,9 @@ function test {
     fi >/dev/null
     $(config testCommand)
     {
+        next=$(( $(test-number) + 1 ))
         git commit -a --amend --no-edit --allow-empty
-        tdd-notes add -f -m $(( $(test-number) + 1 ))
+        tdd-notes add -f -m $next
     } >/dev/null
 }
 
@@ -115,10 +116,12 @@ function accept {
         esac
     done
     $(config acceptCommand)
-    git commit -a --amend ${message+-m "$message"}
-    # NB -- the commit also removes the notes -- why?
-    git push
-    FIRST_TIME=false init
+    {
+        git commit -a --amend ${message+-m "$message"}
+        # NB -- the commit also removes the notes -- why?
+        git push
+        FIRST_TIME=false init
+    } >/dev/null
 }
 
 while (( 0 < $# ))
