@@ -1,12 +1,15 @@
 # vi: ft=bash
 # Source me
 
-readonly pcheckmark=$(printf "\xE2\x9C\x93")
-readonly ppass=$pgreen$pcheckmark$preset
-readonly pballotx=$(printf "\xE2\x9C\x97")
-readonly pfail=$pred$pballotx$preset
-readonly pinterrobang=$(printf "\xE2\x80\xBD")
-readonly perror=$pboldred$pinterrobang$preset
+printf -v pcheckmark "\xE2\x9C\x93"
+readonly pcheckmark
+readonly ppass="$pgreen$pcheckmark$preset"
+printf -v pballotx "\xE2\x9C\x97"
+readonly pballotx
+readonly pfail="$pred$pballotx$preset"
+printf -v pinterrobang "\xE2\x80\xBD"
+readonly pinterrobang
+readonly perror="$pboldred$pinterrobang$preset"
 
 function _print_result {
     local -r exit_code=$1
