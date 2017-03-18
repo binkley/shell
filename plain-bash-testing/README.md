@@ -188,13 +188,13 @@ function fruit_is {
         return 2 ;;  # Not exit!
     esac
 }
-_register 1
+_register fruit_is 1
 
 # For THEN
 function the_colors_agree {
     [[ "$actual_color" == "$expected_color" ]]
 }
-_register
+_register the_colors_agree
 ```
 
 ### `t/good-fruit.sh`
