@@ -20,9 +20,10 @@ Runs BASH test(s).
 
 TEST can be either a single test file or a directory of test path files.
 
-  -c, --color   Print in color
-  -d, --debug   Print extra output
-  -q, --quiet   Print minimal output
+  -c, --color     Print in color
+  -d, --debug     Print extra output
+  -q, --quiet     Print minimal output
+  -v, --verbose   Print extra output
 EOH
 }
 
