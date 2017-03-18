@@ -5,6 +5,7 @@
 Helpful shell scripts and programs.
 
 * [color](color/README.md) - Working with 8- and 24-bit color in the terminal
+* [cygwin](cygwin/README.md) - Cygwin help
 * [fibs](fibs) - Matrix math with Fibonacci Q-matrix
 * [gee](gee/README.md) - Git and tee
 * [git](git/README.md) - Git help and extensions
