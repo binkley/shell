@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+# Helper for Windows/Cygwin to keep UNIX-style text files.
+#
+
+set -e # Die early
+
+silent=false
+
+function echo()
+{
+    $silent || builtin echo "$@"
+}
+
+function show-help()
+{
+    echo "Usage: ${0##*/} [-h|--help][-s|--silent] [FILE]..."
+}
+
+function prep()
+{
+    xbit=false
+    file="$(file "$1")"
+    # Leave run scripts alone
+    if [[ $file =~ executable || $file =~ 'batch file' ]]
+    then
+        xbit=true
+        chmod a+x "$1"
+        git update-index --chmod=+x "$1"
+    else
+        chmod a-x "$1"
+        git update-index --chmod=-x "$1"
+    fi
+    if [[ $file =~ text ]]
+    then
+        if [[ $file =~ DOS ]]
+        then
+            unix2dos -q "$1"
+        else
+            dos2unix -q "$1"
+        fi
+    fi
+    $xbit && echo "$1*" || echo "$1"
+}
+
+silent_opt=$silent
+while getopts :-: opt
+do
+    [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*-}
+    case "$opt" in
+    h | help ) show-help ; exit 0 ;;
+    s | silent ) silent_opt=true ;;
+    * ) show-help >&2 ; exit 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+silent=$silent_opt
+
+case $# in
+    0 ) set - . ;;
+esac
+
+# Git is happier working from the root
+cd $(git rev-parse --show-toplevel)
+
+git status -z "$@" | tr '\0' '\n' | while read -r S f
+do
+    case $S in
+    '??' ) echo "# Unknown: $f" ;;
+    C ) echo "$f" ; read ;;  # Skip next line
+    D ) echo "$f" ;;
+    R* ) read -r g ; prep "$f" ;;
+    * ) prep "$f" ;;
+    esac
+done
