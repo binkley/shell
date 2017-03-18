@@ -37,7 +37,7 @@ function config {
 }
 
 function tdd-notes {
-    git notes --ref=tdd "$@" >/dev/null
+    git notes --ref=tdd "$@"
 }
 
 function test-number {
@@ -72,13 +72,11 @@ function init {
     if ${FIRST_TIME-true}
     then
         show-config "$initial"
-        {
-            git stash 2>/dev/null
-            git commit --allow-empty -m "$initial"
-            git stash pop 2>/dev/null || true
-        } >/dev/null
+        git stash 2>/dev/null
+        git commit --allow-empty -m "$initial"
+        git stash pop 2>/dev/null || true
     else
-        git commit --allow-empty -m "$initial" >/dev/null
+        git commit --allow-empty -m "$initial"
     fi
     tdd-notes add -m 0
 }
@@ -97,13 +95,11 @@ function test {
         # See http://stackoverflow.com/questions/30208928/can-git-pull-automatically-stash-and-pop-pending-changes
         # TODO: Support even older git (see http://stackoverflow.com/a/31575425)
         git -c rebase.autoStash=true pull --rebase
-    fi >/dev/null
+    fi
     $(config testCommand)
-    {
-        next=$(( $(test-number) + 1 ))
-        git commit -a --amend --no-edit --allow-empty
-        tdd-notes add -f -m $next
-    } >/dev/null
+    next=$(( $(test-number) + 1 ))
+    git commit -a --amend --no-edit --allow-empty
+    tdd-notes add -f -m $next
 }
 
 function accept {
@@ -116,12 +112,15 @@ function accept {
         esac
     done
     $(config acceptCommand)
-    {
-        git commit -a --amend ${message+-m "$message"}
-        # NB -- the commit also removes the notes -- why?
-        git push
-        FIRST_TIME=false init
-    } >/dev/null
+    if [[ -n "$message" ]]
+    then
+        git commit -a --amend -m "$message"
+    else
+        git commit -a --amend
+    fi
+    # NB -- the commit also removes the notes -- why?
+    git push
+    FIRST_TIME=false init
 }
 
 while (( 0 < $# ))
