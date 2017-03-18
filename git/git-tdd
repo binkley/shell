@@ -4,6 +4,8 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 set -e
 set -o pipefail
 
+trap 'r=$? ; (( 0 == $r )) || echo "$0: Failed" ; exit $r' EXIT
+
 function usage {
     echo "Usage: $0 <init|test|accept>"
 }
@@ -34,10 +36,13 @@ function config {
     git config "${opts[@]}" $config 2>/dev/null || echo "${2-required $config}"
 }
 
-function edit-number {
-    git log -1 --show-notes --format %N 2>/dev/null \
-        | sed '/^$/d' \
-        | tail -1
+function tdd-notes {
+    git notes --ref=tdd "$@" >/dev/null
+}
+
+function test-number {
+    git log -1 --show-notes=tdd --format=%N 2>/dev/null \
+        | sed '/^$/d'
 }
 
 function show-config {
@@ -58,7 +63,7 @@ function init {
             * ) usage >&2 ; exit 2 ;;
         esac
     done
-    if [[ -n "$(edit-number)" ]]
+    if [[ -n "$(test-number)" ]]
     then
         echo "$0: TDD already initialized" >&2
         exit 2
@@ -75,7 +80,7 @@ function init {
     else
         git commit --allow-empty -m "$initial" >/dev/null
     fi
-    git notes --ref=tdd add -m 0 >/dev/null
+    tdd-notes add -m 0
 }
 
 function test {
@@ -95,8 +100,8 @@ function test {
     fi >/dev/null
     $(config testCommand)
     {
-        git commit -a --amend --no-edit
-        git notes --ref=tdd add -f -m $(( $(edit-number) + 1 ))
+        git commit -a --amend --no-edit --allow-empty
+        tdd-notes add -f -m $(( $(test-number) + 1 ))
     } >/dev/null
 }
 
@@ -110,8 +115,8 @@ function accept {
         esac
     done
     $(config acceptCommand)
-    git commit -a --amend ${message+-m "$message"} \
-    git notes --ref=tdd remove
+    git commit -a --amend ${message+-m "$message"}
+    # NB -- the commit also removes the notes -- why?
     git push
     FIRST_TIME=false init
 }
