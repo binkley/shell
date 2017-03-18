@@ -110,10 +110,7 @@ EOE
 done
 shift $((OPTIND - 1))
 
-if [[ -t 1 ]] || $_color
-then
-    __setup_colors
-fi
+$_color && __setup_colors
 
 case $# in
 0 ) cat <<EOE >&2 ; exit 3 ;;
