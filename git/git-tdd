@@ -50,7 +50,7 @@ function init {
     if ${FIRST_TIME-true}
     then
         cat <<EOM
-Initial commit message (git config tdd.initMessage): $inital
+Initial commit message (git config tdd.initMessage): $initial
 Pull before test (git config tdd.pullBeforeTest): true
 Test command (git config --local tdd.testCommand): $(config testCommand)
 Accept command (git config --local tdd.acceptCommand): $(config acceptCommand)
