@@ -19,23 +19,23 @@ conventions, otherwise is self-bootstrapping.
 Picking out your code from framework code is simple:
 
 * Test functions written by you all start with an alphabetic.
-* The start function and continue functions should be in all-caps for
-  readability.
+* The start function (e.g., `SCENARIO`) and continue functions (e.g., `AND`)
+  should be in all-caps for readability.
 * Framework functions called or implemented by you start with a single
   underscore.
 * Internal functions and variables start with double underscore.  Do not call
   or use these.
-* Support code goes in the `f/` directory.
+* Framework code goes in the `f/` directory.
 * Tests go in the `t/` directory.
 
 ### Coding
 
 * Do not call `exit`; instead use `return`.
-* When possible use `local` variables in functions to avoid cross polution.
+* When possible use `local` variables in functions to avoid escaping scope.
 * Your functions follow particular rules:
-  * Functions which can fail or error the test should use `_register`.
-  * Other functions should finish with `"$@"`.
-  * The start function is special.
+   * Functions which can fail or error the test should use `_register`.
+   * Other functions should finish with `"$@"`.
+   * The start function is special.
 
 ## Implemented by you
 
@@ -44,7 +44,7 @@ Start by implementing:
 ### Start function
 
 The name of the function is up to you.  Good choices include `SCENARIO` (BDD
-style) and `CHECK` or `TEST` (unit test style).
+style), and `CHECK` or `TEST` (unit test style).
 
 Process any arguments, shift them off the stack, and finish the function with
 `_start "$@"`.
@@ -75,11 +75,11 @@ function AND {
 ### `_print_result`
 
 Individual test results may be shown by declaring a `_print_result` function.
-It's only argument is the exit status of test functions:
+It's only argument is the return code of test functions:
 
 * 0 - Passing test
 * 1 - Failing test
-* * - Errored test
+* `*` - Errored test (any return other than 0 or 1)
 
 A "do nothing" function is:
 
@@ -96,12 +96,19 @@ function _print_result {
     local -r exit_code=$1
     $_quiet && return $exit_code
     case $exit_code in
-    0 ) echo -e $pgreen$pcheckmark$preset $scenario_name ;;
-    1 ) echo -e $pred$pballotx$preset $scenario_name ;;
-    * ) echo -e $pboldred$pinterrobang$preset $scenario_name ;;
+    0 ) echo -e $ppass $scenario_name ;;
+    1 ) echo -e $pfail $scenario_name ;;
+    * ) echo -e $perror $scenario_name ;;
     esac
 }
 ```
+
+The default definitions of test status markers are (relying on a console which
+supports UNICODE; most do):
+
+* pass - a green check mark
+* fail - a red X
+* error - a bold red interrobang
 
 ## A simple example
 
@@ -111,16 +118,19 @@ An example mini BDD language in [`simple-example`](simple-example/):
 
 ```bash
 readonly pcheckmark=$(printf "\xE2\x9C\x93")
+readonly ppass="$pgreen$pcheckmark$preset"
 readonly pballotx=$(printf "\xE2\x9C\x97")
+readonly pfail="$pred$pballotx$preset"
 readonly pinterrobang=$(printf "\xE2\x80\xBD")
+readonly perror="$pboldred$pinterrobang$preset"
 
 function _print_result {
     local -r exit_code=$1
     $_quiet && return $exit_code
     case $exit_code in
-    0 ) echo -e "$pgreen$pcheckmark$preset $scenario_name" ;;
-    1 ) echo -e "$pred$pballotx$preset $scenario_name - wanted: $expected_color, got $actual_color" ;;
-    * ) echo -e "$pboldred$pinterrobang$preset $scenario_name - exit: $exit_code" ;;
+    0 ) echo -e "$ppass $scenario_name" ;;
+    1 ) echo -e "$pfail $scenario_name - wanted: $expected_color, got $actual_color" ;;
+    * ) echo -e "$perror $scenario_name - exit: $exit_code" ;;
     esac
 }
 
