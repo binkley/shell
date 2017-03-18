@@ -5,7 +5,7 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 function __setup_colors()
 {
     local -r ncolors=$(tput colors)
-    [[ -n "$ncolors" && $ncolors -ge 7 ]] || return
+    [[ -n "$ncolors" && $ncolors -ge 8 ]] || return
     readonly pgreen=$(printf "\e[32m")
     readonly pred=$(printf "\e[31m")
     readonly pboldred=$(printf "\e[31;1m")
