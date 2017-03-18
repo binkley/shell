@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+set -e
+set -o pipefail
 
 function usage {
     echo "Usage: $0 <init|test|accept>"
@@ -32,6 +34,22 @@ function config {
     git config "${opts[@]}" $config 2>/dev/null || echo "${2-required $config}"
 }
 
+function edit-number {
+    git log -1 --show-notes --format %N 2>/dev/null \
+        | sed '/^$/d' \
+        | tail -1
+}
+
+function show-config {
+    local initial="$1"
+    cat <<EOM
+Initial commit message (git config tdd.initMessage): $initial
+Pull before test (git config tdd.pullBeforeTest): true
+Test command (git config --local tdd.testCommand): $(config testCommand)
+Accept command (git config --local tdd.acceptCommand): $(config acceptCommand)
+EOM
+}
+
 function init {
     while (( 0 < $# ))
     do
@@ -40,29 +58,24 @@ function init {
             * ) usage >&2 ; exit 2 ;;
         esac
     done
-    current="$(git log -1 --pretty=%s)"
-    initial="$(config initMessage WIP)"
-    if [[ "$initial" == "$current" ]]
+    if [[ -n "$(edit-number)" ]]
     then
-        echo "$0: Already initialized: $current" >&2
+        echo "$0: TDD already initialized" >&2
         exit 2
     fi
+    initial="$(config initMessage WIP)"
     if ${FIRST_TIME-true}
     then
-        cat <<EOM
-Initial commit message (git config tdd.initMessage): $initial
-Pull before test (git config tdd.pullBeforeTest): true
-Test command (git config --local tdd.testCommand): $(config testCommand)
-Accept command (git config --local tdd.acceptCommand): $(config acceptCommand)
-EOM
+        show-config "$initial"
         {
-            git stash
+            git stash 2>/dev/null
             git commit --allow-empty -m "$initial"
-            git stash pop
+            git stash pop 2>/dev/null || true
         } >/dev/null
     else
         git commit --allow-empty -m "$initial" >/dev/null
     fi
+    git notes --ref=tdd add -m 0 >/dev/null
 }
 
 function test {
@@ -78,10 +91,13 @@ function test {
         # Support older git without `git pull --autostash`
         # See http://stackoverflow.com/questions/30208928/can-git-pull-automatically-stash-and-pop-pending-changes
         # TODO: Support even older git (see http://stackoverflow.com/a/31575425)
-        git -c rebase.autoStash=true pull --rebase || return $? 
+        git -c rebase.autoStash=true pull --rebase
     fi >/dev/null
-    $(config testCommand) \
-        && git commit -a --amend --no-edit >/dev/null
+    $(config testCommand)
+    {
+        git commit -a --amend --no-edit
+        git notes --ref=tdd add -f -m $(( $(edit-number) + 1 ))
+    } >/dev/null
 }
 
 function accept {
@@ -93,10 +109,11 @@ function accept {
             * ) usage >&2 ; exit 2 ;;
         esac
     done
-    $(config acceptCommand) \
-        && git commit -a --amend ${message+-m "$message"} \
-        && git push \
-        && FIRST_TIME=false init
+    $(config acceptCommand)
+    git commit -a --amend ${message+-m "$message"} \
+    git notes --ref=tdd remove
+    git push
+    FIRST_TIME=false init
 }
 
 while (( 0 < $# ))
