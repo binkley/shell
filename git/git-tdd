@@ -137,6 +137,6 @@ case $# in
 esac
 
 case $1 in
-    init | test | accept ) "$@" ;;
+    init | test | accept | test-number ) "$@" ;;
     * ) usage >&2 ; exit 2 ;;
 esac

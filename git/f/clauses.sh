@@ -13,23 +13,23 @@ function color_of {
 # For GIVEN - cannot fail or error, so do not `_register`
 # Global (not local) so visible to later clauses
 trap 'rm -rf $repodir' EXIT  # Must be outside of function
-function a_repo {
+function a-repo {
     git_tdd=$PWD/git-tdd
     repodir=$(mktemp -d)
     git init $repodir >/dev/null || return $?
     (cd $repodir && touch Bob && git add Bob && git commit -a -m Initial) >/dev/null
 }
-_register a_repo
+_register a-repo
 
 # For WHEN
-function tdd_init {
-    (cd $repodir; $git_tdd init) >/dev/null
+function tdd-init {
+    (cd $repodir && $git_tdd init && git config --local tdd.testCommand true && git config --local tdd.acceptCommand true) >/dev/null
 }
-_register tdd_init
+_register tdd-init
 
 # For THEN
-function work_in_progress {
+function work-in-progress {
     local -r test_number=$1
-    (cd $repodir; number="$(git log -1 --show-notes=tdd --format=%N)"; (( test_number == number )) )
+    (cd $repodir && number="$(git log -1 --show-notes=tdd --format=%N)" && (( test_number == number )) )
 }
-_register work_in_progress 1
+_register work-in-progress 1
