@@ -28,5 +28,6 @@ function tdd_init {
 # For THEN
 function work_in_progress {
     local -r test_number="$0"
+    (cd $repodir; number="$(git log -1 --show-notes=tdd --format=%N)"; (( test_number == number )) )
 }
 _register work_in_progress 1
