@@ -15,6 +15,17 @@ SCENARIO 'TDD init twice' \
 SCENARIO 'TDD first test' \
     GIVEN a-repo \
     WHEN tdd-init \
+        AND a-change \
         AND tdd-test \
     THEN happy-path \
+        AND no-changes \
         AND work-in-progress 1
+
+SCENARIO 'TDD simple accept' \
+    GIVEN a-repo \
+    WHEN tdd-init \
+        AND a-change \
+        AND tdd-test \
+        AND tdd-accept \
+    THEN happy-path \
+        AND work-in-progress 0

@@ -120,7 +120,7 @@ function accept {
         git commit -a --amend
     fi
     # NB -- the commit also removes the notes -- why?
-    git push
+    git push --quiet
     FIRST_TIME=false init
 }
 

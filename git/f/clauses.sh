@@ -44,11 +44,30 @@ function tdd-test {
 }
 _register tdd-test
 
+function tdd-accept {
+    local message="$1"
+    (cd $repodir \
+        && $git_tdd accept -m "$message") >/dev/null
+    exit_code=$?
+}
+_register tdd-accept 1
+
+function a-change {
+    (cd $repodir \
+        && echo NOK >Bob)
+}
+_register a-change
+
 # For THEN
 function happy-path {
     (( 0 == exit_code ))
 }
 _register happy-path
+
+function no-changes {
+    [[ -z "$(cd $repodir && git status --porcelain)" ]]
+}
+_register no-changes
 
 function work-in-progress {
     local -r test_number=$1
