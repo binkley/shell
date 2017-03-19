@@ -99,7 +99,8 @@ function test {
     $(config testCommand)
     next=$(( $(test-number) + 1 ))
     git commit -a --amend --no-edit --allow-empty
-    tdd-notes add -f -m $next
+    # TODO: Cannot distinguish 'Overwriting existing notes' from real error
+    tdd-notes add -f -m $next 2>/dev/null
 }
 
 function accept {

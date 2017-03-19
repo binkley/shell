@@ -11,3 +11,10 @@ SCENARIO 'TDD init twice' \
     WHEN tdd-init \
         AND tdd-init \
     THEN user-failed
+
+SCENARIO 'TDD first test' \
+    GIVEN a-repo \
+    WHEN tdd-init \
+        AND tdd-test \
+    THEN happy-path \
+        AND work-in-progress 1

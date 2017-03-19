@@ -37,6 +37,13 @@ function tdd-init {
 }
 _register tdd-init
 
+function tdd-test {
+    (cd $repodir \
+        && $git_tdd test) >/dev/null
+    exit_code=$?
+}
+_register tdd-test
+
 # For THEN
 function happy-path {
     (( 0 == exit_code ))
