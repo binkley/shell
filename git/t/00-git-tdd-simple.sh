@@ -26,6 +26,6 @@ SCENARIO 'TDD simple accept' \
     WHEN tdd-init \
         AND a-change \
         AND tdd-test \
-        AND tdd-accept \
+        AND tdd-accept 'Some work' \
     THEN happy-path \
         AND work-in-progress 0

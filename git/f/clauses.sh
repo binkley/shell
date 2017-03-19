@@ -73,7 +73,8 @@ function work-in-progress {
     local -r test_number=$1
     (cd $repodir \
         && number="$($git_tdd test-number)" \
-        && (( test_number == number )) )
+        && (( test_number == number )) \
+        && [[ WIP == "$(git log -1 --format=%s)" ]])
 }
 _register work-in-progress 1
 
