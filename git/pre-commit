@@ -21,8 +21,10 @@ function prep()
 {
     xbit=false
     file="$(file "$1")"
-    # Leave run scripts alone
-    if [[ $file =~ executable || $file =~ 'batch file' ]]
+    if [[ $file =~ 'symbolic link' ]]
+    then
+        :
+    elif [[ $file =~ executable || $file =~ 'batch file' ]]
     then
         xbit=true
         chmod a+x "$1"
