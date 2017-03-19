@@ -28,4 +28,5 @@ SCENARIO 'TDD simple accept' \
         AND tdd-test \
         AND tdd-accept 'Some work' \
     THEN happy-path \
+        AND pushed-with 'Some work' \
         AND work-in-progress 0

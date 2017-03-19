@@ -1,15 +1,3 @@
-function color_of {
-    local -r fruit="$1"
-    case $fruit in
-    avacado ) echo greenish ;;
-    orange ) echo orange ;;
-    rambutan ) echo red ;;
-    strawberry ) echo red ;;
-    * ) echo "$0: Unknown fruit: $fruit" >&2
-        return 2 ;;  # Not exit!
-    esac
-}
-
 # For GIVEN - cannot fail or error, so do not `_register`
 # Global (not local) so visible to later clauses
 trap 'rm -rf $upstream $repodir' EXIT  # Must be outside of function
@@ -65,9 +53,17 @@ function happy-path {
 _register happy-path
 
 function no-changes {
-    [[ -z "$(cd $repodir && git status --porcelain)" ]]
+    [[ -z "$(cd $repodir && git status --porcelain)" ]] \
+        && (( 1 == $(cd $repodir \
+            && git log origin/master..HEAD --format=%H | wc -l) ))
 }
 _register no-changes
+
+function pushed-with {
+    local message="$1"
+    [[ "$message" == "$(cd $repodir && git log HEAD^^..HEAD^ --format=%s)" ]]
+}
+_register pushed-with 1
 
 function work-in-progress {
     local -r test_number=$1
