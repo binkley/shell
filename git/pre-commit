@@ -19,14 +19,14 @@ function show-help()
 
 function prep()
 {
-    xbit=false
-    file="$(file "$1")"
+    local bit=''
+    local file="$(file "$1")"
     if [[ $file =~ 'symbolic link' ]]
     then
-        :
+        bit='@'
     elif [[ $file =~ executable || $file =~ 'batch file' ]]
     then
-        xbit=true
+        bit='*'
         chmod a+x "$1"
         git update-index --chmod=+x "$1"
     else
@@ -42,7 +42,7 @@ function prep()
             dos2unix -q "$1"
         fi
     fi
-    $xbit && echo "$1*" || echo "$1"
+    echo "$1$bit"
 }
 
 silent_opt=$silent
