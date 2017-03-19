@@ -15,9 +15,9 @@ function _print_result {
     local -r exit_code=$1
     $_quiet && return $exit_code
     case $exit_code in
-    0 ) echo -e "$ppass $scenario_name" ;;
-    1 ) echo -e "$pfail $scenario_name - wanted: $expected_color, got $actual_color" ;;
-    * ) echo -e "$perror $scenario_name - exit: $exit_code" ;;
+    0 ) echo -e "\r$ppass" ;;
+    1 ) echo -e "\r$pfail $scenario_name - wanted: $expected_color, got $actual_color" ;;
+    * ) echo -e "\r$perror $scenario_name - exit: $exit_code" ;;
     esac
 }
 
@@ -40,5 +40,6 @@ function GIVEN {
 function SCENARIO {
     local -r scenario_name="$1"
     shift
+    $_quiet || echo -n ". $scenario_name"
     _start "$@"
 }
