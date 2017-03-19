@@ -16,8 +16,8 @@ function _print_result {
     $_quiet && return $exit_code
     case $exit_code in
     0 ) echo -e "\r$ppass" ;;
-    1 ) echo -e "\r$pfail $scenario_name - wanted: $expected_color, got $actual_color" ;;
-    * ) echo -e "\r$perror $scenario_name - exit: $exit_code" ;;
+    1 ) echo -e "\r$pfail" ;;
+    * ) echo -e "\r$perror" ;;
     esac
 }
 
