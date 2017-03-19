@@ -21,6 +21,10 @@ function _print_result {
     esac
 }
 
+function AND {
+    "$@"
+}
+
 function THEN {
     "$@"
 }
