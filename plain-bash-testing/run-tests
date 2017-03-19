@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+export PS4='+[${test_function-*}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
 function __setup_colors()
 {
@@ -30,10 +30,10 @@ EOH
 function __enable_debug()
 {
     export debug=true
-    export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
     set -o pipefail
     set -o xtrace
     echo "$0: Called with $@"
+    test_function='*'
 }
 
 function _register {
@@ -58,7 +58,9 @@ $(declare -f $name | sed '1,2d;$d')
         __tally \$__e
     else
         true  # Reset exit code
+        test_function=$name
         "\$@"
+        test_function='*'
         __e=\$?
         __tally \$__e
     fi
