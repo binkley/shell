@@ -19,15 +19,17 @@ function a_repo {
     git init $repodir >/dev/null || return $?
     (cd $repodir && touch Bob && git add Bob && git commit -a -m Initial) >/dev/null
 }
+_register a_repo
 
 # For WHEN
 function tdd_init {
     (cd $repodir; $git_tdd init) >/dev/null
 }
+_register tdd_init
 
 # For THEN
 function work_in_progress {
-    local -r test_number="$0"
+    local -r test_number=$1
     (cd $repodir; number="$(git log -1 --show-notes=tdd --format=%N)"; (( test_number == number )) )
 }
 _register work_in_progress 1
