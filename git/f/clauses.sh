@@ -45,7 +45,9 @@ _register happy-path
 
 function work-in-progress {
     local -r test_number=$1
-    (cd $repodir && number="$(git log -1 --show-notes=tdd --format=%N)" && (( test_number == number )) )
+    (cd $repodir \
+        && number="$($git_tdd test-number)" \
+        && (( test_number == number )) )
 }
 _register work-in-progress 1
 
