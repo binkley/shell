@@ -19,23 +19,23 @@ _register a-repo
 function tdd-init {
     (cd $repodir \
         && $git_tdd init \
-        && git config --local tdd.testCommand true \
-        && git config --local tdd.acceptCommand true) >/dev/null 2>&1
+        && git config --local tdd.testCommand 'echo test' \
+        && git config --local tdd.acceptCommand 'echo accept') >/dev/null 2>&1
     exit_code=$?
 }
 _register tdd-init
 
 function tdd-test {
-    (cd $repodir \
-        && $git_tdd test) >/dev/null
+    test_output="$(cd $repodir \
+        && $git_tdd test)"
     exit_code=$?
 }
 _register tdd-test
 
 function tdd-accept {
     local message="$1"
-    (cd $repodir \
-        && $git_tdd accept -m "$message") >/dev/null
+    accept_output="$(cd $repodir \
+        && $git_tdd accept -m "$message")"
     exit_code=$?
 }
 _register tdd-accept 1
@@ -51,6 +51,16 @@ function happy-path {
     (( 0 == exit_code ))
 }
 _register happy-path
+
+function runs-test-command {
+    [[ test == "$test_output" ]]
+}
+_register runs-test-command
+
+function runs-accept-command {
+    [[ accept == "$accept_output" ]]
+}
+_register runs-accept-command
 
 function no-changes {
     [[ -z "$(cd $repodir && git status --porcelain)" ]] \

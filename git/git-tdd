@@ -98,11 +98,15 @@ function test {
         # Support older git without `git pull --autostash`
         # See http://stackoverflow.com/questions/30208928/can-git-pull-automatically-stash-and-pop-pending-changes
         # TODO: Support even older git (see http://stackoverflow.com/a/31575425)
-        git -c rebase.autoStash=true pull --rebase
+        # EVEN WORSE - Stash is not well-behaved: http://stackoverflow.com/a/38994123/250924
+        local -r stashed_commit=$(git stash create)
+        git reset --quiet --hard
+        git pull --quiet --rebase
+        [[ -n "$stashed_commit" ]] && git stash apply --quiet $stashed_commit
     fi
     $(config testCommand)
     next=$(( $(test-number) + 1 ))
-    git commit -a --amend --no-edit --allow-empty
+    git commit --quiet -a --amend --no-edit --allow-empty
     # TODO: Cannot distinguish 'Overwriting existing notes' from real error
     tdd-notes add -f -m $next 2>/dev/null
 }
@@ -119,9 +123,9 @@ function accept {
     $(config acceptCommand)
     if [[ -n "$message" ]]
     then
-        git commit -a --amend -m "$message"
+        git commit --quiet -a --amend -m "$message"
     else
-        git commit -a --amend
+        git commit --quiet -a --amend
     fi
     # NB -- the commit also removes the notes -- why?
     git push --quiet

@@ -18,6 +18,7 @@ SCENARIO 'TDD first test' \
         AND a-change \
         AND tdd-test \
     THEN happy-path \
+        AND runs-test-command \
         AND no-changes \
         AND work-in-progress 1
 
@@ -28,6 +29,7 @@ SCENARIO 'TDD simple accept' \
         AND tdd-test \
         AND tdd-accept 'Some work' \
     THEN happy-path \
+        AND runs-accept-command \
         AND pushed-with 'Some work' \
         AND work-in-progress 0
 
