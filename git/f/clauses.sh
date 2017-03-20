@@ -15,6 +15,12 @@ function a-repo {
 }
 _register a-repo
 
+function a-failing-pre-push-hook {
+    (cd $repodir \
+        && ln -s /usr/bin/false .git/hooks/pre-push)
+}
+_register a-failing-pre-push-hook
+
 # For WHEN
 function tdd-init {
     (cd $repodir \
@@ -32,13 +38,22 @@ function tdd-test {
 }
 _register tdd-test
 
-function tdd-accept {
-    local message="$1"
+function _tdd-accept {
+    local -r message="$1"
     accept_output="$(cd $repodir \
         && $git_tdd accept --message "$message")"
     exit_code=$?
 }
+
+function tdd-accept {
+    _tdd-accept "$@"
+}
 _register tdd-accept 1
+
+function tdd-accept-ignoring-errors {
+    _tdd-accept "$@" >/dev/null 2>&1
+}
+_register tdd-accept-ignoring-errors 1
 
 function a-change {
     (cd $repodir \

@@ -122,14 +122,21 @@ function accept {
         esac
     done
     $(config acceptCommand)
+    local -r next=$(( $(test-number) + 1 ))
     if [[ -n "$message" ]]
     then
         git commit --quiet -a --amend -m "$message"
     else
         git commit --quiet -a --amend
     fi
-    # NB -- the commit also removes the notes -- why?
-    git push --quiet
+    if ! git push --quiet
+    then
+        # Recover from push hook failure
+        local -r rc=$?
+        git commit --amend -m WIP
+        tdd-notes add -f -m $next 2>/dev/null
+        exit $rc
+    fi
     FIRST_TIME=false init
 }
 
