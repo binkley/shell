@@ -1,5 +1,3 @@
-# These tests PASS
-
 SCENARIO 'TDD init' \
     GIVEN a-repo \
     WHEN tdd-init \
