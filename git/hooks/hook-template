@@ -1,0 +1,10 @@
+#!/bin/bash
+
+hook=${0##*/}
+hookd=$0.d
+[[ -d $hookd ]] || exit 0
+for h in $hookd/*
+do
+    [[ -x $h ]] || continue
+    $h "$@" || exit $?
+done
