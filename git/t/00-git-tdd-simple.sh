@@ -30,3 +30,8 @@ SCENARIO 'TDD simple accept' \
     THEN happy-path \
         AND pushed-with 'Some work' \
         AND work-in-progress 0
+
+SCENARIO 'TDD log' \
+    GIVEN a-repo \
+    WHEN tdd-init \
+    THEN show-current-commit

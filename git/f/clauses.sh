@@ -65,10 +65,14 @@ function pushed-with {
 }
 _register pushed-with 1
 
+function _test-number {
+    $git_tdd show --format=%N
+}
+
 function work-in-progress {
     local -r test_number=$1
     (cd $repodir \
-        && number="$($git_tdd test-number)" \
+        && number="$(_test-number)" \
         && (( test_number == number )) \
         && [[ WIP == "$(git log -1 --format=%s)" ]])
 }
@@ -78,3 +82,10 @@ function user-failed {
     (( 2 == exit_code ))
 }
 _register user-failed
+
+function show-current-commit {
+    (cd $repodir \
+        && [[ WIP == $($git_tdd show --format=%s) ]] \
+        && [[ 0 == $($git_tdd show --format=%N) ]] )
+}
+_register show-current-commit
