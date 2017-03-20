@@ -35,7 +35,7 @@ _register tdd-test
 function tdd-accept {
     local message="$1"
     accept_output="$(cd $repodir \
-        && $git_tdd accept -m "$message")"
+        && $git_tdd accept --message "$message")"
     exit_code=$?
 }
 _register tdd-accept 1

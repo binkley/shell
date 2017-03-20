@@ -8,7 +8,7 @@ progname=${0##*/}
 trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed" ; exit $r' EXIT
 
 function usage {
-    echo "Usage: $progname <init|test|accept|show>"
+    echo "Usage: $progname <init|show|test|accept>"
 }
 
 function help {
@@ -117,7 +117,7 @@ function accept {
     do
         case $1 in
             --help ) usage ; exit 0 ;;
-            -m ) local message="$2" ; shift 2 ;;
+            --message | -m ) local message="$2" ; shift 2 ;;
             * ) usage >&2 ; exit 2 ;;
         esac
     done
