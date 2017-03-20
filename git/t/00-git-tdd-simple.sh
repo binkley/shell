@@ -17,7 +17,7 @@ SCENARIO 'TDD first test' \
         AND tdd-test \
     THEN happy-path \
         AND runs-test-command \
-        AND no-changes \
+        AND changes-committed \
         AND work-in-progress 1
 
 SCENARIO 'TDD simple accept' \
@@ -34,4 +34,4 @@ SCENARIO 'TDD simple accept' \
 SCENARIO 'TDD log' \
     GIVEN a-repo \
     WHEN tdd-init \
-    THEN show-current-commit
+    THEN shows-current-commit

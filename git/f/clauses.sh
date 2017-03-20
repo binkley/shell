@@ -62,12 +62,12 @@ function runs-accept-command {
 }
 _register runs-accept-command
 
-function no-changes {
+function changes-committed {
     [[ -z "$(cd $repodir && git status --porcelain)" ]] \
         && (( 1 == $(cd $repodir \
             && git log origin/master..HEAD --format=%H | wc -l) ))
 }
-_register no-changes
+_register changes-committed
 
 function pushed-with {
     local message="$1"
@@ -93,9 +93,9 @@ function user-failed {
 }
 _register user-failed
 
-function show-current-commit {
+function shows-current-commit {
     (cd $repodir \
         && [[ WIP == $($git_tdd show --format=%s) ]] \
         && [[ 0 == $($git_tdd show --format=%N) ]] )
 }
-_register show-current-commit
+_register shows-current-commit
