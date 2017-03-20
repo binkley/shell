@@ -4,10 +4,11 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 set -e
 set -o pipefail
 
-trap 'r=$? ; (( 0 == $r )) || echo "$0: Failed" ; exit $r' EXIT
+progname=${0##*/}
+trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed" ; exit $r' EXIT
 
 function usage {
-    echo "Usage: $0 <init|test|accept|show>"
+    echo "Usage: $progname <init|test|accept|show>"
 }
 
 function help {
@@ -16,7 +17,7 @@ function help {
 
 function required {
     cat >&2 <<EOM
-$0: Missing git config: $1
+$progname: Missing git config: $1
 Try \`git config --local $1 <value>\` to set $1 for this repository.
 EOM
     exit 2
@@ -28,7 +29,7 @@ function config {
     do
         case $1 in
             --bool ) opts=("${opts[@]}" $1) ; shift ;;
-            -* ) echo "$0: BUG" >&2 ; exit 3 ;;
+            -* ) echo "$progname: BUG" >&2 ; exit 3 ;;
             * ) break ;;
         esac
     done
@@ -69,7 +70,7 @@ function init {
     done
     if [[ -n "$(test-number)" ]]
     then
-        echo "$0: TDD already initialized" >&2
+        echo "$progname: TDD already initialized" >&2
         exit 2
     fi
     initial="$(config initMessage WIP)"
