@@ -7,7 +7,7 @@ SCENARIO 'TDD init' \
 SCENARIO 'TDD init twice' \
     GIVEN a-repo \
     WHEN tdd-init \
-        AND tdd-init \
+        AND tdd-init-ignoring-errors \
     THEN user-failed
 
 SCENARIO 'TDD first test' \

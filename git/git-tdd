@@ -61,12 +61,15 @@ EOM
 }
 
 function init {
+    local quiet=false
     while (( 0 < $# ))
     do
         case $1 in
             --help ) usage ; exit 0 ;;
+            -q | --quiet ) quiet=true ;;
             * ) usage >&2 ; exit 2 ;;
         esac
+        shift
     done
     if [[ -n "$(test-number)" ]]
     then
@@ -76,8 +79,8 @@ function init {
     initial="$(config initMessage WIP)"
     if ${FIRST_TIME-true}
     then
-        show-config "$initial"
-        git stash 2>/dev/null
+        $quiet || show-config "$initial"
+        git stash --quiet
         git commit --quiet --allow-empty -m "$initial"
         git stash pop 2>/dev/null || true
     else

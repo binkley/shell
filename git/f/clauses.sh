@@ -22,14 +22,23 @@ function a-failing-pre-push-hook {
 _register a-failing-pre-push-hook
 
 # For WHEN
-function tdd-init {
+function _tdd-init {
     (cd $repodir \
-        && $git_tdd init \
+        && $git_tdd init --quiet \
         && git config --local tdd.testCommand 'echo test' \
-        && git config --local tdd.acceptCommand 'echo accept') >/dev/null 2>&1
+        && git config --local tdd.acceptCommand 'echo accept')
     exit_code=$?
 }
+
+function tdd-init {
+    _tdd-init "$@"
+}
 _register tdd-init
+
+function tdd-init-ignoring-errors {
+    _tdd-init "$@" >/dev/null 2>&1
+}
+_register tdd-init-ignoring-errors
 
 function tdd-test {
     test_output="$(cd $repodir \
