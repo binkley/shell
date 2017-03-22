@@ -3,6 +3,7 @@
 trap 'rm -rf $upstream $repodir' EXIT  # Must be outside of function
 function a-repo {
     git_tdd=$PWD/git-tdd
+    git_hooks=$PWD/git-hooks
     upstream=$(mktemp -d)
     git init --bare --quiet $upstream >/dev/null || return $?
     repodir=$(mktemp -d)

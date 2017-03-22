@@ -28,10 +28,11 @@ function config {
     while (( 0 < $# ))
     do
         case $1 in
-            --bool ) opts=("${opts[@]}" $1) ; shift ;;
+            --bool ) opts=("${opts[@]}" $1) ;;
             -* ) echo "$progname: BUG" >&2 ; exit 3 ;;
             * ) break ;;
         esac
+        shift
     done
     local config=tdd.$1
     git config "${opts[@]}" $config 2>/dev/null || echo "${2-required $config}"
