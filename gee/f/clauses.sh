@@ -2,7 +2,7 @@
 # Source me
 
 function first_time_in_repo {
-    local -r stack=($(caller 0))
+    local stack=($(caller 0))
     local -r previous=${stack[1]}
 
     case $previous in
@@ -44,7 +44,7 @@ function log_unchanged {
 _register log_unchanged
 
 function run_echo {
-    local -r command=(echo "$1")
+    local command=(echo "$1")
 }
 _register run_echo 1
 

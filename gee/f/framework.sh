@@ -12,7 +12,7 @@ function _bad_syntax {
     valid="${valid// / or }"
     readonly valid
 
-    local -r stack=($(caller 1))
+    local stack=($(caller 1))
     local -r previous=${stack[1]}
 
     echo "$0: Bad scenario: No $valid $order $previous: $scenario" >&2
@@ -21,7 +21,7 @@ function _bad_syntax {
 
 function _print_result {
     local -r exit_code=$1
-    local -r stack=($(caller 1))
+    local stack=($(caller 1))
     local -r previous=${stack[1]}
 
     if (( 0 == exit_code ))
