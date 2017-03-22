@@ -60,8 +60,8 @@ $(declare -f $name | sed '1,2d;$d')
         true  # Reset exit code
         test_function=$name
         "\$@"
-        test_function='*'
         __e=\$?
+        test_function='*'
         __tally \$__e
     fi
 }
