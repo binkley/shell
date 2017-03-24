@@ -1,11 +1,17 @@
 #!/bin/bash
 #
 # Helper for Windows/Cygwin to keep UNIX-style text files.
-#
 
-set -e # Die early
+set -e
+set -o pipefail
 
-silent=false
+# Inside a commit, silent; from command line, use a flag to silence
+if [[ -n "$GIT_AUTHOR_NAME" ]]
+then
+    silent=true
+else
+    silent=false
+fi
 
 function echo()
 {
