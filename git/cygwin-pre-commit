@@ -44,8 +44,10 @@ function prep()
         if [[ $file =~ DOS ]]
         then
             unix2dos -q "$1"
+            git add "$1"
         else
             dos2unix -q "$1"
+            git add "$1"
         fi
     fi
     echo "$1$bit"
