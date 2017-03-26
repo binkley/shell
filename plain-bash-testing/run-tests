@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 export PS4='+[${test_function-*}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+progname=${0##*/}
+readonly progname
 
 function __setup_colors()
 {
@@ -15,15 +17,20 @@ function __setup_colors()
 function __print_help {
     local -r width=$(( $(tput cols) - 2 ))
     cat <<EOH | fold -s -w $width
-Usage: $0 [-c|--color][-d|--debug]|[-q|--quiet][-v|--verbose] TEST [TEST...]
+Usage: $progname [-c|--color][-d|--debug]|[-q|--quiet][-v|--verbose] TEST [TEST...]
 Runs BASH test(s).
 
 TEST can be either a single test file or a directory of test path files.
 
-  -c, --color     Print in color
-  -d, --debug     Print extra output
-  -q, --quiet     Print minimal output
-  -v, --verbose   Print extra output
+  -c, --color     print in color
+  -d, --debug     print extra output
+  -q, --quiet     print minimal output
+  -v, --verbose   print extra output
+
+Examples:
+  ./run-tests t  Run tests over files in the "t" directory
+
+Online help: <https://github.com/binkley/shell>
 EOH
 }
 
@@ -32,7 +39,7 @@ function __enable_debug()
     export debug=true
     set -o pipefail
     set -o xtrace
-    echo "$0: Called with $@"
+    echo "$progname: Called with $@"
     test_function='*'
 }
 
@@ -43,7 +50,7 @@ function _register {
     esac
     case $(type -t $name) in
     function ) ;;
-    * ) echo "$0: $FUNCNAME: Not a function: $name" >&2
+    * ) echo "$progname: $FUNCNAME: Not a function: $name" >&2
         exit 3 ;;
     esac
     read -d '' -r wrapper <<EOF
@@ -105,8 +112,8 @@ do
     q | quiet ) _quiet=true ;;
     v | verbose ) _verbose=true ;;
     * ) cat <<EOE >&2 ; exit 3 ;;
-${0##*/}: unrecognized option '-$OPTARG'
-Try 'cat --help' for more information.
+$progname: unrecognized option '-$OPTARG'
+Try '$progname --help' for more information.
 EOE
     esac
 done
@@ -116,13 +123,13 @@ $_color && __setup_colors
 
 case $# in
 0 ) cat <<EOE >&2 ; exit 3 ;;
-${0##*/}: missing TEST(s)
-Try 'cat --help' for more information.
+$progname: missing TEST(s)
+Try '$progname --help' for more information.
 EOE
 esac
 
 {
-    pushd $(dirname $0)
+    pushd ${0%/*}
     root_dir=$(pwd -P)
     popd
 } >/dev/null
@@ -140,7 +147,7 @@ do
         __found_tests+=($(find $t -type f -name \*.sh))
         if (( 0 == ${#__found_tests[*]} ))
         then
-            echo "${0##*/}: No tests found in '$t'" >&2
+            echo "$progname: No tests found in '$t'" >&2
             exit 2
         fi
         __tests+=("${__found_tests[@]}")
@@ -148,7 +155,7 @@ do
     then
         __tests+=($t)
     else
-        echo "${0##*/}: Not a test or directory: $t" >&2
+        echo "$progname: Not a test or directory: '$t'" >&2
         exit 2
     fi
 done
@@ -156,7 +163,7 @@ set -- $(echo "${__tests[@]}" | sort -u)
 
 if (( 0 == $# ))
 then
-    echo "${0##*/}: No tests" >&2
+    echo "$progname: No tests" >&2
     exit 2
 fi
 
