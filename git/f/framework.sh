@@ -13,8 +13,8 @@ function _print_result {
     $_quiet && return $exit_code
     case $exit_code in
     0 ) echo -e "\r$ppass" ;;
-    1 ) echo -e "\r$pfail" ;;
-    * ) echo -e "\r$perror" ;;
+    1 ) echo -e " ($test_function)\r$pfail" ;;
+    * ) echo -e " ($test_function) -> $exit_code\r$perror" ;;
     esac
 }
 
