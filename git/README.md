@@ -8,6 +8,4 @@ Git help and extensions
 
 ## TODO
 
-* Replace function definitions containing subshells with direct subshells
-  (See [Something you didn't know about functions in bash](http://www.catonmat.net/blog/bash-functions/))
 * Update reporting to say which function failed for a scenario

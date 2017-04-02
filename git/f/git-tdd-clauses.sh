@@ -1,9 +1,9 @@
 # For GIVEN - cannot fail or error, so do not `_register`
 # Global (not local) so visible to later clauses
-function a-failing-pre-push-hook {
-    (cd $repodir \
-        && ln -s /usr/bin/false .git/hooks/pre-push)
-}
+function a-failing-pre-push-hook() (
+    cd $repodir \
+        && ln -s /usr/bin/false .git/hooks/pre-push
+)
 _register a-failing-pre-push-hook
 
 # For WHEN
@@ -49,33 +49,26 @@ function tdd-accept-ignoring-errors {
 }
 _register tdd-accept-ignoring-errors 1
 
-function a-change {
-    (cd $repodir \
-        && echo NOK >Bob)
-}
+function a-change() (
+    cd $repodir \
+        && echo NOK >Bob
+)
 _register a-change
 
 # For THEN
-function happy-path {
-    (( 0 == exit_code ))
-}
+function happy-path() (( 0 == exit_code ))
 _register happy-path
 
-function runs-test-command {
-    [[ test == "$test_output" ]]
-}
+function runs-test-command() [[ test == "$test_output" ]]
 _register runs-test-command
 
-function runs-accept-command {
-    [[ accept == "$accept_output" ]]
-}
+function runs-accept-command() [[ accept == "$accept_output" ]]
 _register runs-accept-command
 
-function changes-committed {
+function changes-committed() \
     [[ -z "$(cd $repodir && git status --porcelain)" ]] \
         && (( 1 == $(cd $repodir \
             && git log origin/master..HEAD --format=%H | wc -l) ))
-}
 _register changes-committed
 
 function pushed-with {
@@ -97,14 +90,12 @@ function work-in-progress {
 }
 _register work-in-progress 1
 
-function user-failed {
-    (( 2 == exit_code ))
-}
+function user-failed() (( 2 == exit_code ))
 _register user-failed
 
-function shows-current-commit {
-    (cd $repodir \
+function shows-current-commit() (
+    cd $repodir \
         && [[ WIP == $($git_tdd show --format=%s) ]] \
-        && [[ 0 == $($git_tdd show --format=%N) ]] )
-}
+        && [[ 0 == $($git_tdd show --format=%N) ]]
+)
 _register shows-current-commit

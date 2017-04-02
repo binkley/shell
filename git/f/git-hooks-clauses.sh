@@ -6,10 +6,10 @@ function hooks-list {
 }
 _register hooks-list 1
 
-function hooks-init {
-    $(cd $repodir \
-        && $git_hooks init)
-}
+function hooks-init() (
+    cd $repodir \
+        && $git_hooks init
+)
 _register hooks-init 1
 
 function add-hook {
@@ -23,9 +23,7 @@ function add-hook {
 _register add-hook 2
 
 # THEN
-function output-is {
-    [[ "$1" == "$list_output" ]]
-}
+function output-is() [[ "$1" == "$list_output" ]]
 _register output-is 1
 
 function hooks-installed {

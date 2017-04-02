@@ -1,6 +1,3 @@
-# vi: ft=bash
-# Source me
-
 printf -v pcheckmark "\xE2\x9C\x93"
 readonly pcheckmark
 readonly ppass="$pgreen$pcheckmark$preset"
