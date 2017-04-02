@@ -68,7 +68,7 @@ $(declare -f $name | sed '1,2d;$d')
         test_function=$name
         "\$@"
         __e=\$?
-        test_function='*'
+        (( 0 == __e )) && test_function='*'
         __tally \$__e
     fi
 }
