@@ -51,3 +51,10 @@ SCENARIO 'TDD test without remote should not pull' \
     THEN happy-path \
         AND this-change-persists Fred \
         AND work-in-progress 1
+
+SCENARIO 'TDD test with no changes' \
+    GIVEN a-repo \
+    WHEN tdd-init \
+        AND tdd-test \
+    THEN happy-path \
+        AND work-in-progress 0

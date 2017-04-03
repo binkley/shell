@@ -109,6 +109,10 @@ function _should-pull-before-test {
     $(config --bool pullBeforeTest true)
 }
 
+function _are-there-changes() {
+    ! git diff-index --quiet HEAD --  # invert
+}
+
 function test {
     while (( 0 < $# ))
     do
@@ -117,6 +121,7 @@ function test {
             * ) usage >&2 ; exit 2 ;;
         esac
     done
+    _are-there-changes || return 0
     _has-upstream \
         && _should-pull-before-test \
         && _update-from-upstream
