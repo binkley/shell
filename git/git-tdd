@@ -39,7 +39,7 @@ function config {
 }
 
 function show {
-    git log -1 --show-notes=tdd "$@"
+    git log -1 --notes=tdd "$@"
 }
 
 function tdd-notes {
