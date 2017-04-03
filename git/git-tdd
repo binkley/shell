@@ -90,6 +90,25 @@ function init {
     tdd-notes add -m 0
 }
 
+function _has-upstream {
+    git remote get-url upstream >/dev/null 2>&1
+}
+
+function _update-from-upstream {
+    # Support older git without `git pull --autostash`
+    # See http://stackoverflow.com/questions/30208928/can-git-pull-automatically-stash-and-pop-pending-changes
+    # TODO: Support even older git (see http://stackoverflow.com/a/31575425)
+    # EVEN WORSE - Stash is not well-behaved: http://stackoverflow.com/a/38994123/250924
+    local -r stashed_commit=$(git stash create)
+    git reset --quiet --hard
+    git pull --quiet --rebase
+    [[ -n "$stashed_commit" ]] && git stash apply --quiet $stashed_commit
+}
+
+function _should-pull-before-test {
+    $(config --bool pullBeforeTest true)
+}
+
 function test {
     while (( 0 < $# ))
     do
@@ -98,17 +117,9 @@ function test {
             * ) usage >&2 ; exit 2 ;;
         esac
     done
-    if $(config --bool pullBeforeTest true)
-    then
-        # Support older git without `git pull --autostash`
-        # See http://stackoverflow.com/questions/30208928/can-git-pull-automatically-stash-and-pop-pending-changes
-        # TODO: Support even older git (see http://stackoverflow.com/a/31575425)
-        # EVEN WORSE - Stash is not well-behaved: http://stackoverflow.com/a/38994123/250924
-        local -r stashed_commit=$(git stash create)
-        git reset --quiet --hard
-        git pull --quiet --rebase
-        [[ -n "$stashed_commit" ]] && git stash apply --quiet $stashed_commit
-    fi
+    _has-upstream \
+        && _should-pull-before-test \
+        && _update-from-upstream
     $(config testCommand)
     next=$(( $(test-number) + 1 ))
     git commit --quiet -a --amend --no-edit --allow-empty
@@ -133,7 +144,7 @@ function accept {
     else
         git commit --quiet -a --amend
     fi
-    if ! git push --quiet
+    if _has-upstream && ! git push --quiet
     then
         # Recover from push hook failure
         local -r rc=$?

@@ -60,10 +60,10 @@ function _a-change() (
         && echo NOK >$1
 )
 
-function a-change {
+function a-change-to-existing {
     _a-change Bob
 }
-_register a-change
+_register a-change-to-existing
 
 function this-change {
     _a-change $1

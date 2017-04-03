@@ -1,3 +1,3 @@
 test:
 	@echo 'Git HOOKs in progress: expect 2 failures'
-	@./run-tests t | grep 'Summary: 9 PASSED, 2 FAILED, 0 ERRORED' >/dev/null
+	@./run-tests t | grep 'Summary: 11 PASSED, 2 FAILED, 0 ERRORED' >/dev/null
