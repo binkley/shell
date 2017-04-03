@@ -25,6 +25,12 @@ function tdd-init-ignoring-errors {
 }
 _register tdd-init-ignoring-errors
 
+function pull-disabled {
+    (cd $repodir \
+        && git config --local tdd.pullBeforeTest false)
+}
+_register pull-disabled
+
 function tdd-test {
     test_output="$(cd $repodir \
         && $git_tdd test)"
@@ -49,11 +55,38 @@ function tdd-accept-ignoring-errors {
 }
 _register tdd-accept-ignoring-errors 1
 
-function a-change() (
+function _a-change() (
     cd $repodir \
-        && echo NOK >Bob
+        && echo NOK >$1
 )
+
+function a-change {
+    _a-change Bob
+}
 _register a-change
+
+function this-change {
+    _a-change $1
+}
+_register this-change 1
+
+function this-change-added {
+    (cd $repodir \
+        && git add $1)
+}
+_register this-change-added 1
+
+# For THEN
+function happy-path {
+    (( 0 == exit_code ))
+}
+_register this-change 1
+
+function this-change-added {
+    (cd $repodir \
+        && git add $1)
+}
+_register this-change-added 1
 
 # For THEN
 function happy-path() (( 0 == exit_code ))
@@ -76,6 +109,21 @@ function pushed-with {
     [[ "$message" == "$(cd $repodir && git log HEAD^^..HEAD^ --format=%s)" ]]
 }
 _register pushed-with 1
+
+function _changes-persist() (
+    cd $repodir \
+        && [[ -f $1 ]]
+)
+
+function changes-persist {
+    _changes-persist Bob
+}
+_register changes-persist
+
+function this-change-persists {
+    _changes-persist $1
+}
+_register this-change-persists 1
 
 function _test-number {
     $git_tdd show --format=%N

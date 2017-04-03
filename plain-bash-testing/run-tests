@@ -88,6 +88,8 @@ function _start {
 let __passed=0 __failed=0 __errored=0
 function __tally {
     local -r __e=$1
+    local -r __test_function=$test_function
+    test_function='*'
     $__tallied && return $__e
     __tallied=true
     case $__e in
@@ -95,7 +97,7 @@ function __tally {
     1 ) let ++__failed ;;
     * ) let ++__errored ;;
     esac
-    _print_result $__e
+    (test_function=$__test_function ; _print_result $__e)
     return $__e
 }
 
