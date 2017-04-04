@@ -34,8 +34,7 @@ Online help: <https://github.com/binkley/shell>
 EOH
 }
 
-function __enable_debug()
-{
+function __enable_debug {
     export debug=true
     set -o pipefail
     set -o xtrace
