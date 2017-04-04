@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export PS4='+[${test_function--}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 progname=${0##*/}
 readonly progname
 
@@ -39,7 +39,6 @@ function __enable_debug {
     set -o pipefail
     set -o xtrace
     echo "$progname: Called with $@"
-    test_function='-'
 }
 
 function _register {
@@ -54,23 +53,19 @@ function _register {
     esac
     read -d '' -r wrapper <<EOF
 function $name {
-    local __e=\$?
-    test_function=$name
-    (exit \$__e)
     # Original function
 $(declare -f $name | sed '1,2d;$d')
 
     __e=\$?
-    test_function='-'
     shift $arity
     if (( 0 < __e || 0 == \$# ))
     then
-        __tally \$__e $name
+        __tally \$__e \$FUNCNAME
     else
         true  # Reset exit code
         "\$@"
         __e=\$?
-        __tally \$__e $name
+        __tally \$__e \$FUNCNAME
     fi
 }
 EOF
