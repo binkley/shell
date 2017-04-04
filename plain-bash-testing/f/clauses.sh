@@ -1,6 +1,3 @@
-# vi: ft=bash
-# Source me
-
 function make_exit {
     local -r e=$1
     shift
