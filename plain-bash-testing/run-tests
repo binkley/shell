@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export PS4='+[${test_function-*}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+export PS4='+[${test_function--}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 progname=${0##*/}
 readonly progname
 
@@ -39,7 +39,7 @@ function __enable_debug {
     set -o pipefail
     set -o xtrace
     echo "$progname: Called with $@"
-    test_function='*'
+    test_function='-'
 }
 
 function _register {
@@ -54,21 +54,21 @@ function _register {
     esac
     read -d '' -r wrapper <<EOF
 function $name {
+    test_function=$name
     # Original function
 $(declare -f $name | sed '1,2d;$d')
 
     __e=\$?
+    test_function='-'
     shift $arity
     if (( 0 < __e || 0 == \$# ))
     then
-        __tally \$__e
+        __tally \$__e $name
     else
         true  # Reset exit code
-        test_function=$name
         "\$@"
         __e=\$?
-        (( 0 == __e )) && test_function='*'
-        __tally \$__e
+        __tally \$__e $name
     fi
 }
 EOF
@@ -87,8 +87,7 @@ function _start {
 let __passed=0 __failed=0 __errored=0
 function __tally {
     local -r __e=$1
-    local -r __test_function=$test_function
-    test_function='*'
+    local -r __test_function=$2
     $__tallied && return $__e
     __tallied=true
     case $__e in
@@ -96,7 +95,7 @@ function __tally {
     1 ) let ++__failed ;;
     * ) let ++__errored ;;
     esac
-    (test_function=$__test_function ; _print_result $__e)
+    (_print_result $__e $__test_function)
     return $__e
 }
 
