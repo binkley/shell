@@ -23,7 +23,11 @@ function add-hook {
 _register add-hook 2
 
 # THEN
-function output-is() [[ "$1" == "$list_output" ]]
+function output-is {
+    expected="$1"
+    actual="$list_output"
+    [[ "$expected" == "$actual" ]]
+}
 _register output-is 1
 
 function hooks-installed {

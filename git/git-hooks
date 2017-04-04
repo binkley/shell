@@ -4,6 +4,8 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 set -e
 set -o pipefail
 
+unset CDPATH  # Trouble-maker
+
 progname=${0##*/}
 trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed" ; exit $r' EXIT
 cd $(git rev-parse --show-toplevel)/.git/hooks
@@ -81,7 +83,7 @@ function list {
     * ) usage >&2 ; exit 2 ;;
     esac
     cd $hook.d
-    ls
+    exec ls
 }
 
 while (( 0 < $# ))
