@@ -9,12 +9,13 @@ readonly pinterrobang
 readonly perror="$pboldred$pinterrobang$preset"
 
 function _print_result {
-    local -r exit_code=$1
-    $_quiet && return $exit_code
-    case $exit_code in
+    local -r _e=$1
+    local -r _f=$2
+    $_quiet && return $_e
+    case $_e in
     0 ) echo -e "\r$ppass" ;;
-    1 ) echo -e " - $test_function\r$pfail" ;;
-    * ) echo -e " - $test_function: $exit_code\r$perror" ;;
+    1 ) echo -e " ($_f)\r$pfail" ;;
+    * ) echo -e " ($_f; exit $_e)\r$perror" ;;
     esac
 }
 
