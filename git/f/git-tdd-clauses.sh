@@ -147,3 +147,20 @@ function shows-current-commit() (
         && [[ 0 == $($git_tdd show --format=%N) ]]
 )
 _register shows-current-commit
+
+function tdd-show {
+    show_output="$(cd $repodir \
+        && $git_tdd show 2>&1)"
+    exit_code=$?
+}
+_register tdd-show
+
+function show-complained {
+    expected='Exit code 2'
+    actual="Exit code $exit_code"
+    (( 2 == exit_code )) || return
+    printf -v expected "git-tdd: TDD not initialized (try 'git tdd init')\ngit-tdd: Failed."
+    actual="$show_output"
+    [[ "$expected" == "$actual" ]]
+}
+_register show-complained

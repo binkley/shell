@@ -8,13 +8,27 @@ printf -v pinterrobang "\xE2\x80\xBD"
 readonly pinterrobang
 readonly perror="$pboldred$pinterrobang$preset"
 
+function __print-fail-or-diff {
+    local -r _e=$1
+    local -r _test_function=$2
+    echo -e " ($_test_function)\r$pfail"
+    [[ -n "$expected" ]] || return 0
+    cat <<EOD
+Expected (on next line):
+$expected
+Actual (on next line):
+$actual
+EOD
+}
+
 function _print_result {
-    local -r exit_code=$1
-    $_quiet && return $exit_code
-    case $exit_code in
+    local -r _e=$1
+    local -r _test_function=$2
+    $_quiet && return $_e
+    case $_e in
     0 ) echo -e "\r$ppass" ;;
-    1 ) echo -e " ($test_function)\r$pfail" ;;
-    * ) echo -e " ($test_function) -> $exit_code\r$perror" ;;
+    1 ) __print-fail-or-diff $_e $_test_function ;;
+    * ) echo -e " ($_test_function; exit $_e)\r$perror" ;;
     esac
 }
 

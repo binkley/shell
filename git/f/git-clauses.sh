@@ -1,7 +1,17 @@
 # For GIVEN - cannot fail or error, so do not `_register`
 # Global (not local) so visible to later clauses
-trap 'rm -rf $upstream $repodir' EXIT  # Must be outside of function
+
 # TODO: Remove ALL tempdirs, not just most recent
+trap 'rm -rf $upstream $repodir' EXIT  # Must be outside of function
+
+function a-new-repo {
+    git_tdd=$PWD/git-tdd
+    git_hooks=$PWD/git-hooks
+    repodir=$(mktemp -d)
+    git init --quiet $repodir >/dev/null || return $?
+}
+_register a-new-repo
+
 function a-repo {
     git_tdd=$PWD/git-tdd
     git_hooks=$PWD/git-hooks
