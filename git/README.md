@@ -8,4 +8,4 @@ Git help and extensions
 
 ## TODO
 
-* Update reporting to say which function failed for a scenario
+* Investigate `git tdd init` when there is something already stashed
