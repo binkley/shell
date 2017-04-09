@@ -13,18 +13,19 @@ else
     silent=false
 fi
 
-function echo()
-{
+function echo {
     $silent || builtin echo "$@"
 }
 
-function show-help()
-{
+function show-help {
     echo "Usage: ${0##*/} [-h|--help][-s|--silent] [FILE]..."
 }
 
-function prep()
-{
+function unchanged {
+    git diff-index --quiet HEAD "$1"
+}
+
+function prep {
     local bit=''
     local file="$(file "$1")"
     if [[ $file =~ 'symbolic link' ]]
@@ -50,6 +51,7 @@ function prep()
             git add "$1"
         fi
     fi
+    unchanged "$1" && bit="$bit#"
     echo "$1$bit"
 }
 

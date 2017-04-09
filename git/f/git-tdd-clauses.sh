@@ -126,7 +126,7 @@ function this-change-persists {
 _register this-change-persists 1
 
 function _test-number {
-    $git_tdd show --format=%N
+    $git_tdd status --format=%N
 }
 
 function work-in-progress {
@@ -143,24 +143,24 @@ _register user-failed
 
 function shows-current-commit() (
     cd $repodir \
-        && [[ WIP == $($git_tdd show --format=%s) ]] \
-        && [[ 0 == $($git_tdd show --format=%N) ]]
+        && [[ WIP == $($git_tdd status --format=%s) ]] \
+        && [[ 0 == $($git_tdd status --format=%N) ]]
 )
 _register shows-current-commit
 
-function tdd-show {
-    show_output="$(cd $repodir \
-        && $git_tdd show 2>&1)"
+function tdd-status {
+    status_output="$(cd $repodir \
+        && $git_tdd status 2>&1)"
     exit_code=$?
 }
-_register tdd-show
+_register tdd-status
 
-function show-complained {
+function status-complained {
     expected='Exit code 2'
     actual="Exit code $exit_code"
     (( 2 == exit_code )) || return
     printf -v expected "git-tdd: TDD not initialized (try 'git tdd init')\ngit-tdd: Failed."
-    actual="$show_output"
+    actual="$status_output"
     [[ "$expected" == "$actual" ]]
 }
-_register show-complained
+_register status-complained

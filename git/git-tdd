@@ -8,7 +8,7 @@ progname=${0##*/}
 trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed." ; exit $r' EXIT
 
 function usage {
-    echo "Usage: $progname <init|show|test|accept>"
+    echo "Usage: $progname <init|status|test|accept>"
 }
 
 function help {
@@ -38,7 +38,7 @@ function config {
     git config "${opts[@]}" $config 2>/dev/null || echo "${2-required $config}"
 }
 
-function show {
+function status {
     _require-init
     git log -1 --notes=tdd "$@"
 }
@@ -189,6 +189,6 @@ case $# in
 esac
 
 case $1 in
-    init | test | accept | show ) "$@" ;;
+    init | test | accept | status ) "$@" ;;
     * ) usage >&2 ; exit 2 ;;
 esac
