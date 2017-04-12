@@ -5,6 +5,21 @@
 This is a simple, general test framework for Bash.  It relies on a few
 conventions, otherwise is self-bootstrapping.
 
+## Which tests to run?
+
+Run all tests in a directory tree:
+```bash
+$ ./run-tests t
+```
+Run all test in a file(s):
+```bash
+$ ./run-tests t/happy-path.sh
+```
+Run tests matching a pattern:
+```bash
+$ ./run-tests --pattern='needs work' t
+```
+
 ## Conventions
 
 * Hook functions implement and extend the framework: do not edit framework

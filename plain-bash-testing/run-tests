@@ -100,16 +100,21 @@ function __tally {
     return $__e
 }
 
+function __tests-in-one-line {
+    sed ':x; /\\$/ { N; s/\\\n//; tx }'
+}
+
 [[ -t 1 ]] && _color=true || _color=false
 _quiet=false
 _verbose=false
-while getopts :cdhqv-: opt
+while getopts :cdhpqv-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     c | color ) _color=true ;;
     d | debug ) __enable_debug "$@" ;;
     h | help ) __print_help ; exit 0 ;;
+    p | pattern ) __match_tests="$OPTARG" ;;
     q | quiet ) _quiet=true ;;
     v | verbose ) _verbose=true ;;
     * ) cat <<EOE >&2 ; exit 3 ;;
@@ -168,6 +173,11 @@ then
     exit 2
 fi
 
+if [[ -n "$__match_tests" ]]
+then
+    echo "${pbold}(Matching only '$__match_tests' tests.)${preset}"
+fi
+
 for t in "$@"
 do
     if ! $_quiet
@@ -178,7 +188,7 @@ do
     let __last_failed=$__failed
     let __last_errored=$__errored
     pushd $PWD >/dev/null
-    . $t
+    . <(__tests-in-one-line <$t | grep "$__match_tests")
     while popd >/dev/null 2>&1 ; do : ; done
     let __t_passed=$((__passed - __last_passed))
     let __t_failed=$((__failed - __last_failed))
@@ -190,7 +200,12 @@ do
         (( 0 == __t_failed )) || __all+=("$__t_failed failed")
         (( 0 == __t_passed )) || __all+=("$__t_passed passed")
         IFS=, eval '__s="${__all[*]}"'
-        echo "${__s//,/, }"
+        if [[ -n "$__s" ]]
+        then
+            echo "${__s//,/, }"
+        else
+            echo 'No tests matched.'
+        fi
     fi
 done
 
