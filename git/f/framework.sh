@@ -12,13 +12,16 @@ function __print-fail-or-diff {
     local -r _e=$1
     local -r _test_function=$2
     echo -e " ($_test_function)\r$pfail"
-    [[ -n "$expected" ]] || return 0
+    [[ -n "$expected" || -n "$actual" ]] || return 0
     cat <<EOD
 Expected (on next line):
 $expected
 Actual (on next line):
 $actual
+
+Diff actual (left) vs expected (right):
 EOD
+    diff --color=always <(echo "$actual") <(echo "$expected")
 }
 
 function _print_result {
