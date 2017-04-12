@@ -4,6 +4,8 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 set -e
 set -o pipefail
 
+unset CDPATH  # Trouble-maker
+
 progname=${0##*/}
 trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed." ; exit $r' EXIT
 
@@ -38,12 +40,12 @@ function config {
     git config "${opts[@]}" $config 2>/dev/null || echo "${2-required $config}"
 }
 
-function status {
+function tdd-status {
     _require-init
     git log -1 --notes=tdd "$@"
 }
 
-function tdd-notes {
+function show-notes {
     git notes --ref=tdd "$@"
 }
 
@@ -74,7 +76,7 @@ function _require-init {
     fi
 }
 
-function init {
+function tdd-init {
     local quiet=false
     while (( 0 < $# ))
     do
@@ -100,7 +102,7 @@ function init {
     else
         git commit --quiet --allow-empty -m "$initial"
     fi
-    tdd-notes add -m 0
+    show-notes add -m 0
 }
 
 function _has-upstream {
@@ -126,7 +128,7 @@ function _are-there-changes() {
     ! git diff-index --quiet HEAD --  # invert
 }
 
-function test {
+function tdd-test {
     while (( 0 < $# ))
     do
         case $1 in
@@ -143,10 +145,10 @@ function test {
     next=$(( $(test-number) + 1 ))
     git commit --quiet -a --amend --no-edit --allow-empty
     # TODO: Cannot distinguish 'Overwriting existing notes' from real error
-    tdd-notes add -f -m $next 2>/dev/null
+    show-notes add -f -m $next 2>/dev/null
 }
 
-function accept {
+function tdd-accept {
     while (( 0 < $# ))
     do
         case $1 in
@@ -169,10 +171,10 @@ function accept {
         # Recover from push hook failure
         local -r rc=$?
         git commit --amend -m WIP
-        tdd-notes add -f -m $next 2>/dev/null
+        show-notes add -f -m $next 2>/dev/null
         exit $rc
     fi
-    FIRST_TIME=false init
+    FIRST_TIME=false tdd-init
 }
 
 while (( 0 < $# ))
@@ -189,6 +191,6 @@ case $# in
 esac
 
 case $1 in
-    init | test | accept | status ) "$@" ;;
+    init | status | test | accept ) tdd-"$@" ;;
     * ) usage >&2 ; exit 2 ;;
 esac
