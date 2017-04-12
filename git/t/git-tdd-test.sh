@@ -1,5 +1,5 @@
 SCENARIO 'TDD first test' \
-    GIVEN a-repo \
+    GIVEN a-cloned-repo-with-commits \
     WHEN tdd-init \
         AND a-change-to-existing \
         AND tdd-test \
@@ -9,7 +9,7 @@ SCENARIO 'TDD first test' \
         AND work-in-progress 1
 
 SCENARIO 'TDD two tests' \
-    GIVEN a-repo \
+    GIVEN a-cloned-repo-with-commits \
     WHEN tdd-init \
         AND a-change-to-existing \
         AND tdd-test \
@@ -22,7 +22,7 @@ SCENARIO 'TDD two tests' \
         AND work-in-progress 2
 
 SCENARIO 'TDD test without pull' \
-    GIVEN a-repo \
+    GIVEN a-cloned-repo-with-commits \
     WHEN tdd-init \
         AND a-change-to-existing \
         AND pull-disabled \
@@ -32,7 +32,7 @@ SCENARIO 'TDD test without pull' \
         AND work-in-progress 1
 
 SCENARIO 'TDD test without pull on new change' \
-    GIVEN a-repo \
+    GIVEN a-cloned-repo-with-commits \
     WHEN tdd-init \
         AND pull-disabled \
         AND this-change Fred \
@@ -43,7 +43,7 @@ SCENARIO 'TDD test without pull on new change' \
         AND work-in-progress 1
 
 SCENARIO 'TDD test without remote should not pull' \
-    GIVEN a-local-repo \
+    GIVEN a-local-repo-with-commits \
     WHEN tdd-init \
         AND this-change Fred \
         AND this-change-added Fred \
@@ -53,7 +53,7 @@ SCENARIO 'TDD test without remote should not pull' \
         AND work-in-progress 1
 
 SCENARIO 'TDD test with no changes' \
-    GIVEN a-repo \
+    GIVEN a-cloned-repo-with-commits \
     WHEN tdd-init \
         AND tdd-test \
     THEN happy-path \

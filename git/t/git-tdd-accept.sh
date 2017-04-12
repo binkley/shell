@@ -1,5 +1,5 @@
 SCENARIO 'TDD simple accept' \
-    GIVEN a-repo \
+    GIVEN a-cloned-repo-with-commits \
     WHEN tdd-init \
         AND a-change-to-existing \
         AND tdd-accept 'Some work' \
@@ -9,7 +9,7 @@ SCENARIO 'TDD simple accept' \
         AND work-in-progress 0
 
 SCENARIO 'Git hook fails, TDD recovers' \
-    GIVEN a-repo \
+    GIVEN a-cloned-repo-with-commits \
         AND a-failing-pre-push-hook \
     WHEN tdd-init \
         AND a-change-to-existing \
