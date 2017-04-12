@@ -46,6 +46,8 @@ Picking out your code from framework code is simple:
 ### Coding
 
 * Do not call `exit`; instead use `return`.
+  * Use the global `exit_code` variable to signal failure (the default
+    `_print_result` will show this).
 * When possible use `local` variables in functions to avoid escaping scope.
 * Your functions follow particular rules:
    * Functions which can fail or error the test should use `_register`.
@@ -89,6 +91,8 @@ function AND {
 
 ### `_print_result`
 
+This is _OPTIONAL_.  The default `_print_function` is informative and colorful.
+
 Individual test results may be shown by declaring a `_print_result` function.
 It's only argument is the return code of test functions:
 
@@ -104,16 +108,17 @@ function _print_result {
 }
 ```
 
-More interesting might be:
+More interesting (but less interesting than the default `_print_result`):
 
 ```bash
 function _print_result {
-    local -r exit_code=$1
-    $_quiet && return $exit_code
-    case $exit_code in
+    local -r _e=$1
+    local -r _function_name=$2
+    $_quiet && return $_e
+    case $_e in
     0 ) echo -e $ppass $scenario_name ;;
-    1 ) echo -e $pfail $scenario_name ;;
-    * ) echo -e $perror $scenario_name ;;
+    1 ) echo -e $pfail $scenario_name ($_function_name) ;;
+    * ) echo -e $perror $scenario_name ($_function_name) ;;
     esac
 }
 ```
@@ -125,6 +130,12 @@ supports UNICODE; most do):
 * fail - a red X
 * error - a bold red interrobang
 
+## Writing tests
+
+Keep each test on _one line_, using backslash line continuation for
+readability.  This supports both `run-tests` executing your entire test as a
+single statement, and using patterns to filter which tests to run.
+
 ## A simple example
 
 An example mini BDD language in [`simple-example`](simple-example/):
@@ -132,23 +143,6 @@ An example mini BDD language in [`simple-example`](simple-example/):
 ### `f/framework.sh`
 
 ```bash
-readonly pcheckmark=$(printf "\xE2\x9C\x93")
-readonly ppass="$pgreen$pcheckmark$preset"
-readonly pballotx=$(printf "\xE2\x9C\x97")
-readonly pfail="$pred$pballotx$preset"
-readonly pinterrobang=$(printf "\xE2\x80\xBD")
-readonly perror="$pboldred$pinterrobang$preset"
-
-function _print_result {
-    local -r exit_code=$1
-    $_quiet && return $exit_code
-    case $exit_code in
-    0 ) echo -e "$ppass $scenario_name" ;;
-    1 ) echo -e "$pfail $scenario_name - wanted: $expected_color, got $actual_color" ;;
-    * ) echo -e "$perror $scenario_name - exit: $exit_code" ;;
-    esac
-}
-
 function THEN {
     "$@"
 }
