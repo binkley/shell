@@ -8,10 +8,14 @@ function __setup_colors()
 {
     local -r ncolors=$(tput colors)
     [[ -n "$ncolors" && $ncolors -ge 8 ]] || return
-    readonly pgreen=$(printf "\e[32m")
-    readonly pred=$(printf "\e[31m")
-    readonly pboldred=$(printf "\e[31;1m")
-    readonly preset=$(printf "\e[0m")
+    printf -v pgreen "\e[32m"
+    readonly pgreen
+    printf -v pred "\e[31m"
+    readonly pred
+    printf -v pboldred "\e[31;1m"
+    readonly pboldred
+    printf -v preset "\e[0m"
+    readonly preset
 }
 
 function __print_help {

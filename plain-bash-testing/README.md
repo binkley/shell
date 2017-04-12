@@ -239,3 +239,7 @@ SCENARIO "Ugli are yellow" \
     WHEN fruit_is ugli \
     THEN the_colors_agree
 ```
+
+## TODO
+
+* Capture STDERR for simple commands so `_print_result` can update line, then show errors
