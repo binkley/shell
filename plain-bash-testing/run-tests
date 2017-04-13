@@ -34,7 +34,7 @@ TEST can be either a single test file or a directory of test path files.
 Examples:
   ./run-tests t  Run tests over files in the "t" directory
 
-Online help: <https://github.com/binkley/shell>
+Online help: <https://https://github.com/binkley/shell/tree/master/plain-bash-testing>
 EOH
 }
 
