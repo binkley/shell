@@ -27,7 +27,7 @@ Runs BASH test(s).
 TEST can be either a single test file or a directory of test path files.
 
   -c, --color     print in color
-  -d, --debug     print extra output
+  -d, --debug     print test debugging; repeat for $progname debugging
   -q, --quiet     print minimal output
   -v, --verbose   print extra output
 
@@ -38,11 +38,15 @@ Online help: <https://github.com/binkley/shell>
 EOH
 }
 
-function __enable_debug {
-    export debug=true
-    set -o pipefail
+function __start-debugging {
+    (( 0 == _debug )) && return
     set -o xtrace
-    echo "$progname: Called with $@"
+}
+
+function __end-tests-debugging {
+    (( 1 < _debug )) && return
+    set +o xtrace
+    set +o pipefail
 }
 
 function _register {
@@ -82,7 +86,7 @@ function _start {
     pushd $PWD >/dev/null
     "$@"
     __tally $?
-    while popd >/dev/null 2>&1 ; do : ; done
+    while popd >/dev/null 2>&1 ; do : ; done  # Undo tests pushd
 }
 
 let __passed=0 __failed=0 __errored=0
@@ -104,6 +108,13 @@ function __tests-in-one-line {
     sed ':x; /\\$/ { N; s/\\\n//; tx }'
 }
 
+function __run-test {
+    local -r test_file=$1
+    __start-debugging
+    . <(__tests-in-one-line <$test_file | grep "$__match_tests")
+    __end-tests-debugging
+}
+
 [[ -t 1 ]] && _color=true || _color=false
 _quiet=false
 _verbose=false
@@ -112,7 +123,7 @@ do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     c | color ) _color=true ;;
-    d | debug ) __enable_debug "$@" ;;
+    d | debug ) let ++_debug ;;
     h | help ) __print_help ; exit 0 ;;
     p | pattern ) __match_tests="$OPTARG" ;;
     q | quiet ) _quiet=true ;;
@@ -125,6 +136,7 @@ EOE
 done
 shift $((OPTIND - 1))
 
+(( 1 < _debug)) && __start-debugging
 $_color && __setup_colors
 
 case $# in
@@ -228,9 +240,7 @@ do
     let __last_passed=$__passed
     let __last_failed=$__failed
     let __last_errored=$__errored
-    pushd $PWD >/dev/null
-    . <(__tests-in-one-line <$t | grep "$__match_tests")
-    while popd >/dev/null 2>&1 ; do : ; done
+    __run-test $t
     let __t_passed=$((__passed - __last_passed))
     let __t_failed=$((__failed - __last_failed))
     let __t_errored=$((__errored - __last_errored))
