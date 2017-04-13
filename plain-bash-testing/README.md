@@ -20,6 +20,11 @@ Run tests matching a pattern:
 $ ./run-tests --pattern='needs work' t
 ```
 
+## What happened?
+
+You can use a single `-d` (`--debug`) switch to enable bash debug printing of
+the tests.  Use two of them to debug `run-tests` itself.
+
 ## Conventions
 
 * Hook functions implement and extend the framework: do not edit framework
