@@ -27,7 +27,7 @@ Runs BASH test(s).
 TEST can be either a single test file or a directory of test path files.
 
   -c, --color     print in color
-  -d, --debug     print test debugging; repeat for $progname debugging
+  -d, --debug     print test debugging (use bash -x for $progname)
   -q, --quiet     print minimal output
   -v, --verbose   print extra output
 
@@ -39,12 +39,10 @@ EOH
 }
 
 function __start-debugging {
-    (( 0 == _debug )) && return
     set -o xtrace
 }
 
 function __end-tests-debugging {
-    (( 1 < _debug )) && return
     set +o xtrace
     set +o pipefail
 }
@@ -118,12 +116,13 @@ function __tests-in-one-line {
 
 function __run-test {
     local -r test_file=$1
-    __start-debugging
+    $_debug && __start-debugging
     . <(__tests-in-one-line <$test_file | grep "$__match_tests")
-    __end-tests-debugging
+    $_debug && __end-tests-debugging
 }
 
 [[ -t 1 ]] && _color=true || _color=false
+_debug=false
 _quiet=false
 _verbose=false
 while getopts :cdhpqv-: opt
@@ -131,7 +130,7 @@ do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     c | color ) _color=true ;;
-    d | debug ) let ++_debug ;;
+    d | debug ) _debug=true ;;
     h | help ) __print_help ; exit 0 ;;
     p | pattern ) __match_tests="$OPTARG" ;;
     q | quiet ) _quiet=true ;;
@@ -144,7 +143,6 @@ EOE
 done
 shift $((OPTIND - 1))
 
-(( 1 < _debug)) && __start-debugging
 $_color && __setup_colors
 
 case $# in
