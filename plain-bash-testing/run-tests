@@ -76,6 +76,7 @@ $(declare -f $name | sed '1,2d;$d')
     then
         __tally \$__e \$FUNCNAME
     else
+        \$_debug && __start-debugging
         true  # Reset exit code
         "\$@"
         __e=\$?
@@ -97,6 +98,7 @@ function _start {
 
 let __passed=0 __failed=0 __errored=0
 function __tally {
+    $_debug && __end-tests-debugging
     local -r __e=$1
     local -r __test_function=$2
     $__tallied && return $__e
@@ -106,7 +108,7 @@ function __tally {
     1 ) let ++__failed ;;
     * ) let ++__errored ;;
     esac
-    (_print_result $__e $__test_function)
+    _print_result $__e $__test_function
     return $__e
 }
 
@@ -115,10 +117,10 @@ function __tests-in-one-line {
 }
 
 function __run-test {
-    local -r test_file=$1
+    local -r __test_file=$1
+    # TODO: Consider read preserving newlines to hide matching during debug
     $_debug && __start-debugging
-    . <(__tests-in-one-line <$test_file | grep "$__match_tests")
-    $_debug && __end-tests-debugging
+    . <(__tests-in-one-line <$__test_file | grep "$__match_tests")
 }
 
 [[ -t 1 ]] && _color=true || _color=false
