@@ -49,6 +49,14 @@ function __end-tests-debugging {
     set +o pipefail
 }
 
+trap 'rm -rf "${__tmpdirs[@]}"' EXIT
+function _new-tmpdir-into {
+    local -r var_name=$1
+    local -r tmpdir=$(mktemp -d)
+    __tmpdirs=("${__tmpdirs[@]}" $tmpdir)
+    eval $var_name'=$tmpdir'
+}
+
 function _register {
     case $# in
     1 ) local -r name=$1 arity=0 ;;

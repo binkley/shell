@@ -58,6 +58,9 @@ Picking out your code from framework code is simple:
    * Functions which can fail or error the test should use `_register`.
    * Other functions should finish with `"$@"`.
    * The start function is special.
+* If you need a temporary directory (a common need), use `_new-tempdir-into`
+  with a variable name to store the tmpdir into, and it will be cleaned up
+  when tests conclude.
 
 ## Implemented by you
 
