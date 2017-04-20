@@ -60,3 +60,15 @@ function f {
     local -r bob=nancy
 }
 _register f
+
+function try-register-none {
+    ( _register 2>/dev/null )
+    (( 2 == $? ))
+}
+_register try-register-none
+
+function try-register-too-many {
+    ( _register f 0 extra-arg 2>/dev/null )
+    (( 2 == $? ))
+}
+_register try-register-too-many
