@@ -237,7 +237,7 @@ then
     exit 2
 fi
 
-if [[ -n "$__match_tests" ]]
+if ! $_quiet && [[ -n "$__match_tests" ]]
 then
     echo "${pbold}(Matching only '$__match_tests' tests.)${preset}"
 fi
