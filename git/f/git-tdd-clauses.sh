@@ -101,12 +101,12 @@ _register runs-accept-command
 function changes-committed() \
     [[ -z "$(cd $repodir && git status --porcelain)" ]] \
         && (( 1 == $(cd $repodir \
-            && git log origin/master..HEAD --format=%H | wc -l) ))
+            && git log --format=%H origin/master..HEAD -- | wc -l) ))
 _register changes-committed
 
 function pushed-with {
     local message="$1"
-    [[ "$message" == "$(cd $repodir && git log HEAD^^..HEAD^ --format=%s)" ]]
+    [[ "$message" == "$(cd $repodir && git log --format=%s HEAD^^..HEAD^ --)" ]]
 }
 _register pushed-with 1
 
