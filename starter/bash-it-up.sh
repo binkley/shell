@@ -44,7 +44,7 @@ Flags:
 EOH
 }
 
-color=false
+[[ -t 1 ]] && color=true || color=false
 debug=false
 print=echo
 pwd=pwd
