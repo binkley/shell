@@ -50,3 +50,4 @@ a new WIP commit.
 
 * Investigate `git tdd init` when there is something already stashed
 * Add manpages
+* Investigate `fatal: bad revision 'origin/master..HEAD'` message

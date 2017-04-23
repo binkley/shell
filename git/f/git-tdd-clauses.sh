@@ -70,22 +70,20 @@ function this-change {
 }
 _register this-change 1
 
-function this-change-added {
-    (cd $repodir \
-        && git add $1)
-}
+function this-change-added() (
+    cd $repodir \
+        && git add $1
+)
 _register this-change-added 1
 
 # For THEN
-function happy-path {
-    (( 0 == exit_code ))
-}
+function happy-path() (( 0 == exit_code ))
 _register this-change 1
 
-function this-change-added {
-    (cd $repodir \
-        && git add $1)
-}
+function this-change-added() (
+    cd $repodir \
+        && git add $1
+)
 _register this-change-added 1
 
 # For THEN

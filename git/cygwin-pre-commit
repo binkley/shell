@@ -22,7 +22,7 @@ function show-help {
 }
 
 function unchanged {
-    git diff-index --quiet HEAD "$1"
+    git diff-index --quiet HEAD -- "$1"
 }
 
 function prep {
