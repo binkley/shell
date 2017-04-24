@@ -7,8 +7,8 @@ do
     if [[ -f $d/Makefile ]]
     then
         (cd $d >/dev/null ; make -s test)
-    elif [[ -f $d/pom.xml ]]
+    elif [[ -f $d/mvnw ]]
     then
-        (cd $d >/dev/null ; mvn -q clean verify)
+        (cd $d >/dev/null ; ./mvnw -q clean verify)
     fi
 done
