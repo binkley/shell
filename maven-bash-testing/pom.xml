@@ -162,8 +162,10 @@
                         <id>make-dir</id>
                         <phase>package</phase>
                         <configuration>
-                            <descriptor>src/assembly/testing-with-bash.xml
-                            </descriptor>
+                            <descriptors>
+                                <descriptor>src/assembly/testing-with-bash.xml
+                                </descriptor>
+                            </descriptors>
                         </configuration>
                         <goals>
                             <goal>single</goal>
