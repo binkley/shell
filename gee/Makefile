@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-test:
+check:
 	@./test-gee -i t | grep 'Summary: 6 PASSED, 0 FAILED, 0 ERRORED' >/dev/null
 
 clean:

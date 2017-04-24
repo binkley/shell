@@ -6,7 +6,7 @@ for d in *
 do
     if [[ -f $d/Makefile ]]
     then
-        (cd $d >/dev/null ; make -s test)
+        (cd $d >/dev/null ; make -s check)
     elif [[ -f $d/mvnw ]]
     then
         (cd $d >/dev/null ; ./mvnw -q clean verify)
