@@ -1,14 +1,15 @@
 #!/bin/bash
 
+unset CDPATH
 set -e
 
 for d in *
 do
     if [[ -f $d/Makefile ]]
     then
-        (cd $d >/dev/null ; make -s check)
+        (cd $d >/dev/null ; echo $PWD: ; make -s check)
     elif [[ -f $d/mvnw ]]
     then
-        (cd $d >/dev/null ; ./mvnw -q clean verify)
+        (cd $d >/dev/null ; echo $PWD: ; ./mvnw -q clean verify)
     fi
 done

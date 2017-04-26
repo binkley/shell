@@ -1,2 +1,2 @@
 test:
-	@./run-tests
+	@./run-tests >/dev/null
