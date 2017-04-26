@@ -96,6 +96,8 @@ _register runs-test-command
 function runs-accept-command() [[ accept == "$accept_output" ]]
 _register runs-accept-command
 
+# TODO: This assumes a remote upstream, not valid locally
+# TODO: Overcomplex, pull out 2nd test
 function changes-committed() \
     [[ -z "$(cd $repodir && git status --porcelain)" ]] \
         && (( 1 == $(cd $repodir \
