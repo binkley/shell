@@ -1,4 +1,3 @@
-# vi: ft=bash
 # Source me
 
 printf -v preset "\e[0m"
