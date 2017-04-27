@@ -98,10 +98,11 @@ _register runs-accept-command
 
 # TODO: This assumes a remote upstream, not valid locally
 # TODO: Overcomplex, pull out 2nd test
-function changes-committed() \
+function changes-committed {
     [[ -z "$(cd $repodir && git status --porcelain)" ]] \
         && (( 1 == $(cd $repodir \
             && git log --format=%H origin/master..HEAD -- | wc -l) ))
+}
 _register changes-committed
 
 function pushed-with {
