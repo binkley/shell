@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-# TODO: Diddle with BASH_SOURCE, FUNCNAME and BASH_LINENO when sourcing tests
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
-progname=${0##*/}
-readonly progname
+readonly progname=${0##*/}
 
-function __setup_colors()
+function __install_colors()
 {
     local -r ncolors=$(tput colors)
     [[ -n "$ncolors" && $ncolors -ge 8 ]] || return
@@ -22,15 +20,16 @@ function __setup_colors()
 function __print_help {
     local -r width=$(( $(tput cols) - 2 ))
     cat <<EOH | fold -s -w $width
-Usage: $progname [-c|--color][-d|--debug]|[-q|--quiet][-v|--verbose] TEST [TEST...]
+Usage: $progname [-C|--color=WHEN][-d|--debug]|[-q|--quiet][-v|--verbose] TEST [TEST...]
 Runs BASH test(s).
 
 TEST can be either a single test file or a directory of test path files.
 
-  -c, --color     print in color
-  -d, --debug     print test debugging (use bash -x for $progname)
-  -q, --quiet     print minimal output
-  -v, --verbose   print extra output
+  -C, --color=WHEN    print in color (WHEN can be 'always', 'auto' or 'never')
+                        -C is the same as --color=always
+  -d, --debug         print test debugging (use bash -x for $progname)
+  -q, --quiet         print minimal output
+  -v, --verbose       print extra output
 
 Examples:
   ./run-tests t  Run tests over files in the "t" directory
@@ -126,6 +125,7 @@ function __run-test {
     . <(__tests-in-one-line <$__test_file | grep "$__match_tests")
 }
 
+__when_color=auto
 [[ -t 1 ]] && _color=true || _color=false
 _debug=false
 _quiet=false
@@ -134,7 +134,17 @@ while getopts :cdhpqv-: opt
 do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
-    c | color ) _color=true ;;
+    C ) _color=true ; __when_color=always ;;
+    color ) case $OPTARG in
+        always ) _color=true ;;
+        auto ) ;;
+        never ) _color=false ;;
+        * ) cat <<EOE >&2 ; exit 3 ;;
+$progname: invalid color '$OPTARG'
+Try '$progname --help' for more inforamtion.
+EOE
+        esac
+        __when_color=$OPTARG ;;
     d | debug ) _debug=true ;;
     h | help ) __print_help ; exit 0 ;;
     p | pattern ) __match_tests="$OPTARG" ;;
@@ -148,7 +158,7 @@ EOE
 done
 shift $((OPTIND - 1))
 
-$_color && __setup_colors
+$_color && __install_colors
 
 case $# in
 0 ) cat <<EOE >&2 ; exit 3 ;;
@@ -187,7 +197,7 @@ $actual
 
 Diff actual (left) vs expected (right):
 EOD
-    diff --color=always <(echo "$actual") <(echo "$expected")
+    diff --color=$__when_color <(echo "$actual") <(echo "$expected")
 }
 
 function _print_result {
