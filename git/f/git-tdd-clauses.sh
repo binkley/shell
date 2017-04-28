@@ -65,6 +65,12 @@ function a-change-to-existing {
 }
 _register a-change-to-existing
 
+function another-change-to-existing() (
+    cd $repodir \
+        && echo OK >Bob
+)
+_register another-change-to-existing
+
 function this-change {
     _a-change $1
 }
@@ -213,3 +219,25 @@ index e69de29..256de1e 100644
     [[ "$_expected" == "$_actual" ]]
 }
 _register shows-wip-differences
+
+function shows-untested-and-wip-differences {
+    _expected="Untested:
+diff --git a/Bob b/Bob
+index 256de1e..d86bac9 100644
+--- a/Bob
++++ b/Bob
+@@ -1 +1 @@
+-NOK
++OK
+
+WIP:
+diff --git a/Bob b/Bob
+index e69de29..256de1e 100644
+--- a/Bob
++++ b/Bob
+@@ -0,0 +1 @@
++NOK"
+    _actual="$tdd_output"
+    [[ "$_expected" == "$_actual" ]]
+}
+_register shows-untested-and-wip-differences
