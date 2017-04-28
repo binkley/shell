@@ -7,14 +7,23 @@ function __install_colors()
 {
     local -r ncolors=$(tput colors)
     [[ -n "$ncolors" && $ncolors -ge 8 ]] || return
-    printf -v pgreen "\e[32m"
-    readonly pgreen
     printf -v pred "\e[31m"
     readonly pred
     printf -v pboldred "\e[31;1m"
     readonly pboldred
+    printf -v pgreen "\e[32m"
+    readonly pgreen
+    printf -v pyellow "\e[33m"
+    readonly pyellow
+    printf -v pblue "\e[34m"
+    readonly pblue
+    printf -v pmagenta "\e[35m"
+    readonly pmagenta
+    printf -v pcyan "\e[36m"
+    readonly pcyan
     printf -v preset "\e[0m"
     readonly preset
+    export PS4='+${pyellow}${BASH_SOURCE}${preset}:${pblue}${LINENO}${preset}: ${pcyan}${FUNCNAME[0]:+${FUNCNAME[0]}${preset}(): } '
 }
 
 function __print_help {
