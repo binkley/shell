@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+[[ -o xtrace ]] && readonly __tracing=true || readonly __tracing=false
 set -o pipefail
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
@@ -56,15 +57,16 @@ function __start_debugging {
 }
 
 function __stop_debugging {
-    set +o xtrace
+    $__tracing || set +o xtrace
 }
 
 trap 'rm -rf "${__tmpdirs[@]}"' EXIT
-function _new-tmpdir-into {
-    local -r var_name=$1
-    local -r tmpdir=$(mktemp -d)
-    __tmpdirs=("${__tmpdirs[@]}" $tmpdir)
-    eval $var_name'=$tmpdir'
+__tmpdirs=()
+function _tmpdir {
+    local -r var=$1
+    local -r tmpdir="$(mktemp -d)"
+    __tmpdirs=("${__tmpdirs[@]}" "$tmpdir")
+    eval "$var=\"\$tmpdir\""
 }
 
 function _register {

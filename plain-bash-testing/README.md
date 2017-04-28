@@ -66,6 +66,11 @@ Picking out your code from framework code is simple:
   with a variable name to store the tmpdir into, and it will be cleaned up
   when tests conclude.
 
+## Implemented by framework
+
+* `_tmpdir VARNAME` creates a temporary directory, and stores the path into
+  VARNAME.  When tests finish, the framework cleans up all tmpdirs.
+
 ## Implemented by you
 
 Start by implementing:
