@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o pipefail
+
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 readonly progname=${0##*/}
 
@@ -47,13 +49,14 @@ Online help: <https://https://github.com/binkley/shell/tree/master/plain-bash-te
 EOH
 }
 
-function __start-debugging {
+function __start_debugging {
+    [[ -o xtrace ]] && return
+    echo -e "\n${pmagenta}----${preset}"
     set -o xtrace
 }
 
-function __end-tests-debugging {
+function __stop_debugging {
     set +o xtrace
-    set +o pipefail
 }
 
 trap 'rm -rf "${__tmpdirs[@]}"' EXIT
@@ -87,7 +90,6 @@ $(declare -f $name | sed '1,2d;$d')
     then
         __tally \$__e \$FUNCNAME
     else
-        \$_debug && __start-debugging
         true  # Reset exit code
         "\$@"
         __e=\$?
@@ -102,6 +104,7 @@ function _start {
     local __tallied=false
     local __e=0
     pushd $PWD >/dev/null
+    $_debug && __start_debugging
     "$@"
     __tally $?
     while popd >/dev/null 2>&1 ; do : ; done  # Undo tests pushd
@@ -109,7 +112,7 @@ function _start {
 
 let __passed=0 __failed=0 __errored=0
 function __tally {
-    $_debug && __end-tests-debugging
+    __stop_debugging
     local -r __e=$1
     local -r __test_function=$2
     $__tallied && return $__e
@@ -130,7 +133,6 @@ function __tests-in-one-line {
 function __run-test {
     local -r __test_file=$1
     # TODO: Consider read preserving newlines to hide matching during debug
-    $_debug && __start-debugging
     . <(__tests-in-one-line <$__test_file | grep "$__match_tests")
 }
 
