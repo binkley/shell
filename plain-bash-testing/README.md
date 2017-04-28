@@ -28,11 +28,11 @@ the tests.  Use two of them to debug `run-tests` itself.
 ## Conventions
 
 * Hook functions and variables implement and extend the framework: do not edit
-  framework functions
+  framework functions.
 * Hook functions and variables are internal: they begin with
-  _double underscore_ (`__`)
+  _double underscore_ (`__`).
 * Extension functions and variables are shared, and optionally modified (they
-  have sensible defaults): they begin with _single underscore_ (`_`)
+  have sensible defaults): they begin with _single underscore_ (`_`).
 * Tracking test status is a responsibility of the framework, not your test
   functions.
 * Failing or erroring a test short circuit execution: invoke no further
