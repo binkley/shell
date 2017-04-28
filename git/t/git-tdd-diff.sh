@@ -19,14 +19,14 @@ SCENARIO 'TDD diff on WIP with untested changes' \
     THEN happy-path \
         AND shows-untested-differences
 
-# SCENARIO 'TDD diff WIP with tested changes' \
-#     GIVEN an-empty-repo-with-initial-empty-commit \
-#     WHEN tdd-init \
-#         AND a-change-to-existing \
-#         AND tdd-test \
-#         AND tdd-diff \
-#     THEN happy-path \
-#         AND shows-wip-differences
+SCENARIO 'TDD diff WIP with tested changes' \
+    GIVEN a-cloned-repo-with-commits \
+    WHEN tdd-init \
+        AND a-change-to-existing \
+        AND tdd-test \
+        AND tdd-diff \
+    THEN happy-path \
+        AND shows-wip-differences
 
 # SCENARIO 'TDD diff WIP with mixed changes' \
 #     GIVEN an-empty-repo-with-initial-empty-commit \

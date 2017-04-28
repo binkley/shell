@@ -201,17 +201,14 @@ _register shows-untested-differences
 
 function shows-wip-differences {
     _expected="Untested:
+
+WIP:
 diff --git a/Bob b/Bob
 index e69de29..256de1e 100644
 --- a/Bob
 +++ b/Bob
 @@ -0,0 +1 @@
-+NOK
-
-WIP:
-diff --git a/Bob b/Bob
-new file mode 100644
-index 0000000..e69de29"
++NOK"
     _actual="$tdd_output"
     [[ "$_expected" == "$_actual" ]]
 }
