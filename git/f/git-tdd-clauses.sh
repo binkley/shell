@@ -32,7 +32,7 @@ function pull-disabled {
 _register pull-disabled
 
 function tdd-test {
-    test_output="$(cd $repodir \
+    tdd_output="$(cd $repodir \
         && $git_tdd test)"
     exit_code=$?
 }
@@ -40,7 +40,7 @@ _register tdd-test
 
 function _tdd-accept {
     local -r message="$1"
-    accept_output="$(cd $repodir \
+    tdd_output="$(cd $repodir \
         && $git_tdd accept --message "$message")"
     exit_code=$?
 }
@@ -90,10 +90,10 @@ _register this-change-added 1
 function happy-path() (( 0 == exit_code ))
 _register happy-path
 
-function runs-test-command() [[ test == "$test_output" ]]
+function runs-test-command() [[ test == "$tdd_output" ]]
 _register runs-test-command
 
-function runs-accept-command() [[ accept == "$accept_output" ]]
+function runs-accept-command() [[ accept == "$tdd_output" ]]
 _register runs-accept-command
 
 # TODO: This assumes a remote upstream, not valid locally
@@ -150,18 +150,74 @@ function shows-current-commit() (
 _register shows-current-commit
 
 function tdd-status {
-    status_output="$(cd $repodir \
-        && $git_tdd status 2>&1)"
+    tdd_output="$(cd $repodir \
+        && $git_tdd status 2>&1 | _strip-color-codes)"
     exit_code=$?
 }
 _register tdd-status
 
-function status-complained {
-    expected='Exit code 2'
-    actual="Exit code $exit_code"
+function not-initialized {
+    _expected='Exit code 2'
+    _actual="Exit code $exit_code"
     (( 2 == exit_code )) || return
-    printf -v expected "git-tdd: TDD not initialized (try 'git tdd init')\ngit-tdd: Failed."
-    actual="$status_output"
-    [[ "$expected" == "$actual" ]]
+    printf -v _expected "git-tdd: TDD not initialized (try 'git tdd init')\ngit-tdd: Failed."
+    _actual="$tdd_output"
+    [[ "$_expected" == "$_actual" ]]
 }
-_register status-complained
+_register not-initialized
+
+function _strip-color-codes {
+    sed 's/\x1B\[[0-9]*\(;[0-9]*\)*m//g'
+}
+
+function tdd-diff {
+    tdd_output="$(cd $repodir \
+        && $git_tdd diff 2>&1 | _strip-color-codes)"
+    exit_code=$?
+}
+_register tdd-diff
+
+function shows-no-differences {
+    _expected="Untested:
+
+WIP:"
+    _actual="$tdd_output"
+    [[ "$_expected" == "$_actual" ]]
+}
+_register shows-no-differences
+
+function shows-untested-differences {
+    _expected="Untested:
+diff --git a/Bob b/Bob
+index e69de29..256de1e 100644
+--- a/Bob
++++ b/Bob
+@@ -0,0 +1 @@
++NOK
+
+WIP:
+diff --git a/Bob b/Bob
+new file mode 100644
+index 0000000..e69de29"
+    _actual="$tdd_output"
+    [[ "$_expected" == "$_actual" ]]
+}
+_register shows-untested-differences
+
+function shows-wip-differences {
+    _expected="Untested:
+diff --git a/Bob b/Bob
+index e69de29..256de1e 100644
+--- a/Bob
++++ b/Bob
+@@ -0,0 +1 @@
++NOK
+
+WIP:
+diff --git a/Bob b/Bob
+new file mode 100644
+index 0000000..e69de29"
+    _actual="$tdd_output"
+    [[ "$_expected" == "$_actual" ]]
+}
+_register shows-wip-differences

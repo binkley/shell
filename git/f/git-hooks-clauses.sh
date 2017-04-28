@@ -24,9 +24,9 @@ _register add-hook 2
 
 # THEN
 function output-is {
-    expected="$1"
-    actual="$list_output"
-    [[ "$expected" == "$actual" ]]
+    _expected="$1"
+    _actual="$list_output"
+    [[ "$_expected" == "$_actual" ]]
 }
 _register output-is 1
 

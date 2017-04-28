@@ -10,7 +10,7 @@ progname=${0##*/}
 trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed." ; exit $r' EXIT
 
 function usage {
-    echo "Usage: $progname <init|status|test|accept>"
+    echo "Usage: $progname <init|diff|status|test|accept>"
 }
 
 function help {
@@ -105,6 +105,33 @@ function tdd-init {
     show-notes add -m 0
 }
 
+function tdd-diff {
+    while (( 0 < $# ))
+    do
+        case $1 in
+            --help ) usage ; exit 0 ;;
+            * ) usage >&2 ; exit 2 ;;
+        esac
+        shift
+    done
+    _require-init
+    # TODO: Limit which diff with switches?
+    {
+        # TODO: Smart picking if color or not
+        # TODO: Check if git config defines colors we can use
+        # TODO: Bold white only makes sense on black terminals
+        printf -v pboldwhite "\e[37;1m"
+        readonly pboldwhite
+        printf -v preset "\e[0m"
+        readonly preset
+        printf "${pboldwhite}Untested:${preset}\n"
+        git -c color.ui=always diff HEAD
+        echo
+        printf "${pboldwhite}WIP:${preset}\n"
+        git -c color.ui=always diff HEAD^..HEAD
+    } | $(git var GIT_PAGER)
+}
+
 function _has-upstream {
     git remote get-url upstream >/dev/null 2>&1
 }
@@ -191,6 +218,6 @@ case $# in
 esac
 
 case $1 in
-    init | status | test | accept ) tdd-"$@" ;;
+    init | status | diff | test | accept ) tdd-"$@" ;;
     * ) usage >&2 ; exit 2 ;;
 esac
