@@ -70,6 +70,11 @@ Picking out your code from framework code is simple:
 
 Start by implementing:
 
+### Result variables
+
+Set `_expected` and `_actual` when comparing results; the default
+`_print_result` will nicely format the difference.
+
 ### Start function
 
 The name of the function is up to you.  Good choices include `SCENARIO` (BDD
@@ -88,7 +93,7 @@ function SCENARIO {
 }
 ```
 
-# Continue functions
+### Continue functions
 
 Continue functions are "glue" between test functions for readability.
 Generally they contain only `"$@"`.
@@ -144,7 +149,7 @@ supports UNICODE; most do):
 
 ## Writing tests
 
-Keep each test on _one line_, using backslash line continuation for
+Keep each test on _one logical line_, using backslash line continuation for
 readability.  This supports both `run-tests` executing your entire test as a
 single statement, and using patterns to filter which tests to run.
 
