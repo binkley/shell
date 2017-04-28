@@ -196,7 +196,7 @@ readonly perror="$pboldred$pinterrobang$preset"
 function __print-fail-or-diff {
     local -r _e=$1
     local -r _test_function=$2
-    echo -e " ($_test_function)\r$pfail"
+    echo -e " (${pcyan}$_test_function${preset})\r$pfail"
     [[ -n "$expected" || -n "$actual" ]] || return 0
     cat <<EOD
 ${pbold}Expected (on next line):${preset}
@@ -207,6 +207,8 @@ $actual
 Diff actual (left) vs expected (right):
 EOD
     diff --color=$__when_color <(echo "$actual") <(echo "$expected")
+    actual=''
+    expected=''
 }
 
 function _print_result {
@@ -216,10 +218,8 @@ function _print_result {
     case $_e in
     0 ) echo -e "\r$ppass" ;;
     1 ) __print-fail-or-diff $_e $_test_function ;;
-    * ) echo -e " ($_test_function; exit $_e)\r$perror" ;;
+    * ) echo -e " (${pcyan}$_test_function${preset}; exit $_e)\r$perror" ;;
     esac
-    actual=''
-    expected=''
 }
 
 # Pull in user framework files
