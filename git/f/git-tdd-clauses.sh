@@ -157,10 +157,8 @@ function tdd-status {
 _register tdd-status
 
 function not-initialized {
-    _expected='Exit code 2'
-    _actual="Exit code $exit_code"
-    (( 2 == exit_code )) || return
-    printf -v _expected "git-tdd: TDD not initialized (try 'git tdd init')\ngit-tdd: Failed."
+    _expected="git-tdd: TDD not initialized (try 'git tdd init')
+git-tdd: Failed."
     _actual="$tdd_output"
     [[ "$_expected" == "$_actual" ]]
 }
