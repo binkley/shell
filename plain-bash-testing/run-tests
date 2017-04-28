@@ -201,18 +201,18 @@ function __print-fail-or-diff {
     local -r _e=$1
     local -r _test_function=$2
     echo -e " (${pcyan}$_test_function${preset})\r$pfail"
-    [[ -n "$expected" || -n "$actual" ]] || return 0
+    [[ -n "$_expected" || -n "$_actual" ]] || return 0
     cat <<EOD
 ${pbold}Expected (on next line):${preset}
-$expected
+$_expected
 ${pbold}Actual (on next line):${preset}
-$actual
+$_actual
 
 Diff actual (left) vs expected (right):
 EOD
-    diff --color=$__when_color <(echo "$actual") <(echo "$expected")
-    actual=''
-    expected=''
+    diff --color=$__when_color <(echo "$_actual") <(echo "$_expected")
+    _actual=''
+    _expected=''
 }
 
 function _print_result {
