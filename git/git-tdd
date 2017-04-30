@@ -81,8 +81,14 @@ function tdd-init {
     while (( 0 < $# ))
     do
         case $1 in
+            --accept-command )
+                git config --local tdd.acceptCommand "$2"
+                shift ;;
             --help ) usage ; exit 0 ;;
             -q | --quiet ) quiet=true ;;
+            --test-command )
+                git config --local tdd.testCommand "$2"
+                shift ;;
             * ) usage >&2 ; exit 2 ;;
         esac
         shift
