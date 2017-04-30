@@ -6,15 +6,15 @@ set -o pipefail
 
 unset CDPATH  # Trouble-maker
 
-progname=${0##*/}
+readonly progname=${0##*/}
 trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed." ; exit $r' EXIT
 
 function usage {
-    echo "Usage: $progname <init|diff|status|test|accept>"
+    echo "Usage: $progname <help|init|diff|status|test|accept>"
 }
 
-function help {
-    usage
+function tdd-help {
+    exec man $progname
 }
 
 function required {
@@ -218,6 +218,6 @@ case $# in
 esac
 
 case $1 in
-    init | status | diff | test | accept ) tdd-"$@" ;;
+    help | init | status | diff | test | accept ) tdd-"$@" ;;
     * ) usage >&2 ; exit 2 ;;
 esac
