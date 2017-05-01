@@ -1,0 +1,32 @@
+Script t/00-returns.sh:
+. Normal return pass direct✓
+. Normal return fail direct (normal_return)✗
+. Normal return error direct (normal_return; exit 2)‽
+. Normal return pass indirect✓
+. Normal return fail indirect (normal_return)✗
+. Normal return error indirect (normal_return; exit 2)‽
+. Early return pass indirect✓
+. Early return fail indirect (f)✗
+. Early return error indirect (f; exit 2)‽
+. Early return pass direct✓
+. Early return fail direct ()✗
+. Early return error direct (; exit 2)‽
+4 errored, 4 failed, 4 passed
+Script t/01-pwds.sh:
+. Change directory✓
+. Check directory cd✓
+. Push directory✓
+. Check directory pushd✓
+4 passed
+Script t/02-specials.sh:
+. Terminal variadic with none✓
+. Terminal variadic with one✓
+. Interior variadic✓
+. Dynamic scope✓
+. Check exit✓
+5 passed
+Script t/03-mistakes.sh:
+. No arguments to _register✓
+. Too many arguments to _register✓
+2 passed
+Summary: 15 PASSED, 4 FAILED, 4 ERRORED
