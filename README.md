@@ -11,7 +11,7 @@ Helpful shell scripts and programs.
 * [maven-bash-testing](maven-bash-testing/README.md) - Maven driving Bash
 * [maven-tools](maven-tools) - Helper scripts for maven repos
 * [plain-bash-testing](plain-bash-testing/README.md) - Bash test framework
-* [md2man](md2man) - Convert markdown to man and view
+* [md2man-pandoc](md2man-pandoc) - Convert markdown to man and view with pandoc
 * [run-from-url](run-from-url) - Fetch and run script, keep up to date
 * [svn-recommit](svn-recommit/README.md) - Reedit an SVN commit message
 * [starter](starter/README.md) - Starter script for writing commands in BASH
