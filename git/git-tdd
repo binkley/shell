@@ -6,7 +6,15 @@ set -o pipefail
 
 unset CDPATH  # Trouble-maker
 
+function progdir {
+    case $0 in
+        */* ) realpath ${0%/*} ;;
+        * ) echo $PWD ;;
+    esac
+}
+
 readonly progname=${0##*/}
+readonly progdir=$(progdir)
 trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed." ; exit $r' EXIT
 
 function usage {
@@ -14,6 +22,7 @@ function usage {
 }
 
 function tdd-help {
+    export MANPATH="$progdir:$MANPATH"
     exec man $progname
 }
 
@@ -213,7 +222,7 @@ function tdd-accept {
 while (( 0 < $# ))
 do
     case $1 in
-        --help ) exec man ${0##*/} ;;
+        --help ) tdd-help ;;
         -* ) usage >&2 ; exit 2 ;;
         * ) break ;;
     esac

@@ -1,0 +1,47 @@
+git-tdd(1) -- TDD for Git
+=========================
+
+## SYNOPSIS
+
+## DESCRIPTION
+
+## OPTIONS
+
+## EXAMPLES
+
+## DISCUSSION
+
+## ENVIRONMENT AND CONFIGURATION VARIABLES
+
+## HOOKS
+
+## FILES
+
+## EXIT STATUS
+
+0 - Success<br/>
+2 - Usage error<br/>
+* - Exit status of underlying git command
+
+## BUGS
+
+* Too much porcelain, not enough plumbing.
+
+## COPYRIGHT
+
+Public domain
+
+## SEE ALSO
+
+git-commit(1)
+git-diff(1)
+git-log(1)
+git-rebase(1)
+git-notes(1)
+git-pull(1)
+git-reset(1)
+git-stash(1)
+
+## GIT
+
+Extension to the git(1) suite
