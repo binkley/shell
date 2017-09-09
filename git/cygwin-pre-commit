@@ -28,7 +28,10 @@ function unchanged {
 function prep {
     local bit=''
     local file="$(file "$1")"
-    if [[ $file =~ 'symbolic link' ]]
+    if [[ $file =~ 'directory' ]]
+    then
+        bit='/'
+    elif [[ $file =~ 'symbolic link' ]]
     then
         bit='@'
     elif [[ $file =~ executable || $file =~ 'batch file' ]]
