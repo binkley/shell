@@ -10,6 +10,7 @@ Helpful shell scripts and programs.
 * [git](git/README.md) - Git help and extensions
 * [maven-bash-testing](maven-bash-testing/README.md) - Maven driving Bash
 * [maven-tools](maven-tools) - Helper scripts for maven repos
+* [open](open) - Launch UI programs from the command line
 * [plain-bash-testing](plain-bash-testing/README.md) - Bash test framework
 * [md2man-pandoc](md2man-pandoc) - Convert markdown to man and view with pandoc
 * [run-from-url](run-from-url) - Fetch and run script, keep up to date
