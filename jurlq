@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+curl_args=()
+for arg
+do
+    case "$arg" in
+    -- ) shift ; break ;;
+    * ) curl_args=("${curl_args[@]}" "$arg") ; shift ;;
+    esac
+done
+head_args=-D-
+for curl_arg in "${curl_args[@]}"
+do
+    case "$curl_arg" in
+    -I | --head ) head_args= ;;
+    esac
+done
+
+jq_args=("${@-.}")
+
+curl -s $head_args "${curl_args[@]}" | tr -d '\r' | {
+    json=false
+    shopt -s nocasematch
+    while read line
+    do
+        [[ -z "$line" ]] && { echo ; break ; }
+        [[ "$line" =~ ^Content-Type:.*json ]] && json=true
+        echo "$line"
+    done
+
+    if $json
+    then
+        if ((0 < $#))
+        then
+            echo "$0: jq arguments for non-JSON response: $@" >&2
+            exit 2
+        fi
+
+        jq "${jq_args[@]}"
+    else
+        cat
+    fi
+}

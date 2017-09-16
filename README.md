@@ -8,6 +8,7 @@ Helpful shell scripts and programs.
 * [fibs](fibs) - Matrix math with Fibonacci Q-matrix
 * [gee](gee/README.md) - Git and tee
 * [git](git/README.md) - Git help and extensions
+* [jurlq](jurlq) - Mash-up of curl and jq ("xpath" for JSON)
 * [maven-bash-testing](maven-bash-testing/README.md) - Maven driving Bash
 * [maven-tools](maven-tools) - Helper scripts for maven repos
 * [open](open) - Launch UI programs from the command line
