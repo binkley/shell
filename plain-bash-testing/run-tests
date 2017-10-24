@@ -237,7 +237,7 @@ for t in "$@"
 do
     if [[ -d "$t" ]]
     then
-        __found_tests+=($(find $t -type f -name \*.sh))
+        __found_tests+=($(find $t -type f -name \*.sh | sort))
         if (( 0 == ${#__found_tests[*]} ))
         then
             echo "$progname: No tests found in '$t'" >&2
