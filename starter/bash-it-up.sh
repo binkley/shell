@@ -30,7 +30,7 @@ function -enable-debug {
 
 function -print-usage {
     cat <<EOU
-Usage: $progname [-c|--color][-d|--debug][-h|--help][-n|--dry-run][-v|--verbose]
+Usage: $progname [-c|--color|--no-color][-d|--debug][-h|--help][-n|--dry-run][-v|--verbose]
 EOU
 }
 
@@ -40,11 +40,12 @@ function -print-help {
     cat <<EOH
 
 Flags:
-  -c, --color    Print in color
-  -d, --debug    Print debug output while running
-  -h, --help     Print help and exit normally
-  -n, --dry-run  Do nothing (dry run); echo actions
-  -v, --verbose  Verbose output
+  -c, --color     Print in color
+      --no-color  Print without color
+  -d, --debug     Print debug output while running
+  -h, --help      Print help and exit normally
+  -n, --dry-run   Do nothing (dry run); echo actions
+  -v, --verbose   Verbose output
 EOH
 }
 
@@ -58,6 +59,7 @@ do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     c | color ) color=true ;;
+    no-color ) color=false ;;
     d | debug ) -enable-debug ;;
     h | help ) -print-help ; exit 0 ;;
     n | dry-run ) print="echo $print" pwd="echo $pwd" ;;
