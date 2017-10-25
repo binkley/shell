@@ -7,7 +7,11 @@ $ some command and args | tee some.out
 ```
 
 Commits `some.out` to a hidden git repo so you can diff against previous
-program runs, etc.  For example:
+program runs, etc.  
+
+## Example and motivation
+
+A challenging example:
 
 ```
 $ gee -o verify.out mvn clean verify
@@ -20,6 +24,8 @@ $ gee -g git diff HEAD^ verify.out
 Note that in a case like maven, I need to do some additional filtering or
 [change the output format](https://maven.apache.org/maven-logging.html) to
 remove timestamps from the output and avoid spurious differences.
+
+## Usage and help
 
 ```
 Usage: gee [-F FILE|-hl|-m MESSAGE|-o FILE][-u] [PROGRAM ...]
