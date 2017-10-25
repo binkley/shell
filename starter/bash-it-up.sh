@@ -6,13 +6,16 @@ set -e
 set -u
 set -o pipefail
 
+readonly progname="${0##*/}"
+readonly version=0
+
 function -setup-colors {
     local -r ncolors=$(tput colors)
 
     if $color && (( ${ncolors-0} > 7 ))
     then
-        printf -v pgreen "\e[32m"
-        printf -v preset "\e[0m"
+        printf -v pgreen "$(tput setaf 2)"
+        printf -v preset "$(tput sgr0)"
     else
         pgreen=''
         preset=''
@@ -27,11 +30,12 @@ function -enable-debug {
 
 function -print-usage {
     cat <<EOU
-Usage: $0 [-c|--color][-d|--debug][-h|--help][-n|--dry-run][-v|--verbose]
+Usage: $progname [-c|--color][-d|--debug][-h|--help][-n|--dry-run][-v|--verbose]
 EOU
 }
 
 function -print-help {
+    echo "$progname, version $version"
     -print-usage
     cat <<EOH
 
