@@ -21,6 +21,6 @@ script_name=Uncle-Bob
 hostname=athena
 
 rscript $script_name $hostname Katy <<'EOS'
-echo $1
+echo $#: $1
 fail 3
 EOS

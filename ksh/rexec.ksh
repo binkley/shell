@@ -4,7 +4,7 @@ _transfer_exit_code() {
     do
         case $line in
             ^[0-9] | ^[1-9][0-9] | ^11[0-9] | ^12[0-7] ) return ${line#^} ;;
-            * ) printf '%s\n' $line ;;
+            * ) printf '%s\n' "$line" ;;
         esac
     done
     echo "$progname: BUG: function _transfer_exit_code: No exit code in last line" >&2
