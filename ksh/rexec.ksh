@@ -1,5 +1,4 @@
 _transfer_exit_code() {
-    rc=0
     while read line
     do
         case $line in
