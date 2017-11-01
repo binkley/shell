@@ -3,20 +3,18 @@ _transfer_exit_code() {
     while read line
     do
         case $line in
-            ^[0-9] ) return ${line#^} ;;
-            ^[1-9][0-9] ) return ${line#^} ;;
-            ^1[12][0-9] ) return ${line#^} ;;
-            * ) printf '%s\n' $line
+            ^[0-9] | ^[1-9][0-9] | ^11[0-9] | ^12[0-7] ) return ${line#^} ;;
+            * ) printf '%s\n' $line ;;
         esac
     done
-    echo "$0: BUG: function _transfer_exit_code: No exit code in last line" >&2
+    echo "$progname: BUG: function _transfer_exit_code: No exit code in last line" >&2
     return 2
 }
 
 rscript() {
     case $# in
         0 | 1 )
-            echo "$0: BUG: Usage: rexec SCRIPT-NAME HOSTNAME [ARGS]..." >&2 ;;
+            echo "$progname: BUG: Usage: rexec SCRIPT-NAME HOSTNAME [ARGS]..." >&2 ;;
         * ) script_name=$1 ; shift
             hostname=$1 ; shift ;;
     esac
