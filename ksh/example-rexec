@@ -1,0 +1,27 @@
+#!/usr/bin/ksh93
+
+progname=${0##*/}
+
+PS4='+$progname:$LINENO ($SECONDS) '
+
+. rexec.ksh
+
+debug=false
+while getopts :d opt
+do
+    case $opt in
+        d ) debug=true ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+
+$debug && set -x
+
+script_name=Uncle-Bob
+hostname=athena
+bob=Katy
+
+rscript $script_name $hostname <<EOS
+echo $bob
+fail 3
+EOS
