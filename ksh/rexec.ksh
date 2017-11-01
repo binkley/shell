@@ -24,6 +24,8 @@ rscript() {
     esac
 
     rexec $hostname /usr/bin/ksh93 -s "$@" <<EOS | _transfer_exit_code
+set - "$@"  # Only reasonable way to pass through function arguments
+
 # Work around AIX ksh93 return code of exit ignored by trap
 fail() {
     return \$1
@@ -32,7 +34,7 @@ fail() {
 # Our hook to capture the exit code for rexec who dumbly swallows it
 trap 'rc=\$?; echo ^\$rc; exit \$rc' EXIT
 
-PS4='+$script_name:\$(( LINENO - 12 )) (\$SECONDS) '
+PS4='+$script_name:\$(( LINENO - 14 )) (\$SECONDS) '
 $_set_x
 
 # The callers script

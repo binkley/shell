@@ -19,9 +19,8 @@ $debug && set -x
 
 script_name=Uncle-Bob
 hostname=athena
-bob=Katy
 
-rscript $script_name $hostname <<EOS
-echo $bob
+rscript $script_name $hostname Katy <<'EOS'
+echo $1
 fail 3
 EOS
