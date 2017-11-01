@@ -4,6 +4,10 @@ progname=${0##*/}
 
 PS4='+$progname:$LINENO ($SECONDS) '
 
+usage() {
+    echo "Usage: $0 [-d] HOSTNAME"
+}
+
 . rexec.ksh
 
 debug=false
@@ -11,16 +15,34 @@ while getopts :d opt
 do
     case $opt in
         d ) debug=true ;;
+        * ) usage >&2 ; exit 2 ;;
     esac
 done
 shift $(( OPTIND - 1 ))
 
+case $# in
+    1 ) hostname=$1 ;;
+    * ) usage >&2 ; exit 2 ;;
+esac
+
 $debug && set -x
 
-script_name=Uncle-Bob
-hostname=athena
+script_name=My-Remote-Script
 
-rscript $script_name $hostname Katy <<'EOS'
+tmp=${TMPDIR-/tmp}/$progname.$RANDOM
+trap 'rm -f $tmp' EXIT
+
+rscript $script_name $hostname Katy <<'EOS' >$tmp
 echo $#: $1
 fail 3
 EOS
+
+case $? in
+    3 ) ;;
+    * ) echo "$0: Did not pass through exit code" >&2 ; exit 1 ;;
+esac
+
+case "$(<$tmp)" in
+    '1: Katy' ) ;;
+    * ) echo "$0: Did not pass through arguments" >&2 ; exit 1 ;;
+esac

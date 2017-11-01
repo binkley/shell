@@ -7,8 +7,7 @@ _transfer_exit_code() {
             * ) printf '%s\n' "$line" ;;
         esac
     done
-    echo "$progname: BUG: function _transfer_exit_code: No exit code in last line" >&2
-    return 2
+    return 1  # ksh93e lacks pipefail; we get here when 'rscript' failed
 }
 
 rscript() {
