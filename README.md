@@ -9,6 +9,7 @@ Helpful shell scripts and programs.
 * [gee](gee/README.md) - Git and tee
 * [git](git/README.md) - Git help and extensions
 * [jurlq](jurlq) - Mash-up of curl and jq ("xpath" for JSON)
+* [ksh](ksh) - KSH-specific scripting
 * [maven-bash-testing](maven-bash-testing/README.md) - Maven driving Bash
 * [maven-tools](maven-tools) - Helper scripts for maven repos
 * [open](open) - Launch UI programs from the command line
