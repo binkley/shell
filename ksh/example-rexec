@@ -5,16 +5,14 @@ progname=${0##*/}
 PS4='+$progname:$LINENO ($SECONDS) '
 
 usage() {
-    echo "Usage: $0 [-d] HOSTNAME"
+    echo "Usage: $0 [-d][-d] HOSTNAME"
 }
 
-. rexec.ksh
-
-debug=false
+let debug=0
 while getopts :d opt
 do
     case $opt in
-        d ) debug=true ;;
+        d ) let debug+=1 ;;
         * ) usage >&2 ; exit 2 ;;
     esac
 done
@@ -25,15 +23,23 @@ case $# in
     * ) usage >&2 ; exit 2 ;;
 esac
 
-$debug && set -x
+case $debug in
+    0 ) debug=false ;;
+    1 ) debug=true ;;
+    * ) debug=true ; set -x ;;
+esac
+
+. rexec.ksh
 
 script_name=My-Remote-Script
 
-tmp=${TMPDIR-/tmp}/$progname.$RANDOM
-trap 'rm -f $tmp' EXIT
+tmpout=${TMPDIR-/tmp}/$progname.$RANDOM
+tmperr=${TMPDIR-/tmp}/$progname.$RANDOM
+trap 'rm -f $tmpout $tmperr' EXIT
 
-rscript $script_name $hostname Katy <<'EOS' >$tmp
+rscript $script_name $hostname Katy <<'EOS' >$tmpout 2>$tmperr
 echo $#: $1
+echo STDERR >&2
 fail 3
 EOS
 
@@ -42,7 +48,12 @@ case $? in
     * ) echo "$0: Did not pass through exit code" >&2 ; exit 1 ;;
 esac
 
-case "$(<$tmp)" in
+case "$(<$tmpout)" in
     '1: Katy' ) ;;
     * ) echo "$0: Did not pass through arguments" >&2 ; exit 1 ;;
+esac
+
+case "$(grep -v '^+' <$tmperr)" in
+    STDERR ) grep '^+' <$tmperr ;;
+    * ) echo "$0: Did not print to stderr:" >&2 ; cat $tmperr >&2 ; exit 1 ;;
 esac

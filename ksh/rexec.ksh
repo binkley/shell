@@ -17,9 +17,14 @@ rscript() {
             hostname=$1 ; shift ;;
     esac
     # Trace callers script if we ourselves are being traced
-    case $- in
-        *x* ) _set_x='set -x' ;;
-    esac
+    if ${debug-false}
+    then
+        _set_x='set -x'
+    else
+        case $- in
+            *x* ) _set_x='set -x' ;;
+        esac
+    fi
 
     rexec $hostname /usr/bin/ksh93 -s "$@" <<EOS | _transfer_exit_code
 set - "$@"  # Only reasonable way to pass through function arguments
