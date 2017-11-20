@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 
 set -e
 set -u
@@ -24,8 +24,12 @@ function -setup-colors {
     readonly preset
 }
 
-function -enable-debug {
-    set -x
+function -maybe-debug {
+    case $debug in
+    0 ) debug=false ;;
+    1 ) debug=true ;;
+    * ) debug=true ; set -x ;;
+    esac
 }
 
 function -print-usage {
@@ -50,7 +54,7 @@ EOH
 }
 
 [[ -t 1 ]] && color=true || color=false
-debug=false
+let debug=0 || true
 print=echo
 pwd=pwd
 verbose=false
@@ -60,7 +64,7 @@ do
     case $opt in
     c | color ) color=true ;;
     no-color ) color=false ;;
-    d | debug ) -enable-debug ;;
+    d | debug ) let ++debug ;;
     h | help ) -print-help ; exit 0 ;;
     n | dry-run ) print="echo $print" pwd="echo $pwd" ;;
     v | verbose ) verbose=true ;;
@@ -75,6 +79,7 @@ case $# in
 esac
 
 -setup-colors
+-maybe-debug
 
 $print "${pgreen}I am green.${preset}"
 $pwd
