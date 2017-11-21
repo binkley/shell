@@ -39,7 +39,7 @@ EOU
 function enable_debug()
 {
     export debug=true
-    export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+    export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
     set -o pipefail
     set -o xtrace
     echo "$0: Called with $@"

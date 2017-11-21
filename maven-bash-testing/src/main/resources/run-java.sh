@@ -3,7 +3,7 @@
 function enable_debug()
 {
     export debug=true
-    export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+    export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
     set -o xtrace
 }
 
@@ -17,8 +17,8 @@ set -o pipefail
 
 job_file=META-INF/jobs
 
-trap 'rm -f $all_jobs' EXIT
 all_jobs=$(mktemp)
+trap 'rm -f $all_jobs' EXIT
 
 rootdir=$(dirname $0)
 for jar in $rootdir/lib/*.jar
@@ -48,7 +48,7 @@ function format_job()
 function print_help()
 {
     print_usage
-    cat <<EOH
+    cat <<'EOH'
 
 Flags:
   -J-*           JVM flags prefixed with J

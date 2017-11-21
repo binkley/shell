@@ -16,9 +16,9 @@
         <jar.skipIfEmpty>true</jar.skipIfEmpty>
         <java.charset>UTF-8</java.charset>
         <java.version>8</java.version>
-        <jopt-simple.version>5.0.3</jopt-simple.version>
+        <jopt-simple.version>5.0.4</jopt-simple.version>
         <main.class>hm.binkley.Main</main.class>
-        <maven-assembly-plugin.version>3.0.0</maven-assembly-plugin.version>
+        <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
         <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
         <project.build.outputEncoding>${java.charset}</project.build.outputEncoding>
@@ -27,6 +27,7 @@
         <project.reporting.sourceEncoding>${java.charset}</project.reporting.sourceEncoding>
         <skipITs>${skipTests}</skipITs>
         <surefire.printSummary>false</surefire.printSummary>
+        <versions-maven-plugin.phase>validate</versions-maven-plugin.phase>
         <versions-maven-plugin.version>2.3</versions-maven-plugin.version>
         <!-- @formatter:on -->
     </properties>
@@ -56,17 +57,15 @@
                         file://${session.executionRootDirectory}/maven-version-rules.xml
                     </rulesUri>
                 </configuration>
-                <!--
                 <executions>
                     <execution>
                         <id>update-dependencies</id>
-                        <phase>validate</phase>
+                        <phase>${versions-maven-plugin.phase}</phase>
                         <goals>
                             <goal>update-properties</goal>
                         </goals>
                     </execution>
                 </executions>
-                -->
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
