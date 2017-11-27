@@ -5,6 +5,17 @@ export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 set -e
 set -o pipefail
 
+function dump-args {
+    printf "\e[3m"
+    cat <<EOD
+head_args: $head_args
+curl_args: ${curl_args[@]}
+jq_args: ${jq_args[@]}
+
+EOD
+    printf "\e[0m"
+}
+
 curl_args=()
 for arg
 do
@@ -21,7 +32,27 @@ do
     esac
 done
 
-jq_args=("${@-.}")
+let debug=0 || true
+jq_args=()
+for arg
+do
+    case "$arg" in
+    -d ) let ++debug ; shift ;;
+    * ) jq_args=("${jq_args[@]}" "$arg") ; shift ;;
+    esac
+done
+
+if (( 0 < $# ))
+then
+    echo "$0: BUG: Unprocessed args: $@" >&2
+    exit 2
+fi
+
+case $debug in
+0 ) debug=false ;;
+1 ) debug=true ; dump-args >&2 ;;
+* ) debug=true ; dump-args >&2 ; set -x ;;
+esac
 
 # TODO: Heuristic, need to parse JQ args for options
 color=false
@@ -51,7 +82,7 @@ curl -s $head_args "${curl_args[@]}" | tr -d '\r' | {
     else
         if ((0 < $#))
         then
-            echo "$0: jq arguments for non-JSON response: $@" >&2
+            echo "$0: jq arguments for non-JSON response: ${jq_args[@]}" >&2
             exit 2
         fi
 
