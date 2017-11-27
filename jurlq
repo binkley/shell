@@ -1,5 +1,15 @@
 #!/bin/bash
 
+command -v curl >/dev/null 2>&1 || {
+    echo "$0: curl: command not found" >&2
+    exit 127
+}
+
+command -v jq >/dev/null 2>&1 || {
+    echo "$0: jq: command not found" >&2
+    exit 127
+}
+
 export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 
 set -e
