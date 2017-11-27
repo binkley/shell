@@ -23,11 +23,23 @@ done
 
 jq_args=("${@-.}")
 
+# TODO: Heuristic, need to parse JQ args for options
+color=false
+[[ -t 1 ]] && color=true
+[[ "${jq_args[@]}" =~ -([a-z][A-Z])*C([a-z][A-Z])* ]] && color=true
+[[ "${jq_args[@]}" =~ -([a-z][A-Z])*M([a-z][A-Z])* ]] && color=false
+
 curl -s $head_args "${curl_args[@]}" | tr -d '\r' | {
     json=false
+    first=$color
     shopt -s nocasematch
     while read line
     do
+        $first && {
+            first=false
+            printf "\e[1m$line\e[0m\n" "$line"
+            continue
+        }
         [[ -z "$line" ]] && { echo ; break ; }
         [[ "$line" =~ ^Content-Type:.*json ]] && json=true
         printf "%s\n" "$line"
