@@ -15,6 +15,22 @@ export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 set -e
 set -o pipefail
 
+function print-help {
+    cat <<EOH
+Usage: $0 [CURL-OPTION]... CURL-ARG... [-- [JQ-OPTION]... [JQ-ARG]...]
+Fetches a URL with \`curl' and processes the output with \`jq'.
+
+Options:
+ -h, --help    Prints help and exits, including help for \`curl' and \`jq'
+ -g, --debug   Debugs this script; use a second time to trace (to use the
+                  \`-g' flag for \`curl', use \`--globoff')
+
+EOH
+    curl --help
+    echo
+    jq --help
+}
+
 function dump-args {
     printf "\e[3m"
     cat <<EOD
@@ -26,11 +42,14 @@ EOD
     printf "\e[0m"
 }
 
+let debug=0 || true
 curl_args=()
 for arg
 do
     case "$arg" in
     -- ) shift ; break ;;
+    -h | --help ) print-help ; exit 0 ;;
+    -g | --debug ) let ++debug ; shift ;;
     * ) curl_args=("${curl_args[@]}" "$arg") ; shift ;;
     esac
 done
@@ -42,21 +61,7 @@ do
     esac
 done
 
-let debug=0 || true
-jq_args=()
-for arg
-do
-    case "$arg" in
-    -d ) let ++debug ; shift ;;
-    * ) jq_args=("${jq_args[@]}" "$arg") ; shift ;;
-    esac
-done
-
-if (( 0 < $# ))
-then
-    echo "$0: BUG: Unprocessed args: $@" >&2
-    exit 2
-fi
+jq_args=("$@")
 
 case $debug in
 0 ) debug=false ;;
