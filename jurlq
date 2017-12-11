@@ -28,7 +28,7 @@ Options:
 EOH
     curl --help
     echo
-    jq --help
+    jq --help | sed 's/^\t//'
 }
 
 function dump-args {
