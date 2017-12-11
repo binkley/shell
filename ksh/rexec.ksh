@@ -12,7 +12,7 @@ _transfer_exit_code() {
 rscript() {
     case $# in
         0 | 1 )
-            echo "$progname: BUG: Usage: rexec SCRIPT-NAME HOSTNAME [ARGS]..." >&2 ;;
+            echo "$progname: BUG: Usage: rscript SCRIPT-NAME HOSTNAME [ARGS]..." >&2 ;;
         * ) script_name=$1 ; shift
             hostname=$1 ; shift ;;
     esac
@@ -37,7 +37,15 @@ fail() {
 # Our hook to capture the exit code for rexec who dumbly swallows it
 trap 'rc=\$?; echo ^\$rc; exit \$rc' EXIT
 
-PS4='+$script_name:\$(( LINENO - 14 )) (\$SECONDS) '
+_trap() {
+    case \$2 in
+        EXIT ) \\trap "rc=\\\$? ; \$1 ; echo ^\\\$rc ; exit \\\$rc" ;;
+        * ) \\trap "\$@" ;;
+    esac
+}
+alias trap=_trap
+
+PS4='+$script_name:\$(( LINENO - 20 )) (\$SECONDS) '
 $_set_x
 
 # The callers script

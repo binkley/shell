@@ -29,7 +29,7 @@ case $debug in
     * ) debug=true ; set -x ;;
 esac
 
-. rexec.ksh
+. ./rexec.ksh
 
 script_name=My-Remote-Script
 
@@ -39,6 +39,7 @@ trap 'rm -f $tmpout $tmperr' EXIT
 
 rscript $script_name $hostname Katy <<'EOS' >$tmpout 2>$tmperr
 echo $#: $1
+trap 'echo In script trap' EXIT
 echo STDERR >&2
 fail 3
 EOS
