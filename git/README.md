@@ -36,7 +36,7 @@ have passed.  Each passing test cycle amends the WIP commit.
 
 _Accepting_ - When work is ready to share, "accepting" runs tests one last
 time (possibly more complete or expensive tests) before pushing, and starting
-a new WIP commit.
+a new, empty WIP commit.
 
 ### Subcommands
 
