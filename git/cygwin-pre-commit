@@ -53,6 +53,8 @@ function prep {
             dos2unix -q "$1"
             git add "$1"
         fi
+    else
+        bit='^'
     fi
     unchanged "$1" && bit="$bit#"
     echo "$1$bit"
