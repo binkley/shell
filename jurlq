@@ -61,7 +61,7 @@ do
     esac
 done
 
-jq_args=("$@")
+jq_args=("${@-.}")
 
 case $debug in
 0 ) debug=false ;;
