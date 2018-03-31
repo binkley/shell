@@ -2,9 +2,9 @@
 function set-java {
     local -a java_v
     local jdk v OPTIND
-    for jdk in /c/Program\ Files/Java/jdk*
+    for jdk in /cygdrive/c/Program\ Files/Java/jdk*
     do
-        jdk="${jdk/\/c\/Program\ Files\/Java\/jdk/}"
+        jdk="${jdk/\/cygdrive\/c\/Program\ Files\/Java\/jdk/}"
         v=${jdk#-}
         v=${v#1.}
         v=${v%%.*}
