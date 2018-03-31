@@ -1,0 +1,59 @@
+# Until jenv.be supports Cygwin
+function set-java {
+    local -a java_v
+    local jdk v OPTIND
+    for jdk in /c/Program\ Files/Java/jdk*
+    do
+        jdk="${jdk/\/c\/Program\ Files\/Java\/jdk/}"
+        v=${jdk#-}
+        v=${v#1.}
+        v=${v%%.*}
+        java_v[$v]=$jdk
+    done
+
+    local verbose=false
+    while getopts :hv opt
+    do
+        case $opt in
+        h ) cat <<EOH
+Usage: $FUNCNAME [-hv] VERSION
+
+Options:
+   -h   Print help and exit
+   -v   Verbose output
+
+Arguments:
+   VERSION   One of ${!java_v[@]}
+EOH
+            return 0 ;;
+        v ) verbose=true ;;
+        * ) echo "Usage: $FUNCNAME [-hv] VERSION" >&2 ; return 2 ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    case $# in
+    1 ) ;;
+    * ) echo "Usage: $FUNCNAME [-hv] VERSION" >&2 ; return 2 ;;
+    esac
+
+    if ! [[ ${java_v[$1]+foo} ]]
+    then
+        echo "$FUNCNAME: No such Java version: $1.  Try $FUNCNAME -h" >&2
+        return 2
+    fi
+
+    export JAVA_HOME='C:\Program Files\Java\jdk'${java_v[$1]}
+    for v in ${!java_v[@]}
+    do
+        case $v in
+        $1 ) ;;
+        * ) export PATH="${PATH//${java_v[$v]}/${java_v[$1]}}" ;;
+        esac
+    done
+
+    if $verbose
+    then
+        echo "$FUNCNAME: Updated JAVA_HOME and PATH for JDK to $v at $JAVA_HOME"
+    fi
+}

@@ -20,6 +20,7 @@ Helpful shell scripts and programs.
 * [svn-recommit](svn-recommit/README.md) - Reedit an SVN commit message
 * [starter](starter/README.md) - Starter script for writing commands in BASH
 * [unicode](unicode/README.md) - Work with UNICODE data
+* [workaround-for-jenv-on-cygwin](workaround-for-jenv-on-cygwin) - Until jenv.be supports Cygwin
 
 ## Building
 
