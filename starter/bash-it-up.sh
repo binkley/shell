@@ -9,6 +9,29 @@ set -o pipefail
 readonly progname="${0##*/}"
 readonly version=0
 
+fmt=fmt
+function -setup-terminal {
+    if [[ ! -t 1 ]]
+    then
+        readonly fmt
+        return 0
+    fi
+
+    : "${LINES:=$(tput lines)}"
+    export LINES
+    : "${COLUMNS:=$(tput cols)}"
+    export COLUMNS
+
+    local -r fmt_width=$((COLUMNS - 5))
+    if (( fmt_width < 10 ))
+    then
+        echo "$progname: Your terminal is too narrow." >&2
+        exit 2
+    fi
+    fmt="fmt -w $fmt_width"
+    readonly fmt
+}
+
 function -setup-colors {
     local -r ncolors=$(tput colors)
 
@@ -33,8 +56,8 @@ function -maybe-debug {
 }
 
 function -print-usage {
-    cat <<EOU
-Usage: $progname [-c|--color|--no-color][-d|--debug][-h|--help][-n|--dry-run][-v|--verbose]
+    cat <<EOU | $fmt
+Usage: $progname [-c|--color|--no-color] [-d|--debug] [-h|--help] [-n|--dry-run] [-v|--verbose]
 EOU
 }
 
@@ -52,6 +75,8 @@ Flags:
   -v, --verbose   Verbose output
 EOH
 }
+
+-setup-terminal
 
 [[ -t 1 ]] && color=true || color=false
 let debug=0 || true
