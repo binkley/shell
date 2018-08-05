@@ -57,7 +57,7 @@ function -maybe-debug {
 
 function -print-usage {
     cat <<EOU | $fmt
-Usage: $progname [-c|--color|--no-color] [-d|--debug] [-h|--help] [-n|--dry-run] [-v|--verbose]
+Usage: $progname [-c|--color|--no-color] [-d|--debug] [-h|--help] [-n|--dry-run] [-v|--verbose] [${tasks[@]}]
 EOU
 }
 
@@ -73,8 +73,46 @@ Flags:
   -h, --help      Print help and exit normally
   -n, --dry-run   Do nothing (dry run); echo actions
   -v, --verbose   Verbose output
+
+Tasks:
+EOH
+
+    for task in "${tasks[@]}"
+    do
+        local help_fn="-$task-help"
+        echo "  * $task"
+        if declare -F -- $help_fn >/dev/null 2>&1
+        then
+            $help_fn | -format-help
+        fi
+    done
+}
+
+function -format-help {
+   $fmt | sed 's/^/       /'
+}
+
+function greet-greenly {
+    $print "${pgreen}I am green.${preset}"
+}
+
+function -greet-greenly-help {
+    cat <<EOH
+It's good to be green.
 EOH
 }
+
+function where-am-i {
+    echo $pwd
+}
+
+function -where-am-i-help {
+    cat <<EOH
+It's good to know where you are.
+EOH
+}
+
+readonly tasks=($(declare -F | cut -d' ' -f3 | grep -v '^-' | sort))
 
 -setup-terminal
 
@@ -97,14 +135,33 @@ do
     esac
 done
 shift $((OPTIND - 1))
+readonly print
+readonly verbose
 
 case $# in
 0 ) ;;
-* ) -print-usage >&2 ; exit 2 ;;
+* ) # TODO: This is ugly code
+    cmd="$1"
+    found=false
+    for task in "${tasks[@]}"
+    do
+        [[ "$cmd" == "$task" ]] && found=true
+    done
+
+    if ! $found
+    then
+        echo "$progname: $cmd: Unknown command." >&2
+        echo "Try '$progname --help' for more information." >&2
+        -print-usage >&2
+        exit 2
+    fi
+    ;;
 esac
 
 -setup-colors
 -maybe-debug
+readonly debug
 
-$print "${pgreen}I am green.${preset}"
-$pwd
+echo 'Try help, maybe?'
+
+"$@"
