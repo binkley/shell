@@ -1,5 +1,7 @@
 #!/bin/bash
 
+shopt -s nocasematch
+
 command -v curl >/dev/null 2>&1 || {
     echo "$0: curl: command not found" >&2
     exit 127
@@ -92,13 +94,13 @@ curl -s $head_args "${curl_args[@]}" | tr -d '\r' | {
             continue
         }
         [[ -z "$line" ]] && { echo ; break ; }
-        [[ "$line" =~ ^Content-Type:.*json ]] && json=true
+        [[ "$line" =~ ^Content-Type:.*json.* ]] && json=true
         printf "%s\n" "$line"
     done
 
     if $json
     then
-        jq "${jq_args[@]}"
+        jq -C "${jq_args[@]}"
     else
         if ((0 < $#))
         then
