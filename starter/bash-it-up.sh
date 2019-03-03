@@ -69,7 +69,7 @@ function -print-help {
 Flags:
   -c, --color     Print in color
       --no-color  Print without color
-  -d, --debug     Print debug output while running
+  -d, --debug     Print debug output while running.  Repeat for more output
   -h, --help      Print help and exit normally
   -n, --dry-run   Do nothing (dry run); echo actions
   -v, --verbose   Verbose output
