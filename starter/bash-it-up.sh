@@ -92,6 +92,15 @@ function -format-help {
    $fmt | sed 's/^/       /'
 }
 
+function -find-in-tasks {
+    local cmd="$1"
+    for task in "${tasks[@]}"
+    do
+        [[ "$cmd" == "$task" ]] && return 0
+    done
+    return 1
+}
+
 function greet-greenly {
     $print "${pgreen}I am green.${preset}"
 }
@@ -140,15 +149,8 @@ readonly verbose
 
 case $# in
 0 ) ;;
-* ) # TODO: This is ugly code
-    cmd="$1"
-    found=false
-    for task in "${tasks[@]}"
-    do
-        [[ "$cmd" == "$task" ]] && found=true
-    done
-
-    if ! $found
+* ) cmd="$1"
+    if ! -find-in-tasks "$cmd"
     then
         echo "$progname: $cmd: Unknown command." >&2
         echo "Try '$progname --help' for more information." >&2
