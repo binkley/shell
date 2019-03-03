@@ -9,7 +9,13 @@ set -o pipefail
 readonly progname="${0##*/}"
 readonly version=0
 
+: "${LINES:=$(tput lines)}"
+export LINES
+: "${COLUMNS:=$(tput cols)}"
+export COLUMNS
+
 fmt=fmt
+readonly fmt_width=$((COLUMNS - 5))
 function -setup-terminal {
     if [[ ! -t 1 ]]
     then
@@ -17,12 +23,6 @@ function -setup-terminal {
         return 0
     fi
 
-    : "${LINES:=$(tput lines)}"
-    export LINES
-    : "${COLUMNS:=$(tput cols)}"
-    export COLUMNS
-
-    local -r fmt_width=$((COLUMNS - 5))
     if (( fmt_width < 10 ))
     then
         echo "$progname: Your terminal is too narrow." >&2
@@ -89,7 +89,7 @@ EOH
 }
 
 function -format-help {
-   $fmt | sed 's/^/       /'
+    $fmt -w $((fmt_width - 8)) | sed 's/^/       /'
 }
 
 function -find-in-tasks {
