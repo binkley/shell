@@ -10,4 +10,5 @@ BASH.
 * Debugging script itself
 * Dry-run example
 * Disable color if in a pipe
+* Segregated tasks (sub-commands) into separate files
 * Sample tasks (sub-commands) with individual help

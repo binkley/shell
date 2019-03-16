@@ -19,15 +19,17 @@ readonly fmt_width=$((COLUMNS - 5))
 function -setup-terminal {
     if [[ ! -t 1 ]]
     then
-        readonly fmt
+        readonly fmt=cat
         return 0
     fi
 
     if (( fmt_width < 10 ))
     then
         echo "$progname: Your terminal is too narrow." >&2
-        exit 2
+        readonly fmt=cat
+        return 0
     fi
+
     fmt="fmt -w $fmt_width"
     readonly fmt
 }
@@ -101,25 +103,10 @@ function -find-in-tasks {
     return 1
 }
 
-function greet-greenly {
-    $print "${pgreen}I am green.${preset}"
-}
-
-function -greet-greenly-help {
-    cat <<EOH
-It's good to be green.
-EOH
-}
-
-function where-am-i {
-    echo $pwd
-}
-
-function -where-am-i-help {
-    cat <<EOH
-It's good to know where you are.
-EOH
-}
+for f in f/*.sh
+do
+    source $f
+done
 
 readonly tasks=($(declare -F | cut -d' ' -f3 | grep -v '^-' | sort))
 
