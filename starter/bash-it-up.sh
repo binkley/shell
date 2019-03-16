@@ -57,7 +57,7 @@ function -maybe-debug {
 
 function -print-usage {
     cat <<EOU | $fmt
-Usage: $progname [-c|--color|--no-color] [-d|--debug] [-h|--help] [-n|--dry-run] [-v|--verbose] [${tasks[@]}]
+Usage: $progname [OPTION]... [TASK]...
 EOU
 }
 
@@ -66,7 +66,7 @@ function -print-help {
     -print-usage
     cat <<EOH
 
-Flags:
+Options:
   -c, --color     Print in color
       --no-color  Print without color
   -d, --debug     Print debug output while running.  Repeat for more output
