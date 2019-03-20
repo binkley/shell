@@ -103,7 +103,19 @@ function -find-in-tasks {
     return 1
 }
 
-for f in f/*.sh
+function -check-cmd {
+    local cmd="$1"
+
+    if ! -find-in-tasks "$cmd"
+    then
+        echo "$progname: $cmd: Unknown command." >&2
+        echo "Try '$progname --help' for more information." >&2
+        -print-usage >&2
+        exit 2
+    fi
+}
+
+for f in functions/*.sh
 do
     source $f
 done
@@ -134,9 +146,14 @@ shift $((OPTIND - 1))
 readonly print
 readonly verbose
 
-case $# in
-0 ) ;;
-* ) cmd="$1"
+-setup-colors
+-maybe-debug
+readonly debug
+
+echo 'Try help, maybe?'
+
+for cmd
+do
     if ! -find-in-tasks "$cmd"
     then
         echo "$progname: $cmd: Unknown command." >&2
@@ -144,13 +161,6 @@ case $# in
         -print-usage >&2
         exit 2
     fi
-    ;;
-esac
-
--setup-colors
--maybe-debug
-readonly debug
-
-echo 'Try help, maybe?'
+done
 
 "$@"
