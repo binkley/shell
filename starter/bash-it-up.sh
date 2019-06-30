@@ -71,12 +71,13 @@ function -print-help() {
   cat <<EOH
 
 Options:
-  -c, --color     Print in color
-      --no-color  Print without color
-  -d, --debug     Print debug output while running.  Repeat for more output
-  -h, --help      Print help and exit normally
-  -n, --dry-run   Do nothing (dry run); echo actions
-  -v, --verbose   Verbose output
+  -c, --color          Print in color
+      --no-color       Print without color
+  -d, --debug          Print debug output while running.  Repeat for more output
+  -e, --prefix=PREFIX  Prefix dry run output (default '> ')
+  -h, --help           Print help and exit normally
+  -n, --dry-run        Do nothing (dry run); echo actions
+  -v, --verbose        Verbose output
 
 Tasks:
 EOH
@@ -125,12 +126,14 @@ readonly tasks
 
 [[ -t 1 ]] && color=true || color=false
 ((debug = 0)) || true
+prefix='> '
 print=echo
 pwd=pwd
 verbose=false
-while getopts :cdhnv-: opt; do
+while getopts :cdE:hnv-: opt; do
   [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
   case $opt in
+  E | prefix) prefix="$OPTARG" ;;
   c | color) color=true ;;
   no-color) color=false ;;
   d | debug) ((++debug)) ;;
@@ -138,7 +141,7 @@ while getopts :cdhnv-: opt; do
     -print-help
     exit 0
     ;;
-  n | dry-run) print="echo > $print" pwd="echo > $pwd" ;;
+  n | dry-run) print="echo $prefix$print" pwd="echo $prefix$pwd" ;;
   v | verbose) verbose=true ;;
   *)
     -print-usage >&2
