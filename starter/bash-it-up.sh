@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2059,SC2209,SC2214,SC2215
+
 export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 
 set -e
@@ -82,7 +84,7 @@ EOH
   for task in "${tasks[@]}"; do
     local help_fn="-$task-help"
     echo "  * $task"
-    if declare -F -- $help_fn >/dev/null 2>&1; then
+    if declare -F -- "$help_fn" >/dev/null 2>&1; then
       $help_fn | -format-help
     fi
   done
@@ -112,24 +114,26 @@ function -check-cmd() {
 }
 
 for f in "${0%/*}/functions"/*.sh; do
-  source $f
+  # shellcheck source=functions
+  source "$f"
 done
 
-readonly tasks=($(declare -F | cut -d' ' -f3 | grep -v '^-' | sort))
+mapfile -t tasks < <(declare -F | cut -d' ' -f3 | grep -v '^-' | sort)
+readonly tasks
 
 -setup-terminal
 
 [[ -t 1 ]] && color=true || color=false
-let debug=0 || true
+((debug = 0)) || true
 print=echo
 pwd=pwd
 verbose=false
 while getopts :cdhnv-: opt; do
-  [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
+  [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
   case $opt in
   c | color) color=true ;;
   no-color) color=false ;;
-  d | debug) let ++debug ;;
+  d | debug) ((++debug)) ;;
   h | help)
     -print-help
     exit 0
