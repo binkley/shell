@@ -18,9 +18,9 @@
         <java.version>8</java.version>
         <jopt-simple.version>5.0.4</jopt-simple.version>
         <main.class>hm.binkley.Main</main.class>
-        <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
-        <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
-        <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
+        <maven-assembly-plugin.version>3.1.1</maven-assembly-plugin.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
         <project.build.outputEncoding>${java.charset}</project.build.outputEncoding>
         <project.build.sourceEncoding>${java.charset}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${java.charset}</project.reporting.outputEncoding>
@@ -28,7 +28,7 @@
         <skipITs>${skipTests}</skipITs>
         <surefire.printSummary>false</surefire.printSummary>
         <versions-maven-plugin.phase>validate</versions-maven-plugin.phase>
-        <versions-maven-plugin.version>2.3</versions-maven-plugin.version>
+        <versions-maven-plugin.version>2.7</versions-maven-plugin.version>
         <!-- @formatter:on -->
     </properties>
 
