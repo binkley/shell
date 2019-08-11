@@ -161,16 +161,7 @@ readonly verbose
 -maybe-debug
 readonly debug
 
-commands=($(make -f - "$@" <<EOM
-all: greet-greenly
-
-greet-greenly: where-am-i
-	@echo greet-greenly
-
-where-am-i:
-	@echo where-am-i
-EOM
-))
+commands=($(make -f functions/Runfile "$@"))
 
 for cmd in "${commands[@]}"; do
   if ! -find-in-tasks "$cmd"; then

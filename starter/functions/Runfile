@@ -1,0 +1,7 @@
+all: greet-greenly
+
+greet-greenly: where-am-i
+	@echo greet-greenly
+
+where-am-i:
+	@echo where-am-i
