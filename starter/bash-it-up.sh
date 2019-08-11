@@ -129,6 +129,7 @@ readonly tasks
 prefix='> '
 print=echo
 pwd=pwd
+run=  # Nothing, unless dry run
 verbose=false
 while getopts :cdE:hnv-: opt; do
   [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
@@ -141,7 +142,10 @@ while getopts :cdE:hnv-: opt; do
     -print-help
     exit 0
     ;;
-  n | dry-run) print="echo $prefix$print" pwd="echo $prefix$pwd" ;;
+  n | dry-run)
+    print="echo $prefix$print" pwd="echo $prefix$pwd"
+    run=echo
+    ;;
   v | verbose) verbose=true ;;
   *)
     -print-usage >&2
@@ -157,15 +161,23 @@ readonly verbose
 -maybe-debug
 readonly debug
 
-echo 'Try help, maybe?'
+commands=($(make -f - "$@" <<EOM
+all: greet-greenly
 
-for cmd; do
+greet-greenly: where-am-i
+	@echo greet-greenly
+
+where-am-i:
+	@echo where-am-i
+EOM
+))
+
+for cmd in "${commands[@]}"; do
   if ! -find-in-tasks "$cmd"; then
     echo "$progname: $cmd: Unknown command." >&2
     echo "Try '$progname --help' for more information." >&2
     -print-usage >&2
     exit 2
   fi
+  $run "$cmd"
 done
-
-"$@"
