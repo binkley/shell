@@ -11,6 +11,8 @@ Usage: ${0##*/} [-houv] URL FILE [...]
 Usage: ${0##*/} -i [-houv] [--] [...]
 Runs a local copy of a BASH script fetched from the Internet, caching based on ETag.
 
+WARNING: Do not run scripts from the Internet without close inspection.
+
 With URL and FILE, wrap the rest of the command line, otherwise run in place.
 
   -h, --help       print help and exit normally
