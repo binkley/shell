@@ -8,7 +8,7 @@ man:
 check:
 	@diff --color=auto \
 		<(./run-tests t | grep 'Summary: .* PASSED, .* FAILED, .* ERRORED') \
-		<(echo 'Summary: 21 PASSED, 0 FAILED, 0 ERRORED')
+		<(echo 'Summary: 22 PASSED, 0 FAILED, 0 ERRORED')
 
 clean:
 	@for page in man1/*.ronn ; do rm -f $${page%.ronn} ; done

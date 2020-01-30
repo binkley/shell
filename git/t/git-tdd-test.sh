@@ -25,7 +25,7 @@ SCENARIO 'TDD test without pull' \
     GIVEN a-cloned-repo-with-commits \
     WHEN tdd-init \
         AND a-change-to-existing \
-        AND pull-disabled \
+        AND pull-before-test-disabled \
         AND tdd-test \
     THEN happy-path \
         AND changes-persist \
@@ -34,7 +34,7 @@ SCENARIO 'TDD test without pull' \
 SCENARIO 'TDD test without pull on new change' \
     GIVEN a-cloned-repo-with-commits \
     WHEN tdd-init \
-        AND pull-disabled \
+        AND pull-before-test-disabled \
         AND this-change Fred \
         AND this-change-added Fred \
         AND tdd-test \
@@ -58,3 +58,13 @@ SCENARIO 'TDD test with no changes' \
         AND tdd-test \
     THEN happy-path \
         AND work-in-progress 0
+
+SCENARIO 'TDD test fails should revert' \
+    GIVEN a-cloned-repo-with-commits \
+    WHEN tdd-init \
+        AND revert-on-fail-enabled \
+        AND a-change-to-existing \
+        AND failing-tests \
+        AND tdd-test \
+    THEN sad-path \
+        AND the-repo-is-clean

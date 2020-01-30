@@ -68,8 +68,9 @@ function test-number() {
 function show-config() {
     local initial="$1"
     cat <<EOM
-Initial commit message (git config tdd.initMessage): $initial
-Pull before test (git config tdd.pullBeforeTest): true
+Initial commit message (git config --local tdd.initMessage): $initial
+Pull before test (git config --local tdd.pullBeforeTest): $(config pullBeforeTest)
+Revert on fail (git config --local tdd.revertOnFail): $(config revertOnFail)
 Test command (git config --local tdd.testCommand): $(config testCommand)
 Accept command (git config --local tdd.acceptCommand): $(config acceptCommand)
 EOM
@@ -177,6 +178,15 @@ function _should-pull-before-test() {
     $(config --bool pullBeforeTest true)
 }
 
+function _revert-changes() {
+    echo "$progname: Tests failed; reverting changes."
+    git reset --quiet --hard
+}
+
+function _should-revert-on-fail() {
+    $(config --bool revertOnFail false)
+}
+
 function _are-there-changes() {
     ! git diff-index --quiet HEAD -- # invert
 }
@@ -199,7 +209,12 @@ function tdd-test() {
     _has-upstream &&
         _should-pull-before-test &&
         _update-from-upstream
-    $(config testCommand)
+    $(config testCommand) || {
+        local test_code=$?
+        _should-revert-on-fail &&
+            _revert-changes
+        return $test_code
+    }
     next=$(($(test-number) + 1))
     git commit --quiet -a --amend --no-edit --allow-empty
     # TODO: Cannot distinguish 'Overwriting existing notes' from real error
