@@ -18,7 +18,7 @@
         <java.version>8</java.version>
         <jopt-simple.version>5.0.4</jopt-simple.version>
         <main.class>hm.binkley.Main</main.class>
-        <maven-assembly-plugin.version>3.1.1</maven-assembly-plugin.version>
+        <maven-assembly-plugin.version>3.2.0</maven-assembly-plugin.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.2.1</maven-shade-plugin.version>
         <project.build.outputEncoding>${java.charset}</project.build.outputEncoding>
