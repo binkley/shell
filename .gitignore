@@ -1,5 +1,5 @@
 *.1
-*.iml
+/.idea/
+/*.iml
 .kobalt/
-/.idea
 target/
