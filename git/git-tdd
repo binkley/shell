@@ -4,12 +4,12 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 set -e
 set -o pipefail
 
-unset CDPATH  # Trouble-maker
+unset CDPATH # Trouble-maker
 
-function progdir {
+function progdir() {
     case $0 in
-        */* ) realpath ${0%/*} ;;
-        * ) echo $PWD ;;
+    */*) realpath ${0%/*} ;;
+    *) echo $PWD ;;
     esac
 }
 
@@ -17,16 +17,16 @@ readonly progname=${0##*/}
 readonly progdir=$(progdir)
 trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed." ; exit $r' EXIT
 
-function usage {
+function usage() {
     echo "Usage: $progname <help|init|diff|status|test|accept>"
 }
 
-function tdd-help {
+function tdd-help() {
     export MANPATH="$progdir:$MANPATH"
     exec man $progname
 }
 
-function required {
+function required() {
     cat >&2 <<EOM
 $progname: Missing git config: $1
 Try \`git config --local $1 <value>\` to set $1 for this repository.
@@ -34,14 +34,16 @@ EOM
     exit 2
 }
 
-function config {
+function config() {
     local opts=(--get)
-    while (( 0 < $# ))
-    do
+    while ((0 < $#)); do
         case $1 in
-            --bool ) opts=("${opts[@]}" $1) ;;
-            -* ) echo "$progname: BUG" >&2 ; exit 3 ;;
-            * ) break ;;
+        --bool) opts=("${opts[@]}" $1) ;;
+        -*)
+            echo "$progname: BUG" >&2
+            exit 3
+            ;;
+        *) break ;;
         esac
         shift
     done
@@ -49,21 +51,21 @@ function config {
     git config "${opts[@]}" $config 2>/dev/null || echo "${2-required $config}"
 }
 
-function tdd-status {
+function tdd-status() {
     _require-init
     git log -1 --notes=tdd "$@"
 }
 
-function show-notes {
+function show-notes() {
     git notes --ref=tdd "$@"
 }
 
-function test-number {
-    git log -1 --notes=tdd --format=%N 2>/dev/null \
-        | sed '/^$/d'
+function test-number() {
+    git log -1 --notes=tdd --format=%N 2>/dev/null |
+        sed '/^$/d'
 }
 
-function show-config {
+function show-config() {
     local initial="$1"
     cat <<EOM
 Initial commit message (git config tdd.initMessage): $initial
@@ -73,43 +75,47 @@ Accept command (git config --local tdd.acceptCommand): $(config acceptCommand)
 EOM
 }
 
-function _has-init {
+function _has-init() {
     [[ -n "$(test-number)" ]]
 }
 
-function _require-init {
-    if ! _has-init
-    then
+function _require-init() {
+    if ! _has-init; then
         echo "$progname: TDD not initialized (try 'git tdd init')" >&2
         exit 2
     fi
 }
 
-function tdd-init {
+function tdd-init() {
     local quiet=false
-    while (( 0 < $# ))
-    do
+    while ((0 < $#)); do
         case $1 in
-            --accept-command )
-                git config --local tdd.acceptCommand "$2"
-                shift ;;
-            --help ) usage ; exit 0 ;;
-            -q | --quiet ) quiet=true ;;
-            --test-command )
-                git config --local tdd.testCommand "$2"
-                shift ;;
-            * ) usage >&2 ; exit 2 ;;
+        --accept-command)
+            git config --local tdd.acceptCommand "$2"
+            shift
+            ;;
+        --help)
+            usage
+            exit 0
+            ;;
+        -q | --quiet) quiet=true ;;
+        --test-command)
+            git config --local tdd.testCommand "$2"
+            shift
+            ;;
+        *)
+            usage >&2
+            exit 2
+            ;;
         esac
         shift
     done
-    if _has-init
-    then
+    if _has-init; then
         echo "$progname: TDD already initialized" >&2
         exit 2
     fi
     initial="$(config initMessage WIP)"
-    if ${FIRST_TIME-true}
-    then
+    if ${FIRST_TIME-true}; then
         $quiet || show-config "$initial"
         git stash --quiet
         git commit --quiet --allow-empty -m "$initial"
@@ -120,12 +126,17 @@ function tdd-init {
     show-notes add -m 0
 }
 
-function tdd-diff {
-    while (( 0 < $# ))
-    do
+function tdd-diff() {
+    while ((0 < $#)); do
         case $1 in
-            --help ) usage ; exit 0 ;;
-            * ) usage >&2 ; exit 2 ;;
+        --help)
+            usage
+            exit 0
+            ;;
+        *)
+            usage >&2
+            exit 2
+            ;;
         esac
         shift
     done
@@ -147,11 +158,11 @@ function tdd-diff {
     } | $(git var GIT_PAGER)
 }
 
-function _has-upstream {
+function _has-upstream() {
     git remote get-url upstream >/dev/null 2>&1
 }
 
-function _update-from-upstream {
+function _update-from-upstream() {
     # Support older git without `git pull --autostash`
     # See http://stackoverflow.com/questions/30208928/can-git-pull-automatically-stash-and-pop-pending-changes
     # TODO: Support even older git (see http://stackoverflow.com/a/31575425)
@@ -162,54 +173,65 @@ function _update-from-upstream {
     [[ -n "$stashed_commit" ]] && git stash apply --quiet $stashed_commit
 }
 
-function _should-pull-before-test {
+function _should-pull-before-test() {
     $(config --bool pullBeforeTest true)
 }
 
 function _are-there-changes() {
-    ! git diff-index --quiet HEAD --  # invert
+    ! git diff-index --quiet HEAD -- # invert
 }
 
-function tdd-test {
-    while (( 0 < $# ))
-    do
+function tdd-test() {
+    while ((0 < $#)); do
         case $1 in
-            --help ) usage ; exit 0 ;;
-            * ) usage >&2 ; exit 2 ;;
+        --help)
+            usage
+            exit 0
+            ;;
+        *)
+            usage >&2
+            exit 2
+            ;;
         esac
     done
     _require-init
     _are-there-changes || return 0
-    _has-upstream \
-        && _should-pull-before-test \
-        && _update-from-upstream
+    _has-upstream &&
+        _should-pull-before-test &&
+        _update-from-upstream
     $(config testCommand)
-    next=$(( $(test-number) + 1 ))
+    next=$(($(test-number) + 1))
     git commit --quiet -a --amend --no-edit --allow-empty
     # TODO: Cannot distinguish 'Overwriting existing notes' from real error
     show-notes add -f -m $next 2>/dev/null
 }
 
-function tdd-accept {
-    while (( 0 < $# ))
-    do
+function tdd-accept() {
+    while ((0 < $#)); do
         case $1 in
-            --help ) usage ; exit 0 ;;
-            --message | -m ) local message="$2" ; shift 2 ;;
-            * ) usage >&2 ; exit 2 ;;
+        --help)
+            usage
+            exit 0
+            ;;
+        --message | -m)
+            local message="$2"
+            shift 2
+            ;;
+        *)
+            usage >&2
+            exit 2
+            ;;
         esac
     done
     _require-init
     $(config acceptCommand)
-    local -r next=$(( $(test-number) + 1 ))
-    if [[ -n "$message" ]]
-    then
+    local -r next=$(($(test-number) + 1))
+    if [[ -n "$message" ]]; then
         git commit --quiet -a --amend -m "$message"
     else
         git commit --quiet -a --amend
     fi
-    if _has-upstream && ! git push --quiet
-    then
+    if _has-upstream && ! git push --quiet; then
         # Recover from push hook failure
         local -r rc=$?
         git commit --amend -m WIP
@@ -219,20 +241,28 @@ function tdd-accept {
     FIRST_TIME=false tdd-init
 }
 
-while (( 0 < $# ))
-do
+while ((0 < $#)); do
     case $1 in
-        --help ) tdd-help ;;
-        -* ) usage >&2 ; exit 2 ;;
-        * ) break ;;
+    --help) tdd-help ;;
+    -*)
+        usage >&2
+        exit 2
+        ;;
+    *) break ;;
     esac
 done
 
 case $# in
-    0 ) usage >&2 ; exit 2 ;;
+0)
+    usage >&2
+    exit 2
+    ;;
 esac
 
 case $1 in
-    help | init | status | diff | test | accept ) tdd-"$@" ;;
-    * ) usage >&2 ; exit 2 ;;
+help | init | status | diff | test | accept) tdd-"$@" ;;
+*)
+    usage >&2
+    exit 2
+    ;;
 esac

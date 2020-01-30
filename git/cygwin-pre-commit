@@ -6,36 +6,32 @@ set -e
 set -o pipefail
 
 # Inside a commit, silent; from command line, use a flag to silence
-if [[ -n "$GIT_AUTHOR_NAME" ]]
-then
+if [[ -n "$GIT_AUTHOR_NAME" ]]; then
     silent=true
 else
     silent=false
 fi
 
-function echo {
+function echo() {
     $silent || builtin echo "$@"
 }
 
-function show-help {
+function show-help() {
     echo "Usage: ${0##*/} [-h|--help][-s|--silent] [FILE]..."
 }
 
-function unchanged {
+function unchanged() {
     git diff-index --quiet HEAD -- "$1"
 }
 
-function prep {
+function prep() {
     local bit=''
     local file="$(file "$1")"
-    if [[ $file =~ 'directory' ]]
-    then
+    if [[ $file =~ 'directory' ]]; then
         bit='/'
-    elif [[ $file =~ 'symbolic link' ]]
-    then
+    elif [[ $file =~ 'symbolic link' ]]; then
         bit='@'
-    elif [[ $file =~ executable || $file =~ 'batch file' ]]
-    then
+    elif [[ $file =~ executable || $file =~ 'batch file' ]]; then
         bit='*'
         chmod a+x "$1"
         git update-index --chmod=+x "$1"
@@ -43,10 +39,8 @@ function prep {
         chmod a-x "$1"
         git update-index --chmod=-x "$1"
     fi
-    if [[ $file =~ text ]]
-    then
-        if [[ $file =~ DOS ]]
-        then
+    if [[ $file =~ text ]]; then
+        if [[ $file =~ DOS ]]; then
             unix2dos -q "$1"
             git add "$1"
         else
@@ -61,32 +55,42 @@ function prep {
 }
 
 silent_opt=$silent
-while getopts :-: opt
-do
+while getopts :-: opt; do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*-}
     case "$opt" in
-    h | help ) show-help ; exit 0 ;;
-    s | silent ) silent_opt=true ;;
-    * ) show-help >&2 ; exit 1 ;;
+    h | help)
+        show-help
+        exit 0
+        ;;
+    s | silent) silent_opt=true ;;
+    *)
+        show-help >&2
+        exit 1
+        ;;
     esac
 done
 shift $((OPTIND - 1))
 silent=$silent_opt
 
 case $# in
-    0 ) set - . ;;
+0) set - . ;;
 esac
 
 # Git is happier working from the root
 cd $(git rev-parse --show-toplevel)
 
-git status -z "$@" | tr '\0' '\n' | while read -r S f
-do
+git status -z "$@" | tr '\0' '\n' | while read -r S f; do
     case $S in
-    '??' ) echo "# Unknown: $f" ;;
-    C ) echo "$f" ; read ;;  # Skip next line
-    D ) echo "$f" ;;
-    R* ) read -r g ; prep "$f" ;;
-    * ) prep "$f" ;;
+    '??') echo "# Unknown: $f" ;;
+    C)
+        echo "$f"
+        read
+        ;; # Skip next line
+    D) echo "$f" ;;
+    R*)
+        read -r g
+        prep "$f"
+        ;;
+    *) prep "$f" ;;
     esac
 done

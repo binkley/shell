@@ -4,21 +4,21 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 set -e
 set -o pipefail
 
-unset CDPATH  # Trouble-maker
+unset CDPATH # Trouble-maker
 
 progname=${0##*/}
 trap 'r=$? ; (( 0 == $r )) || echo "$progname: Failed" ; exit $r' EXIT
 cd $(git rev-parse --show-toplevel)/.git/hooks
 
-function usage {
+function usage() {
     echo "Usage: $progname <init|list>"
 }
 
-function help {
+function help() {
     usage
 }
 
-function required {
+function required() {
     cat >&2 <<EOM
 $progname: Missing git config: $1
 Try \`git config --local $1 <value>\` to set $1 for this repository.
@@ -26,14 +26,16 @@ EOM
     exit 2
 }
 
-function config {
+function config() {
     local opts=(--get)
-    while (( 0 < $# ))
-    do
+    while ((0 < $#)); do
         case $1 in
-            --bool ) opts=("${opts[@]}" $1) ;;
-            -* ) echo "$progname: BUG" >&2 ; exit 3 ;;
-            * ) break ;;
+        --bool) opts=("${opts[@]}" $1) ;;
+        -*)
+            echo "$progname: BUG" >&2
+            exit 3
+            ;;
+        *) break ;;
         esac
         shift
     done
@@ -41,12 +43,14 @@ function config {
     git config "${opts[@]}" $config 2>/dev/null || echo "${2-required $config}"
 }
 
-function init {
-    while (( 0 < $# ))
-    do
+function init() {
+    while ((0 < $#)); do
         case $1 in
-            -* ) echo "$progname: BUG" >&2 ; exit 3 ;;
-            * ) break ;;
+        -*)
+            echo "$progname: BUG" >&2
+            exit 3
+            ;;
+        *) break ;;
         esac
         shift
     done
@@ -62,44 +66,56 @@ do
 done
 EOS
     chmod a+rx hooks
-    for h in *.sample
-    do
+    for h in *.sample; do
         mkdir ${h%.sample}.d
         ln -s hooks ${h%.sample}
     done
 }
 
-function list {
-    while (( 0 < $# ))
-    do
+function list() {
+    while ((0 < $#)); do
         case $1 in
-            -* ) usage >&2 ; exit 2 ;;
-            * ) break ;;
+        -*)
+            usage >&2
+            exit 2
+            ;;
+        *) break ;;
         esac
         shift
     done
     case $# in
-    1 ) local hook=$1 ;;
-    * ) usage >&2 ; exit 2 ;;
+    1) local hook=$1 ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
     esac
     cd $hook.d
     exec ls
 }
 
-while (( 0 < $# ))
-do
+while ((0 < $#)); do
     case $1 in
-        --help ) exec man ${0##*/} ;;
-        -* ) usage >&2 ; exit 2 ;;
-        * ) break ;;
+    --help) exec man ${0##*/} ;;
+    -*)
+        usage >&2
+        exit 2
+        ;;
+    *) break ;;
     esac
 done
 
 case $# in
-    0 ) usage >&2 ; exit 2 ;;
+0)
+    usage >&2
+    exit 2
+    ;;
 esac
 
 case $1 in
-    init | list ) "$@" ;;
-    * ) usage >&2 ; exit 2 ;;
+init | list) "$@" ;;
+*)
+    usage >&2
+    exit 2
+    ;;
 esac
