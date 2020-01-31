@@ -35,10 +35,20 @@ for e in bold light italic underscore blink reverse invisible strikethrough; do
     done
     echo
 done
-echo Done
+echo
 
 for r in $(seq 5 10 255); do
     c bg $r 0 0
+    printf '  '
+done
+echo "$preset"
+for g in $(seq 5 10 255); do
+    c bg 0 $g 0
+    printf '  '
+done
+echo "$preset"
+for b in $(seq 5 10 255); do
+    c bg 0 0 $b
     printf '  '
 done
 echo "$preset"
