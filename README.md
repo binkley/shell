@@ -16,7 +16,6 @@ HTTPie)
 * [mdv](mdv) - Markdown viewer
 * [open](open) - Launch UI programs from the command line
 * [plain-bash-testing](plain-bash-testing/README.md) - Bash test framework
-* [md2man-pandoc](md2man-pandoc) - Convert markdown to man and view with pandoc
 * [rls](rls) - Handle GPG from command line for other programs
 * [svn-recommit](svn-recommit/README.md) - Reedit an SVN commit message
 * [starter](starter/README.md) - Starter script for writing commands in BASH

@@ -46,11 +46,13 @@ function print-help() {
     cat <<EOH
 
 Options:
-  -h, --help           Print help and exit normally
+  -h, --help    Print help and exit normally
+  -m, --man     View as man page
+  -w, --web     View as HTML (default)
 EOH
 }
 
-function view-as-html() {
+function is-single-file() {
     local file="$1"
     [[ ! -e "$file" ]] && {
         echo "$0: $file: No such file or directory" >&2
@@ -64,19 +66,34 @@ function view-as-html() {
         echo "$0: $file: Permission denied" >&2
         exit 1
     }
+}
+
+function view-as-man() {
+    local file="$1"
+    is-single-file "$file"
+
+    pandoc -s -f markdown -t man "$file" | groff -T utf8 -man | ${PAGER-more}
+}
+
+function view-as-web() {
+    local file="$1"
+    is-single-file "$file"
 
     pandoc -f gfm -t html5 "$file" | lynx -stdin
 }
 
 setup-terminal
 
-while getopts :h-: opt; do
+view=web
+while getopts :hmw-: opt; do
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     h | help)
         print-help
         exit 0
         ;;
+    m | man) view=man ;;
+    w | web) view=web ;;
     *)
         print-usage >&2
         exit 2
@@ -86,7 +103,7 @@ done
 shift $((OPTIND - 1))
 
 case $# in
-1) view-as-html "$1" ;;
+1) view-as-$view "$1" ;;
 *)
     print-usage >&2
     exit 2

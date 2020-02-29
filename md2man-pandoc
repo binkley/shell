@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# See http://stackoverflow.com/a/7603703/250924
-
-exec pandoc -s -f markdown -t man "${@--}" | groff -T utf8 -man | ${PAGER-more}
