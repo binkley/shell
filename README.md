@@ -13,6 +13,7 @@ HTTPie)
 * [ksh](ksh) - KSH-specific scripting
 * [maven-bash-testing](maven-bash-testing/README.md) - Maven driving Bash
 * [maven-tools](maven-tools) - Helper scripts for maven repos
+* [mdv](mdv) - Markdown viewer
 * [open](open) - Launch UI programs from the command line
 * [plain-bash-testing](plain-bash-testing/README.md) - Bash test framework
 * [md2man-pandoc](md2man-pandoc) - Convert markdown to man and view with pandoc

@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# TODO: Evaluate alternatives
+# TODO: Consider flags for pandoc and lynx
+
+export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
+
+set -e
+set -u
+set -o pipefail
+
+readonly version=1
+
+: "${LINES:=$(tput lines)}"
+export LINES
+: "${COLUMNS:=$(tput cols)}"
+export COLUMNS
+
+fmt=fmt
+readonly fmt_width=$((COLUMNS - 5))
+function setup-terminal() {
+    if [[ ! -t 1 ]]; then
+        readonly fmt=cat
+        return 0
+    fi
+
+    if ((fmt_width < 10)); then
+        echo "$0: Your terminal is too narrow." >&2
+        readonly fmt=cat
+        return 0
+    fi
+
+    fmt="fmt -w $fmt_width"
+    readonly fmt
+}
+
+function print-usage() {
+    cat <<EOU | $fmt
+Usage: $0 MARKDOWN-FILE
+EOU
+}
+
+function print-help() {
+    echo "$0, version $version"
+    print-usage
+    cat <<EOH
+
+Options:
+  -h, --help           Print help and exit normally
+EOH
+}
+
+function mdv() {
+    local file="$1"
+    [[ ! -e "$file" ]] && {
+        echo "$0: $file: No such file or directory" >&2
+        exit 1
+    }
+    [[ -d "$file" ]] && {
+        echo "$0: $file: Is a directory" >&2
+        exit 1
+    }
+    [[ -r "$file" ]] || {
+        echo "$0: $file: Permission denied" >&2
+        exit 1
+    }
+
+    pandoc -f gfm -t html5 "$file" | lynx -stdin
+}
+
+setup-terminal
+
+while getopts :h-: opt; do
+    [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
+    case $opt in
+    h | help)
+        print-help
+        exit 0
+        ;;
+    *)
+        print-usage >&2
+        exit 2
+        ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+case $# in
+1) mdv "$1" ;;
+*)
+    print-usage >&2
+    exit 2
+    ;;
+esac
