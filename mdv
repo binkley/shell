@@ -75,7 +75,7 @@ function view-as-man() {
     local file="$1"
     is-single-file "$file"
 
-    pandoc -s -f gfm -t man "$file" | groff -T utf8 -man | ${PAGER-more}
+    pandoc -s -f gfm -t man "$file" | groff -T utf8 -man | ${PAGER-less}
 }
 
 function view-as-web() {
