@@ -1,15 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 unset CDPATH
 set -e
 
-for d in *
-do
-    if [[ -f $d/Makefile ]]
-    then
-        (cd $d >/dev/null ; echo $PWD: ; make -s clean)
-    elif [[ -f $d/mvnw ]]
-    then
-        (cd $d >/dev/null ; echo $PWD: ; ./mvnw -q clean)
+for d in *; do
+    if [[ -f $d/Makefile ]]; then
+        (
+            cd $d >/dev/null
+            echo $PWD:
+            make -s clean
+        )
+    elif [[ -f $d/mvnw ]]; then
+        (
+            cd $d >/dev/null
+            echo $PWD:
+            ./mvnw -q clean
+        )
     fi
 done

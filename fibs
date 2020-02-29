@@ -1,77 +1,74 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-function usage {
+function usage() {
     echo "Usage: $0 n"
 }
 
 int_re='-?(0|[1-9][0-9]*)'
 
 case $# in
-1 ) if [[ $1 =~ $int_re ]]
-    then
-        let n=$1
-    else
-        usage >&2
-        exit 2
-    fi ;;
-* ) usage >&2 ; exit 2 ;;
+1) if [[ $1 =~ $int_re ]]; then
+    let n=$1
+else
+    usage >&2
+    exit 2
+fi ;;
+*)
+    usage >&2
+    exit 2
+    ;;
 esac
 
-function row {
+function row() {
     local offset
     let offset=$((2 * $1))
     local a=(${!2})
     local i
 
-    for i in 0 1
-    do
+    for i in 0 1; do
         echo ${a[i + offset]}
     done
 }
 
-function col {
+function col() {
     local offset
     let offset=$1
     local a=(${!2})
     local j
 
-    for j in 0 2
-    do
+    for j in 0 2; do
         echo ${a[j + offset]}
     done
 }
 
-function dot {
+function dot() {
     local a=(${!1})
     local b=(${!2})
 
     let dot=0
     local i
-    for i in 0 1
-    do
+    for i in 0 1; do
         let dot=$((dot + a[i] * b[i]))
     done
     echo $dot
 }
 
-function mult {
+function mult() {
     local a=(${!1})
     local b=(${!2})
 
     local i
-    for i in 0 1
-    do
+    for i in 0 1; do
         local row=($(row $i a[@]))
         local j
-        for j in 0 1
-        do
+        for j in 0 1; do
             local col=($(col $j b[@]))
             dot row[@] col[@]
         done
     done
 }
 
-function format {
+function format() {
     local a=(${!1})
     local f0
     printf -v f0 "%'d" ${a[1]}
@@ -84,8 +81,7 @@ function format {
 }
 
 fib0=(0 1 1 1)
-if (( 0 > n ))
-then
+if ((0 > n)); then
     let start=-1
     let step=-1
     m=(-1 1 1 0)
@@ -97,8 +93,7 @@ fi
 fibn=(${fib0[@]})
 
 format fib0[@]
-for n in $(seq $start $step $1)
-do
+for n in $(seq $start $step $1); do
     fibn=($(mult fibn[@] m[@]))
     format fibn[@]
 done

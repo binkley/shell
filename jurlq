@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 shopt -s nocasematch
 
@@ -17,7 +17,7 @@ export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 set -e
 set -o pipefail
 
-function print-help {
+function print-help() {
     cat <<EOH
 Usage: $0 [CURL-OPTION]... CURL-ARG... [-- [JQ-OPTION]... [JQ-ARG]...]
 Fetches a URL with \`curl' and processes the output with \`jq'.
@@ -33,7 +33,7 @@ EOH
     jq --help | sed 's/^\t//'
 }
 
-function dump-args {
+function dump-args() {
     printf "\e[3m"
     cat <<EOD
 head_args: $head_args
@@ -46,29 +46,46 @@ EOD
 
 let debug=0 || true
 curl_args=()
-for arg
-do
+for arg; do
     case "$arg" in
-    -- ) shift ; break ;;
-    -h | --help ) print-help ; exit 0 ;;
-    -g | --debug ) let ++debug ; shift ;;
-    * ) curl_args=("${curl_args[@]}" "$arg") ; shift ;;
+    --)
+        shift
+        break
+        ;;
+    -h | --help)
+        print-help
+        exit 0
+        ;;
+    -g | --debug)
+        let ++debug
+        shift
+        ;;
+    *)
+        curl_args=("${curl_args[@]}" "$arg")
+        shift
+        ;;
     esac
 done
 head_args=-D-
-for curl_arg in "${curl_args[@]}"
-do
+for curl_arg in "${curl_args[@]}"; do
     case "$curl_arg" in
-    -I | --head ) head_args= ;;
+    -I | --head) head_args= ;;
     esac
 done
 
 jq_args=("${@-.}")
 
 case $debug in
-0 ) debug=false ;;
-1 ) debug=true ; dump-args >&2 ;;
-* ) debug=true ; dump-args >&2 ; set -x ;;
+0) debug=false ;;
+1)
+    debug=true
+    dump-args >&2
+    ;;
+*)
+    debug=true
+    dump-args >&2
+    set -x
+    ;;
 esac
 
 # TODO: Heuristic, need to parse JQ args for options
@@ -81,29 +98,29 @@ curl -s $head_args "${curl_args[@]}" | tr -d '\r' | {
     json=false
     first=$color
     shopt -s nocasematch
-    while read line
-    do
+    while read line; do
         $first && {
             first=false
             case "$line" in
-                *" 2"?? ) printf "\e[1m$line\e[0m\n" "$line" ;;
-                *" 3"?? ) printf "\e[1;33m$line\e[0m\n" "$line" ;;
-                *" 4"?? | *" 5"?? ) printf "\e[1;31m$line\e[0m\n" "$line" ;;
-                * ) printf "\e[1;35m$line\e[0m\n" "$line" ;;
+            *" 2"??) printf "\e[1m$line\e[0m\n" "$line" ;;
+            *" 3"??) printf "\e[1;33m$line\e[0m\n" "$line" ;;
+            *" 4"?? | *" 5"??) printf "\e[1;31m$line\e[0m\n" "$line" ;;
+            *) printf "\e[1;35m$line\e[0m\n" "$line" ;;
             esac
             continue
         }
-        [[ -z "$line" ]] && { echo ; break ; }
+        [[ -z "$line" ]] && {
+            echo
+            break
+        }
         [[ "$line" =~ ^Content-Type:.*json.* ]] && json=true
         printf "%s\n" "$line"
     done
 
-    if $json
-    then
+    if $json; then
         jq -C "${jq_args[@]}"
     else
-        if ((0 < $#))
-        then
+        if ((0 < $#)); then
             echo "$0: jq arguments for non-JSON response: ${jq_args[@]}" >&2
             exit 2
         fi

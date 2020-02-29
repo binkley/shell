@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Until jenv.be supports Cygwin
 function set-java {
     local -a java_v
