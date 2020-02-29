@@ -50,7 +50,7 @@ Options:
 EOH
 }
 
-function mdv() {
+function view-as-html() {
     local file="$1"
     [[ ! -e "$file" ]] && {
         echo "$0: $file: No such file or directory" >&2
@@ -86,7 +86,7 @@ done
 shift $((OPTIND - 1))
 
 case $# in
-1) mdv "$1" ;;
+1) view-as-html "$1" ;;
 *)
     print-usage >&2
     exit 2
