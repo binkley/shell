@@ -19,6 +19,11 @@ export COLUMNS
 : "${BROWSER:=lynx -stdin}"
 export BROWSER
 
+command -v pandoc >/dev/null || {
+    echo "$0: Install pandoc" >&2
+    exit 1
+}
+
 fmt=fmt
 readonly fmt_width=$((COLUMNS - 5))
 function setup-terminal() {
