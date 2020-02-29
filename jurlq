@@ -17,20 +17,33 @@ export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 set -e
 set -o pipefail
 
+readonly version=0
+
 function print-help() {
     cat <<EOH
 Usage: $0 [CURL-OPTION]... CURL-ARG... [-- [JQ-OPTION]... [JQ-ARG]...]
 Fetches a URL with \`curl' and processes the output with \`jq'.
 
 Options:
- -h, --help    Prints help and exits, including help for \`curl' and \`jq'
- -g, --debug   Debugs this script; use a second time to trace (to use the
-                  \`-g' flag for \`curl', use \`--globoff')
+  -h, --help    Prints help and exits normally, including help for \`curl' and \`jq'
+  -g, --debug   Debugs this script; use a second time to trace (to use the
+                   \`-g' flag for \`curl', use \`--globoff')
+ --version     Prints version and exits normally
 
 EOH
     curl --help
     echo
     jq --help | sed 's/^\t//'
+}
+
+function print-version() {
+    cat <<EOV
+${0##*/} $version
+This is free and unencumbered software released into the public domain.
+For more information, please refer to <http://unlicense.org/>.
+
+Written by B. K. Oxley (binkley).
+EOV
 }
 
 function dump-args() {
@@ -59,6 +72,10 @@ for arg; do
     -g | --debug)
         let ++debug
         shift
+        ;;
+    --version)
+        print-version
+        exit 0
         ;;
     *)
         curl_args=("${curl_args[@]}" "$arg")

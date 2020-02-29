@@ -4,6 +4,8 @@ export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 
 set -e
 
+readonly version=0
+
 function print-help() {
     local -r width=$(($(tput cols) - 2))
     cat <<EOH | fold -s -w $width
@@ -31,6 +33,16 @@ Examples:
 EOH
 }
 
+function print-version() {
+    cat <<EOV
+${0##*/} $version
+This is free and unencumbered software released into the public domain.
+For more information, please refer to <http://unlicense.org/>.
+
+Written by B. K. Oxley (binkley).
+EOV
+}
+
 inplace=false
 offline=false
 update=false
@@ -46,6 +58,10 @@ while getopts :hiouv-: opt; do
     o | offline) offline=true ;;
     u | update) update=true ;;
     v | verbose) verbose=true ;;
+    version)
+        print-version
+        exit 0
+        ;;
     :)
         cat <<EOE >&2
 ${0##*/}: option requires an argument -- '$OPTARG'
