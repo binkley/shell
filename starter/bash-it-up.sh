@@ -77,6 +77,7 @@ Options:
   -h, --help           Print help and exit normally
   -n, --dry-run        Do nothing (dry run); echo actions
   -v, --verbose        Verbose output
+  --version            Print version and exit normally
 
 Tasks:
 EOH
@@ -92,6 +93,16 @@ EOH
 
 function -format-help() {
     $fmt -w $((fmt_width - 8)) | sed 's/^/       /'
+}
+
+function -print-version() {
+    cat <<EOV
+${0##*/} $version
+This is free and unencumbered software released into the public domain.
+For more information, please refer to <http://unlicense.org/>.
+
+Written by B. K. Oxley (binkley).
+EOV
 }
 
 function -find-in-tasks() {
@@ -146,6 +157,10 @@ while getopts :cdE:hnv-: opt; do
         run=echo
         ;;
     v | verbose) verbose=true ;;
+    version)
+        -print-version
+        exit 0
+        ;;
     *)
         -print-usage >&2
         exit 2
