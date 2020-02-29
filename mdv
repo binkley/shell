@@ -67,6 +67,16 @@ Use the PAGER environment variable to change your viewer for the "man" option.
 EOH
 }
 
+function print-version() {
+    cat <<EOV
+${0##*/} $version
+This is free and unencumbered software released into the public domain.
+For more information, please refer to <http://unlicense.org/>.
+
+Written by B. K. Oxley (binkley).
+EOV
+}
+
 function is-single-file() {
     local file="$1"
     [[ ! -e "$file" ]] && {
@@ -100,7 +110,7 @@ function view-as-web() {
 setup-terminal
 
 view=web
-while getopts :hmw-: opt; do
+while getopts :hmvw-: opt; do
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     h | help)
@@ -108,6 +118,10 @@ while getopts :hmw-: opt; do
         exit 0
         ;;
     m | man) view=man ;;
+    version)
+        print-version
+        exit 0
+        ;;
     w | web) view=web ;;
     *)
         print-usage >&2
