@@ -16,6 +16,9 @@ export LINES
 : "${COLUMNS:=$(tput cols)}"
 export COLUMNS
 
+: "${BROWSER:=lynx -stdin}"
+export BROWSER
+
 fmt=fmt
 readonly fmt_width=$((COLUMNS - 5))
 function setup-terminal() {
@@ -79,7 +82,7 @@ function view-as-web() {
     local file="$1"
     is-single-file "$file"
 
-    pandoc -f gfm -t html5 "$file" | lynx -stdin
+    pandoc -f gfm -t html5 "$file" | $BROWSER
 }
 
 setup-terminal
