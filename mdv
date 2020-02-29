@@ -47,11 +47,18 @@ function print-help() {
     echo "$0, version $version"
     print-usage
     cat <<EOH
+Renders GitHub MARKDOWN-FILE to your BROWSER or PAGER.
 
 Options:
   -h, --help    Print help and exit normally
   -m, --man     View as man page
   -w, --web     View as HTML (default)
+
+Examples:
+  mdv README.md
+
+Use the BROWSER environment variable to change your HTML renderer.
+Use the PAGER environment variable to change your viewer for the "man" option.
 EOH
 }
 
