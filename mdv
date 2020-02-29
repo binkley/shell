@@ -39,7 +39,7 @@ function setup-terminal() {
 
 function print-usage() {
     cat <<EOU | $fmt
-Usage: $0 MARKDOWN-FILE
+Usage: $0 [-h|--help][-m|--man][-w|--web] MARKDOWN-FILE
 EOU
 }
 
@@ -47,7 +47,7 @@ function print-help() {
     echo "$0, version $version"
     print-usage
     cat <<EOH
-Renders GitHub MARKDOWN-FILE to your BROWSER or PAGER.
+Renders a single GitHub MARKDOWN-FILE to your BROWSER or PAGER.
 
 Options:
   -h, --help    Print help and exit normally
