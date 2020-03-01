@@ -5,9 +5,9 @@ set -o pipefail
 
 export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
 readonly progname=${0##*/}
+readonly version=0
 
-function __install_colors()
-{
+function __install_colors() {
     local -r ncolors=$(tput colors)
     [[ -n "$ncolors" && $ncolors -ge 8 ]] || return
     printf -v pred "\e[31m"
@@ -29,10 +29,10 @@ function __install_colors()
     export PS4='+${pyellow}${BASH_SOURCE}${preset}:${pblue}${LINENO}${preset}: ${pcyan}${FUNCNAME[0]:+${FUNCNAME[0]}${preset}(): } '
 }
 
-function __print_help {
-    local -r width=$(( $(tput cols) - 2 ))
+function __print_help() {
+    local -r width=$(($(tput cols) - 2))
     cat <<EOH | fold -s -w $width
-Usage: $progname [-C|--color=WHEN][-d|--debug]|[-q|--quiet][-v|--verbose] TEST [TEST...]
+Usage: $progname [-C|--color=WHEN][-d|--debug][-h|--help][-q|--quiet][-v|--verbose][--version] TEST [TEST...]
 Runs BASH test(s).
 
 TEST can be either a single test file or a directory of test path files.
@@ -40,8 +40,10 @@ TEST can be either a single test file or a directory of test path files.
   -C, --color=WHEN    print in color (WHEN can be 'always', 'auto' or 'never')
                         -C is the same as --color=always
   -d, --debug         print test debugging (use bash -x for $progname)
+  -h, --help          print help and exit normally
   -q, --quiet         print minimal output
   -v, --verbose       print extra output
+  --version           print version and exit normally
 
 Examples:
   ./run-tests t  Run tests over files in the "t" directory
@@ -50,36 +52,50 @@ Online help: <https://https://github.com/binkley/shell/tree/master/plain-bash-te
 EOH
 }
 
-function __start_debugging {
+function __print_version() {
+    cat <<EOV
+${0##*/} $version
+This is free and unencumbered software released into the public domain.
+For more information, please refer to <http://unlicense.org/>.
+
+Written by B. K. Oxley (binkley).
+EOV
+}
+
+function __start_debugging() {
     [[ -o xtrace ]] && return
     echo -e "\n${pmagenta}----${preset}"
     set -o xtrace
 }
 
-function __stop_debugging {
+function __stop_debugging() {
     $__tracing || set +o xtrace
 }
 
 trap 'rm -rf "${__tmpdirs[@]}"' EXIT
 __tmpdirs=()
-function _tmpdir {
+function _tmpdir() {
     local -r var=$1
     local -r tmpdir="$(mktemp -d)"
     __tmpdirs=("${__tmpdirs[@]}" "$tmpdir")
     eval "$var=\"\$tmpdir\""
 }
 
-function _register {
+function _register() {
     case $# in
-    1 ) local -r name=$1 arity=0 ;;
-    2 ) local -r name=$1 arity=$2 ;;
-    * ) echo "$progname: Wrong number of arguments to _register: $#" >&2
-        exit 2 ;;
+    1) local -r name=$1 arity=0 ;;
+    2) local -r name=$1 arity=$2 ;;
+    *)
+        echo "$progname: Wrong number of arguments to _register: $#" >&2
+        exit 2
+        ;;
     esac
     case $(type -t $name) in
-    function ) ;;
-    * ) echo "$progname: $FUNCNAME: Not a function: $name" >&2
-        exit 3 ;;
+    function) ;;
+    *)
+        echo "$progname: $FUNCNAME: Not a function: $name" >&2
+        exit 3
+        ;;
     esac
     read -d '' -r wrapper <<EOF
 function $name {
@@ -102,37 +118,37 @@ EOF
     eval "$wrapper"
 }
 
-function _start {
+function _start() {
     local __tallied=false
     local __e=0
     pushd $PWD >/dev/null
     $_debug && __start_debugging
     "$@"
     __tally $?
-    while popd >/dev/null 2>&1 ; do : ; done  # Undo tests pushd
+    while popd >/dev/null 2>&1; do :; done # Undo tests pushd
 }
 
 let __passed=0 __failed=0 __errored=0
-function __tally {
+function __tally() {
     __stop_debugging
     local -r __e=$1
     local -r __test_function=$2
     $__tallied && return $__e
     __tallied=true
     case $__e in
-    0 ) let ++__passed ;;
-    1 ) let ++__failed ;;
-    * ) let ++__errored ;;
+    0) let ++__passed ;;
+    1) let ++__failed ;;
+    *) let ++__errored ;;
     esac
     _print_result $__e $__test_function
     return $__e
 }
 
-function __tests-in-one-line {
+function __tests-in-one-line() {
     sed ':x; /\\$/ { N; s/\\\n//; tx }'
 }
 
-function __run-test {
+function __run-test() {
     local -r __test_file=$1
     # TODO: Consider read preserving newlines to hide matching during debug
     . <(__tests-in-one-line <$__test_file | grep "$__match_tests")
@@ -143,41 +159,67 @@ __when_color=auto
 _debug=false
 _quiet=false
 _verbose=false
-while getopts :cdhpqv-: opt
-do
+while getopts :Ccdhpqv-: opt; do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
-    C ) _color=true ; __when_color=always ;;
-    color ) case $OPTARG in
-        always ) _color=true ;;
-        auto ) ;;
-        never ) _color=false ;;
-        * ) cat <<EOE >&2 ; exit 3 ;;
+    C)
+        _color=true
+        __when_color=always
+        ;;
+    color)
+        case $OPTARG in
+        always) _color=true ;;
+        auto) ;;
+        never) _color=false ;;
+        *)
+            cat <<EOE >&2
 $progname: invalid color '$OPTARG'
 Try '$progname --help' for more inforamtion.
 EOE
+            exit 3
+            ;;
+
         esac
-        __when_color=$OPTARG ;;
-    d | debug ) _debug=true ;;
-    h | help ) __print_help ; exit 0 ;;
-    p | pattern ) __match_tests="$OPTARG" ;;
-    q | quiet ) _quiet=true ;;
-    v | verbose ) _verbose=true ;;
-    * ) cat <<EOE >&2 ; exit 3 ;;
+
+        __when_color=$OPTARG
+        ;;
+    d | debug) _debug=true ;;
+    h | help)
+        __print_help
+        exit 0
+        ;;
+    p | pattern) __match_tests="$OPTARG" ;;
+    q | quiet) _quiet=true ;;
+    v | verbose) _verbose=true ;;
+    version)
+        __print_version
+        exit 0
+        ;;
+    *)
+        cat <<EOE >&2
 $progname: unrecognized option '-$OPTARG'
 Try '$progname --help' for more information.
 EOE
+        exit 3
+        ;;
+
     esac
+
 done
+
 shift $((OPTIND - 1))
 
 $_color && __install_colors
 
 case $# in
-0 ) cat <<EOE >&2 ; exit 3 ;;
+0)
+    cat <<EOE >&2
 $progname: missing TEST(s)
 Try '$progname --help' for more information.
 EOE
+    exit 3
+    ;;
+
 esac
 
 {
@@ -197,7 +239,7 @@ printf -v pinterrobang "\xE2\x80\xBD"
 readonly pinterrobang
 readonly perror="$pboldred$pinterrobang$preset"
 
-function __print-fail-or-diff {
+function __print-fail-or-diff() {
     local -r _e=$1
     local -r _test_function=$2
     echo -e " (${pcyan}$_test_function${preset})\r$pfail"
@@ -215,37 +257,32 @@ EOD
     _expected=''
 }
 
-function _print_result {
+function _print_result() {
     local -r _e=$1
     local -r _test_function=$2
     $_quiet && return $_e
     case $_e in
-    0 ) echo -e "\r$ppass" ;;
-    1 ) __print-fail-or-diff $_e $_test_function ;;
-    * ) echo -e " (${pcyan}$_test_function${preset}; exit $_e)\r$perror" ;;
+    0) echo -e "\r$ppass" ;;
+    1) __print-fail-or-diff $_e $_test_function ;;
+    *) echo -e " (${pcyan}$_test_function${preset}; exit $_e)\r$perror" ;;
     esac
 }
 
 # Pull in user framework files
-for f in $root_dir/f/*.sh
-do
+for f in $root_dir/f/*.sh; do
     . $f
 done
 
 __tests=()
-for t in "$@"
-do
-    if [[ -d "$t" ]]
-    then
+for t in "$@"; do
+    if [[ -d "$t" ]]; then
         __found_tests+=($(find $t -type f -name \*.sh | sort))
-        if (( 0 == ${#__found_tests[*]} ))
-        then
+        if ((0 == ${#__found_tests[*]})); then
             echo "$progname: No tests found in '$t'" >&2
             exit 2
         fi
         __tests+=("${__found_tests[@]}")
-    elif [[ -f "$t" ]]
-    then
+    elif [[ -f "$t" ]]; then
         __tests+=($t)
     else
         echo "$progname: Not a test or directory: '$t'" >&2
@@ -254,21 +291,17 @@ do
 done
 set -- $(echo "${__tests[@]}" | sort -u)
 
-if (( 0 == $# ))
-then
+if ((0 == $#)); then
     echo "$progname: No tests" >&2
     exit 2
 fi
 
-if ! $_quiet && [[ -n "$__match_tests" ]]
-then
+if ! $_quiet && [[ -n "$__match_tests" ]]; then
     echo "${pbold}(Matching only '$__match_tests' tests.)${preset}"
 fi
 
-for t in "$@"
-do
-    if ! $_quiet
-    then
+for t in "$@"; do
+    if ! $_quiet; then
         echo "${pbold}Script $t:${preset}"
     fi
     let __last_passed=$__passed
@@ -278,15 +311,13 @@ do
     let __t_passed=$((__passed - __last_passed))
     let __t_failed=$((__failed - __last_failed))
     let __t_errored=$((__errored - __last_errored))
-    if ! $_quiet
-    then
+    if ! $_quiet; then
         __all=()
-        (( 0 == __t_errored )) || __all+=("$__t_errored errored")
-        (( 0 == __t_failed )) || __all+=("$__t_failed failed")
-        (( 0 == __t_passed )) || __all+=("$__t_passed passed")
+        ((0 == __t_errored)) || __all+=("$__t_errored errored")
+        ((0 == __t_failed)) || __all+=("$__t_failed failed")
+        ((0 == __t_passed)) || __all+=("$__t_passed passed")
         IFS=, eval '__s="${__all[*]}"'
-        if [[ -n "$__s" ]]
-        then
+        if [[ -n "$__s" ]]; then
             echo "${__s//,/, }"
         else
             echo 'No tests matched.'
@@ -294,20 +325,17 @@ do
     fi
 done
 
-if ! $_quiet
-then
-    (( 0 == __passed )) && ppassed= || ppassed=${pgreen}
-    (( 0 == __failed )) && pfailed= || pfailed=${pred}
-    (( 0 == __errored )) && perrored= || perrored=${pboldred}
+if ! $_quiet; then
+    ((0 == __passed)) && ppassed= || ppassed=${pgreen}
+    ((0 == __failed)) && pfailed= || pfailed=${pred}
+    ((0 == __errored)) && perrored= || perrored=${pboldred}
     cat <<EOS
 ${pbold}Summary${preset}: ${ppassed}$__passed PASSED${preset}, ${pfailed}$__failed FAILED${preset}, ${perrored}$__errored ERRORED${preset}
 EOS
 fi
 
-if (( 0 < __errored ))
-then
+if ((0 < __errored)); then
     exit 2
-elif (( 0 < __failed ))
-then
+elif ((0 < __failed)); then
     exit 1
 fi
