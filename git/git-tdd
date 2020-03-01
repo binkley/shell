@@ -23,6 +23,9 @@ function usage() {
 
 function tdd-help() {
     export MANPATH="$progdir:$MANPATH"
+    # TODO: Suppress warning about the ronn file
+    #  For some kinds of `man`, this is `-q`
+    #  For others, it may be wacky groff warning flags
     exec man $progname
 }
 
