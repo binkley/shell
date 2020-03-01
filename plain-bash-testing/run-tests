@@ -269,7 +269,7 @@ function _print_result() {
 }
 
 # Pull in user framework files
-for f in $root_dir/f/*.sh; do
+for f in $(find $root_dir/f -type f -name \*.sh | sort); do
     . $f
 done
 
