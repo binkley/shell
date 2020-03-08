@@ -39,3 +39,7 @@ in color (when run on a suitable terminal).  However, parse errors by BASH will 
 ## TODO
 
 * Top-level make does not know about working offline
+
+## Resources
+
+* [_Advanced Bash-Scripting Guild_](http://www.tldp.org/LDP/abs/html/)
