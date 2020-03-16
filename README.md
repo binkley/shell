@@ -34,7 +34,7 @@ in color (when run on a suitable terminal).  However, parse errors by BASH will 
 ## Tools in this directory
 
 * `fibs` - Shows off the Fibonacci Q matrix with Bash integer math
-* `md2man-pandoc` - Build man page from markdown
+* `mdv` - Markdown viewer
 
 ## TODO
 
