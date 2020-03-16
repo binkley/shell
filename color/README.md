@@ -18,6 +18,9 @@ echo "This is $(c IndianRed)Indian Red$preset."
    or if that file is unreadable, to an `rgb.txt` provided with `colors.sh`.
 3. Source [`color.sh`](color.sh).
 
+Please note the default MacOS terminal is anemic, and does not show colors as
+nicely as Linux or Windows.
+
 ## Pre-defined variables
 
 ```bash
