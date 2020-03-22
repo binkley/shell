@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # TODO: Evaluate alternatives
 # TODO: Consider flags for pandoc and lynx
