@@ -3,11 +3,20 @@
 [[ -o xtrace ]] && readonly __tracing=true || readonly __tracing=false
 set -o pipefail
 
-export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+export PS4='+${pyellow}${BASH_SOURCE}${preset}:${pblue}${LINENO}${preset}: ${pcyan}${FUNCNAME[0]:+${FUNCNAME[0]}${preset}(): } ${preset}'
 readonly progname=${0##*/}
 readonly version=0
 
+__when_color=auto
+_color=false # Usable by framework/clauses
 function __install_colors() {
+    case $__when_color in
+    always) ;;
+    auto) [[ ! -t 1 ]] && return ;;
+    never) return ;;
+    esac
+    _color=true
+
     local -r ncolors=$(tput colors)
     [[ -n "$ncolors" && $ncolors -ge 8 ]] || return
     printf -v pred "\e[31m"
@@ -26,7 +35,6 @@ function __install_colors() {
     readonly pcyan
     printf -v preset "\e[0m"
     readonly preset
-    export PS4='+${pyellow}${BASH_SOURCE}${preset}:${pblue}${LINENO}${preset}: ${pcyan}${FUNCNAME[0]:+${FUNCNAME[0]}${preset}(): } ${preset}'
 }
 
 function __print_help() {
@@ -154,34 +162,25 @@ function __run-test() {
     . <(__tests-in-one-line <$__test_file | grep "$__match_tests")
 }
 
-__when_color=auto
-[[ -t 1 ]] && _color=true || _color=false
 _debug=false
 _quiet=false
 _verbose=false
 while getopts :Ccdhpqv-: opt; do
     [[ - == $opt ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
-    C)
-        _color=true
-        __when_color=always
-        ;;
+    C) __when_color=always ;;
     color)
         case $OPTARG in
-        always) _color=true ;;
-        auto) ;;
-        never) _color=false ;;
+        always | auto | never) __when_color=$OPTARG ;;
         *)
             cat <<EOE >&2
 $progname: invalid color '$OPTARG'
 Try '$progname --help' for more information.
 EOE
-            exit 3
+            exit 2
             ;;
 
         esac
-
-        __when_color=$OPTARG
         ;;
     d | debug) _debug=true ;;
     h | help)
@@ -209,7 +208,7 @@ done
 
 shift $((OPTIND - 1))
 
-$_color && __install_colors
+__install_colors
 
 case $# in
 0)
