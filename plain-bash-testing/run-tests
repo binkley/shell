@@ -26,7 +26,7 @@ function __install_colors() {
     readonly pcyan
     printf -v preset "\e[0m"
     readonly preset
-    export PS4='+${pyellow}${BASH_SOURCE}${preset}:${pblue}${LINENO}${preset}: ${pcyan}${FUNCNAME[0]:+${FUNCNAME[0]}${preset}(): } '
+    export PS4='+${pyellow}${BASH_SOURCE}${preset}:${pblue}${LINENO}${preset}: ${pcyan}${FUNCNAME[0]:+${FUNCNAME[0]}${preset}(): } ${preset}'
 }
 
 function __print_help() {
