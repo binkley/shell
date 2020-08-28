@@ -1,20 +1,26 @@
 #!/usr/bin/env bash
 
+# Suppress various Shellcheck warnings.  Shellcheck is recommended, and
+# IntelliJ will download it for you.  See https://www.shellcheck.net/
 # shellcheck disable=SC2059,SC2209,SC2214,SC2215
 
+# Better debugging output when using `bash -x <script>`
 export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 
+# Enable good runtime checks by Bash when executing the script
 set -e
 set -u
 set -o pipefail
 
 readonly version=0
 
+# When executing in a console, inform various tools of your screen settings
 : "${LINES:=$(tput lines)}"
 export LINES
 : "${COLUMNS:=$(tput cols)}"
 export COLUMNS
 
+# Used for paging output, particularly "help"
 fmt=fmt
 readonly fmt_width=$((COLUMNS - 5))
 function -setup-terminal() {
@@ -95,6 +101,7 @@ function -format-help() {
     $fmt -w $((fmt_width - 8)) | sed 's/^/       /'
 }
 
+# Follow GNU standards for command line tools
 function -print-version() {
     cat <<EOV
 ${0##*/} $version
@@ -105,6 +112,7 @@ Written by B. K. Oxley (binkley).
 EOV
 }
 
+# Only needed for "task-based" scripts, ala how git has subcommands
 function -find-in-tasks() {
     local cmd="$1"
     for task in "${tasks[@]}"; do
@@ -113,6 +121,7 @@ function -find-in-tasks() {
     return 1
 }
 
+# Only needed for "task-based" scripts, ala how git has subcommands
 function -check-cmd() {
     local cmd="$1"
 
@@ -124,16 +133,20 @@ function -check-cmd() {
     fi
 }
 
+# Only needed for "task-based" scripts, ala how git has subcommands
 for f in "${0%/*}/functions"/*.sh; do
     # shellcheck source=functions
     source "$f"
 done
 
+# Only needed for "task-based" scripts, ala how git has subcommands
 mapfile -t tasks < <(declare -F | cut -d' ' -f3 | grep -v '^-' | sort)
 readonly tasks
 
+# Used for paging output, particularly "help"
 -setup-terminal
 
+# Rule of thumb: Define default values for things which options can change
 [[ -t 1 ]] && color=true || color=false
 ((debug = 0)) || true
 prefix='> '
@@ -141,7 +154,9 @@ print=echo
 pwd=pwd
 run= # Nothing, unless dry run
 verbose=false
+# Note the "-" as an option: This supports long options ("--help" vs "-h")
 while getopts :cdE:hnv-: opt; do
+    # Complex, but addresses "--foo=bar" type options
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     E | prefix) prefix="$OPTARG" ;;
@@ -175,8 +190,12 @@ readonly verbose
 -maybe-debug
 readonly debug
 
+# Only needed for "task-based" scripts, ala how git has subcommands
+# Specific to this example.  YMMV
+# shellcheck disable=SC2207
 commands=($(make -f functions/Runfile "$@"))
 
+# Only needed for "task-based" scripts, ala how git has subcommands
 for cmd in "${commands[@]}"; do
     if ! -find-in-tasks "$cmd"; then
         echo "$0: $cmd: Unknown command." >&2
