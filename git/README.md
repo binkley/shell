@@ -48,5 +48,6 @@ a new, empty WIP commit.
 
 ## TODO
 
+* Fix broken tests in `git` because of colorized output
 * Investigate `git tdd init` when there is something already stashed
 * Add manpages
