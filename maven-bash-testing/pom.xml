@@ -15,7 +15,7 @@
         <generateBackupPoms>false</generateBackupPoms>
         <jar.skipIfEmpty>true</jar.skipIfEmpty>
         <java.charset>UTF-8</java.charset>
-        <java.version>8</java.version>
+        <jdk.version>11</jdk.version>
         <jopt-simple.version>5.0.4</jopt-simple.version>
         <main.class>hm.binkley.Main</main.class>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
@@ -71,8 +71,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
                 </configuration>
             </plugin>
             <plugin>
