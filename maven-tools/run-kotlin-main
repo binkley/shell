@@ -52,7 +52,7 @@ function mangle-kotlin-classname() {
     local last="${parts[-1]}"
 
     case "$last" in
-    *-* | *Kt) ;;
+    *Kt) ;;
     *) last="${last}Kt" ;;
     esac
     last="${last//-/_}"
