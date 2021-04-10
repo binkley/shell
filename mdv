@@ -24,6 +24,11 @@ command -v pandoc >/dev/null || {
     exit 1
 }
 
+command -v "$BROWSER" >/dev/null || {
+    echo "$0: Install $BROWSER" >&2
+    exit 1
+}
+
 fmt=fmt
 readonly fmt_width=$((COLUMNS - 5))
 function setup-terminal() {
