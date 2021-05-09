@@ -135,5 +135,5 @@ done
 shift $((OPTIND - 1))
 
 file="$1"
-shift 2 # Drop the --
+shift 2 || true # Drop the --
 view-as-$view "$file" "$@"
