@@ -44,7 +44,7 @@ function setup-terminal() {
 
 function print-usage() {
     cat <<EOU | $fmt
-Usage: $0 [-h|--help][-m|--man][--version][-w|--web] MARKDOWN-FILE
+Usage: $0 [-h|--help][-m|--man][--version][-w|--web] MARKDOWN-FILE [VIEWER-OPTIONS]
 EOU
 }
 
@@ -96,16 +96,18 @@ function is-single-file() {
 
 function view-as-man() {
     local file="$1"
+    shift
     is-single-file "$file"
 
-    pandoc -s -f gfm -t man "$file" | groff -T utf8 -man | ${PAGER-less}
+    pandoc -s -f gfm -t man "$file" | groff -T utf8 -man | ${PAGER-less} "$@"
 }
 
 function view-as-web() {
     local file="$1"
+    shift
     is-single-file "$file"
 
-    pandoc -f gfm -t html5 "$file" | $BROWSER
+    pandoc -f gfm -t html5 "$file" | $BROWSER "$@"
 }
 
 setup-terminal
@@ -132,10 +134,6 @@ while getopts :hmvw-: opt; do
 done
 shift $((OPTIND - 1))
 
-case $# in
-1) view-as-$view "$1" ;;
-*)
-    print-usage >&2
-    exit 2
-    ;;
-esac
+file="$1"
+shift 2 # Drop the --
+view-as-$view "$file" "$@"
