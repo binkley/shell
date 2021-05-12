@@ -19,11 +19,12 @@ readonly progname="${0##*/}"
 
 function print-help() {
     cat <<EOH
-Usage: $progname [-Xdh] [CLASS] [ARGUMENTS]
+Usage: $progname [-JXdh] [CLASS] [ARGUMENTS]
 Runs a single-jar Kotlin project.
 
 With no CLASS, assume the jar is executable.
 
+  -J, --java        treat CLASS as a Java class
   -X, --executable  stop processing command line
   -d, --debug       print script execution to STDERR
   -h, --help        display this help and exit
@@ -71,9 +72,11 @@ function rebuild-if-needed() {
 
 debug=false
 executable=false
-while getopts :Xdh-: opt; do
+kotlin=true
+while getopts :JXdh-: opt; do
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
+    J | java) kotlin=false ;;
     X | executable)
         executable=true
         break
@@ -97,7 +100,11 @@ $debug && set -x
 if $executable; then
     set - -jar "$jar" "$@"
 else
-    readonly class="$(mangle-kotlin-classname "$package.$1")"
+    if $kotlin; then
+        readonly class="$(mangle-kotlin-classname "$package.$1")"
+    else
+        readonly class="$package.$1"
+    fi
     shift
     set - -cp "$jar" "$class" "$@"
 fi
