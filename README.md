@@ -17,6 +17,7 @@ HTTPie)
 * [open](open) - Launch UI programs from the command line
 * [plain-bash-testing](plain-bash-testing/README.md) - Bash test framework
 * [rls](rls) - Handle GPG from command line for other programs
+* [run-jvm-main](run-jvm-main) - Run executable jar including auto-rebuild
 * [svn-recommit](svn-recommit/README.md) - Reedit an SVN commit message
 * [starter](starter/README.md) - Starter script for writing commands in BASH
 * [unicode](unicode/README.md) - Work with UNICODE data
