@@ -142,11 +142,11 @@ function build-config-outdated-maven() {
 }
 
 function jar-outdated() {
-    [[ -e "$jar" ]] && outdated-to-jar src/main
+    [[ ! -e "$jar" ]] || outdated-to-jar src/main
 }
 
 function rebuild-if-needed() {
-    if build-config-outdated-$build_tool || jar-outdated; then
+    if jar-outdated || build-config-outdated-$build_tool; then
         case $build_tool in
         gradle) ./gradlew --warning-mode=all jar ;;
         maven) ./mvnw -Dmaven.test.skip=true package ;;
