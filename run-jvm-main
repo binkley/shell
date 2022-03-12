@@ -9,7 +9,7 @@ readonly artifactId=your-project
 readonly version=0-SNAPSHOT
 build_tool=maven # or gradle -- this sets the default
 language=java    # or kotlin -- this sets the default
-jvm_flags=()
+jvm_flags=()     # Default JVM flags such as --add-opens
 
 # No editable parts below here
 
@@ -156,7 +156,7 @@ function rebuild-if-needed() {
 
 alt_class=''
 debug=false
-while getopts :B:C:J:L:a:b:dhj:l:-: opt; do
+[[ -z "${SCRIPT_FLAGS+x}" ]] || while getopts :B:C:J:L:a:b:dhj:l:-: opt; do
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     B | build-tool) case "$OPTARG" in
