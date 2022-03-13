@@ -137,12 +137,12 @@ function build-config-outdated-gradle() {
     false
 }
 
-function build-config-outdated-maven() {
-    outdated-to-jar pom.xml
-}
-
 function jar-outdated() {
     [[ ! -e "$jar" ]] || outdated-to-jar src/main
+}
+
+function build-config-outdated-maven() {
+    outdated-to-jar pom.xml
 }
 
 function rebuild-if-needed() {
