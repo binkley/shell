@@ -19,22 +19,6 @@ set -o pipefail
 
 readonly progname="${0##*/}"
 
-case $build_tool in
-gradle | maven) ;;
-*)
-    echo "$progname: BUG: Pick 'gradle' or 'maven': $build_tool" >&2
-    exit 2
-    ;;
-esac
-
-case $language in
-java | kotlin) ;;
-*)
-    echo "$progname: BUG: Pick 'java' or 'kotlin': $language" >&2
-    exit 2
-    ;;
-esac
-
 function print-help() {
     cat <<EOH
 Usage: $progname [OPTIONS] [-- ARGUMENTS]
@@ -122,6 +106,10 @@ function outdated-to-jar() {
     [[ -n "$(find "$compare" -type f -newer "$jar")" ]]
 }
 
+function jar-outdated() {
+    [[ ! -e "$jar" ]] || outdated-to-jar src/main
+}
+
 function build-config-outdated-gradle() {
     [[ -e settings.gradle.kts ]] &&
         local settings=settings.gradle.kts ||
@@ -135,10 +123,6 @@ function build-config-outdated-gradle() {
     done
 
     false
-}
-
-function jar-outdated() {
-    [[ ! -e "$jar" ]] || outdated-to-jar src/main
 }
 
 function build-config-outdated-maven() {
@@ -156,7 +140,7 @@ function rebuild-if-needed() {
 
 alt_class=''
 debug=false
-[[ -z "${SCRIPT_FLAGS+x}" ]] || while getopts :B:C:J:L:a:b:dhj:l:-: opt; do
+[[ -z "${SCRIPT_FLAGS+x}" ]] || while getopts :B:C:J:L:dh-: opt; do
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     B | build-tool) case "$OPTARG" in
@@ -204,6 +188,18 @@ maven)
         exit 2
     fi
     readonly jar=target/$artifactId-$version-jar-with-dependencies.jar
+    ;;
+*)
+    echo "$progname: Build tool not supported: $build_tool" >&2
+    exit 2
+    ;;
+esac
+
+case $language in
+java | kotlin) ;;
+*)
+    echo "$progname: Language not supported: $language" >&2
+    exit 2
     ;;
 esac
 
