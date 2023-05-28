@@ -9,14 +9,23 @@ echo "This is $(c IndianRed)Indian Red$preset."
 
 ## Using
 
-1. Define `c_truecolor` to `true` or `false`. There is not (yet) any automatic
-   detection to distinguish 8-bit (256) color terminals from 24-bit (16
-   million). The Mac OS X system terminal lags behind most others in this
-   respect. The default is `true`.
+1. Define `c_truecolor` to `true` or `false`.
+   There is not (yet) any automatic detection to distinguish 8-bit (256) color
+   terminals from 24-bit (16 million)[^1].
+   The Mac OS X system terminal lags behind most others in this respect[^2].
+   The default is `true`.
 2. Optionally set `X11_RGB_TXT` to the full path of your [`rgb.txt`](rgb.txt)
    such as provided with X11. If unset, defaults to `/usr/share/X11/rgb.txt`,
    or if that file is unreadable, to an `rgb.txt` provided with `colors.sh`.
 3. Source [`color.sh`](color.sh).
+
+[^1]: I need to investigate [_test if your terminal supports 24 bit true
+  color_](https://gist.github.com/weimeng23/60b51b30eb758bd7a2a648436da1e562).
+  This formula may work, but needs testing, and integration into `color.sh`:
+  ```bash
+  printf "\x1b[38;2;255;100;0mTRUECOLOR\x1b[0m\n"
+  ```
+[^2]: Since I last wrote this, it seems improved on MacOS.
 
 Please note the default MacOS terminal is anemic, and does not show colors as
 nicely as Linux or Windows.
