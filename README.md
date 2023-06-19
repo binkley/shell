@@ -5,6 +5,8 @@
 Helpful shell scripts and programs.
 
 * [color](color/README.md) - Working with 8- and 24-bit color in the terminal
+* [coverage](coverage) - Check JVM Maven project coverage with JaCoCo and
+  Pitest
 * [fibs](fibs) - Matrix math with Fibonacci Q-matrix
 * [gee](gee/README.md) - Git and tee mashup
 * [git](git/README.md) - Git help and extensions
