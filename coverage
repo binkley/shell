@@ -21,7 +21,7 @@ OPTIONS:
                           unit - unit only
   -h, --help            print this help and exit
   -m, --with-mutation   also check mutation coverage
-  -o, --open-report     open coverage reports in a web browser
+  -o, --open-report     open coverage report(s) in a web browser
   -x, --no-rerun        only open coverage reports, do not rerun build
 
 ARGUMENTS:
@@ -47,15 +47,6 @@ $progname: invalid "$2" for -$2 option
 Try '$progname --help' for more information.
 EOM
     esac
-}
-
-function require-file() {
-    local file="$1"
-    shift
-    if [[ ! -f "$file" ]]; then
-        echo "$progname: $file: No such file or directory" >&2
-        return 1
-    fi
 }
 
 full=none
@@ -112,28 +103,29 @@ esac
 ((rc = 0)) || true
 if $run; then
     if $mutation; then
-        targets='-DwithHistory clean verify'
+        targets='verify'
     else
-        targets='clean test jacoco:report jacoco:check'
+        targets='test jacoco:report jacoco:check'
     fi
 
     # shellcheck disable=SC2086
     ./mvnw $flags "$@" $targets || ((rc += $?)) || true
-else
-    # Refresh coverage report when editing limits in pom.xml without rebuild
-    ./mvnw $flags "$@" jacoco:report jacoco:check || ((rc += $?)) || true
 fi
 
 if $open; then
-    if require-file target/site/jacoco/index.html; then
+    if [[ -r target/site/jacoco/index.html ]]; then
         (cd target/site/jacoco && open index.html)
     else
-        ((++rc))
+        echo "$0: No unit test coverage report" >&2
+        ((rc++)) || true
     fi
-    if $mutation && require-file target/pit-reports/index.html; then
-        (cd target/pit-reports && open index.html)
-    else
-        ((++rc))
+    if $mutation; then
+        if [[ -r target/pit-reports/index.html ]]; then
+            (cd target/pit-reports && open index.html)
+        else
+            echo "$0: No mutation test coverage report" >&2
+            ((rc++)) || true
+        fi
     fi
 fi
 
