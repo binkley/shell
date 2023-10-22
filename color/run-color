@@ -64,3 +64,8 @@ for x in reset bold light italic underscore blink rapidblink reverse \
     invisible strikethrough doubleunderscore; do
     eval "echo \"  ${x^^}: \$preset\${p$x}\$text\$preset\""
 done
+
+echo If your terminal has multiple fonts, though poorly supported
+for x in primary {11..19} fraktur; do
+    eval "echo \"  FONT ${x^^}: \$preset\${p${x}font}\$text\$preset\""
+done

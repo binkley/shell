@@ -7,18 +7,25 @@ printf -v pbold "\e[1m"
 printf -v plight "\e[2m"
 printf -v pitalic "\e[3m"
 printf -v punderscore "\e[4m"
-
-# Past here, until colors, this was about ASCII trying to make a terminal
-# behave with modern fonts, so of generally little use for non-graphical
-# terminals. Folks used to think that blinking and hidden text was cool.
-
 printf -v pblink "\e[5m"
 printf -v prapidblink "\e[6m" # Poorly supported
 printf -v preverse "\e[7m" # Poorly supported
 printf -v pinvisible "\e[8m" # Poorly supported
-
 printf -v pstrikethrough "\e[9m"
-# Codes 10-20 are about font shifting -- poorly supported
+
+# Codes 10-21 are about font shifting -- poorly supported
+printf -v pprimaryfont "\e[10m"
+printf -v palternativefont11 "\e[11m"
+printf -v palternativefont12 "\e[12m"
+printf -v palternativefont13 "\e[13m"
+printf -v palternativefont14 "\e[14m"
+printf -v palternativefont15 "\e[15m"
+printf -v palternativefont16 "\e[16m"
+printf -v palternativefont17 "\e[17m"
+printf -v palternativefont18 "\e[18m"
+printf -v palternativefont19 "\e[19m"
+printf -v pfrakturfont "\e[20m"
+
 printf -v pdoubleunderscore "\e[21m"
 printf -v pnormalintensity "\e[22m" # Undo formatting, but preserve color
 printf -v pnoitalicblackletter "\e[23m"
