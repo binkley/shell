@@ -23,6 +23,14 @@ shift $((OPTIND - 1))
 
 . $root_dir/color.sh
 
+function echo_with_ascii_formatting() {
+    local text="$1" ; shift
+
+    echo -n "$preset"
+    for x ; do eval echo -n "\$p$x" ; done
+    echo -n "$preset"
+}
+
 echo This is normal color
 for c in black red green yellow blue magenta cyan white; do
     eval "echo -n \" \${p$c}$c\$preset\""
@@ -71,30 +79,12 @@ for x in primary {11..19} fraktur; do
 done
 
 echo Mixing together
-echo -n "$preset"
-echo -n "$pbold"
-echo -n "$plight"
-echo -n "$pitalic"
-echo -n "$punderline"
-echo -n "$pblink"
-echo -n "$preverse"
-echo -n "$pstrikethrough"
-echo -n "$pgreen"
-echo "$text"
-echo -n "$preset"
+echo_with_ascii_formatting "$text" bold light italic underline blink reverse \
+    strikethrough green
 echo Mixing together, removing all but color
 echo Need more research on meaning of \"Normal intensity\"
-echo -n "$pbold"
-echo -n "$plight"
-echo -n "$pitalic"
-echo -n "$punderline"
-echo -n "$pblink"
-echo -n "$preverse"
-echo -n "$pstrikethrough"
-echo -n "$pgreen"
-echo -n "$pnormal"
-echo "$text"
-echo "$preset"
+echo_with_ascii_formatting "$text" bold light italic underline blink reverse \
+    strikethrough green normal
 
 echo Undo underline only
 echo -n "$pyellow"
