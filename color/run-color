@@ -23,13 +23,13 @@ shift $((OPTIND - 1))
 
 . $root_dir/color.sh
 
-echo This is normal
+echo This is normal color
 for c in black red green yellow blue magenta cyan white; do
     eval "echo -n \" \${p$c}$c\$preset\""
 done
 echo
 for e in bold light italic underscore blink reverse invisible strikethrough; do
-    echo This is $e
+    echo This is $e color
     for c in black red green yellow blue magenta cyan white; do
         eval "echo -n \" \${p$e}\${p$c}$c\$preset\""
     done
@@ -55,4 +55,12 @@ echo "$preset"
 
 for color; do
     printf "$(c $color)$color$preset\n"
+done
+
+echo These are ASCII escape codes for the terminal, including oddballs
+echo Please be cautious: most users just want bold and color
+text='FRODO LIVES!'
+for x in reset bold light italic underscore blink rapidblink reverse \
+    invisible strikethrough doubleunderscore; do
+    eval "echo \"  ${x^^}: \$preset\${p$x}\$text\$preset\""
 done

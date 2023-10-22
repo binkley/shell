@@ -1,4 +1,5 @@
 # Source me
+# See https://en.wikipedia.org/wiki/ANSI_escape_code
 
 printf -v preset "\e[0m"
 
@@ -6,11 +7,29 @@ printf -v pbold "\e[1m"
 printf -v plight "\e[2m"
 printf -v pitalic "\e[3m"
 printf -v punderscore "\e[4m"
-printf -v pblink "\e[5m"
-printf -v preverse "\e[7m"
-printf -v pinvisible "\e[8m"
-printf -v pstrikethrough "\e[9m"
 
+# Past here, until colors, this was about ASCII trying to make a terminal
+# behave with modern fonts, so of generally little use for non-graphical
+# terminals. Folks used to think that blinking and hidden text was cool.
+
+printf -v pblink "\e[5m"
+printf -v prapidblink "\e[6m" # Poorly supported
+printf -v preverse "\e[7m" # Poorly supported
+printf -v pinvisible "\e[8m" # Poorly supported
+
+printf -v pstrikethrough "\e[9m"
+# Codes 10-20 are about font shifting -- poorly supported
+printf -v pdoubleunderscore "\e[21m"
+printf -v pnormalintensity "\e[22m" # Undo formatting, but preserve color
+printf -v pnoitalicblackletter "\e[23m"
+printf -v pnounderline "\e[24m" # Undo underline, but preserve other formatting
+printf -v pnoblink "\e[25m" # Undo blink, but preserve other formatting
+printf -v pproportionalspacing "\e[26m" # Irrelevant with fixed font terminals
+printf -v pnoreverse "\e[27m" # Undo reversing, but preserve other formatting
+printf -v pnoinvisible "\e[28m" # Undo hidden text, but preserve other formatting
+printf -v pnostrikethrough "\e[29m" # Undo strikethrough, but preserve other formatting
+
+# Easy colors
 printf -v pblack "\e[30m"
 printf -v pred "\e[31m"
 printf -v pgreen "\e[32m"
