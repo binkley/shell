@@ -6,7 +6,7 @@ printf -v preset "\e[0m"
 printf -v pbold "\e[1m"
 printf -v plight "\e[2m"
 printf -v pitalic "\e[3m"
-printf -v punderscore "\e[4m"
+printf -v punderline "\e[4m"
 printf -v pblink "\e[5m"
 printf -v prapidblink "\e[6m" # Poorly supported
 printf -v preverse "\e[7m" # Poorly supported
@@ -26,8 +26,8 @@ printf -v palternativefont18 "\e[18m"
 printf -v palternativefont19 "\e[19m"
 printf -v pfrakturfont "\e[20m"
 
-printf -v pdoubleunderscore "\e[21m"
-printf -v pnormalintensity "\e[22m" # Undo formatting, but preserve color
+printf -v pdoubleunderline "\e[21m"
+printf -v pnormal "\e[22m" # Undo formatting, but preserve color
 printf -v pnoitalicblackletter "\e[23m"
 printf -v pnounderline "\e[24m" # Undo underline, but preserve other formatting
 printf -v pnoblink "\e[25m" # Undo blink, but preserve other formatting

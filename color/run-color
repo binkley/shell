@@ -28,7 +28,7 @@ for c in black red green yellow blue magenta cyan white; do
     eval "echo -n \" \${p$c}$c\$preset\""
 done
 echo
-for e in bold light italic underscore blink reverse invisible strikethrough; do
+for e in bold light italic underline blink reverse invisible strikethrough; do
     echo This is $e color
     for c in black red green yellow blue magenta cyan white; do
         eval "echo -n \" \${p$e}\${p$c}$c\$preset\""
@@ -60,8 +60,8 @@ done
 echo These are ASCII escape codes for the terminal, including oddballs
 echo Please be cautious: most users just want bold and color
 text='FRODO LIVES!'
-for x in reset bold light italic underscore blink rapidblink reverse \
-    invisible strikethrough doubleunderscore; do
+for x in reset bold light italic underline blink rapidblink reverse \
+    invisible strikethrough doubleunderline; do
     eval "echo \"  ${x^^}: \$preset\${p$x}\$text\$preset\""
 done
 
@@ -69,3 +69,37 @@ echo If your terminal has multiple fonts, though poorly supported
 for x in primary {11..19} fraktur; do
     eval "echo \"  FONT ${x^^}: \$preset\${p${x}font}\$text\$preset\""
 done
+
+echo Mixing together
+echo -n "$preset"
+echo -n "$pbold"
+echo -n "$plight"
+echo -n "$pitalic"
+echo -n "$punderline"
+echo -n "$pblink"
+echo -n "$preverse"
+echo -n "$pstrikethrough"
+echo -n "$pgreen"
+echo "$text"
+echo -n "$preset"
+echo Mixing together, removing all but color
+echo Need more research on meaning of \"Normal intensity\"
+echo -n "$pbold"
+echo -n "$plight"
+echo -n "$pitalic"
+echo -n "$punderline"
+echo -n "$pblink"
+echo -n "$preverse"
+echo -n "$pstrikethrough"
+echo -n "$pgreen"
+echo -n "$pnormal"
+echo "$text"
+echo "$preset"
+
+echo Undo underline only
+echo -n "$pyellow"
+echo -n "$punderline"
+echo "$text"
+echo -n "$pnounderline"
+echo "$text"
+echo -n "$preset"
