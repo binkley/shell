@@ -38,7 +38,10 @@ function echo_with_ascii_formatting() {
     while getopts :n opt; do
         case $opt in
         n ) reset=false ;;
-        * ) echo "$0: BUG: unexpected flag: $opt" >&2 ; exit 2 ;;
+        * )
+            echo "$0: BUG: unexpected flag or flag argument: $opt: $OPTARG" >&2
+            exit 2
+            ;;
         esac
     done
     shift $((OPTIND - 1))
@@ -47,7 +50,7 @@ function echo_with_ascii_formatting() {
 
     echo -n "$preset"
     for x ; do eval echo -n "\$p$x" ; done
-    $reset && echo -n "$preset"
+    $reset && echo -n "$preset" || true
 }
 
 echo This is normal color
