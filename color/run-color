@@ -1,6 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-export PS4='+${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): } '
+# Suppress various Shellcheck warnings.  Shellcheck is recommended, and
+# IntelliJ will download it for you.  See https://www.shellcheck.net/
+# shellcheck disable=SC2059,SC2209,SC2214,SC2215
+
+# Better debugging output when using `bash -x <script>`
+export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
+
+# Enable good runtime checks by Bash when executing the script
+set -e
+set -u
+set -o pipefail
 
 {
     pushd $(dirname $0)
@@ -24,11 +34,20 @@ shift $((OPTIND - 1))
 . $root_dir/color.sh
 
 function echo_with_ascii_formatting() {
+    reset=true
+    while getopts :n opt; do
+        case $opt in
+        n ) reset=false ;;
+        * ) echo "$0: BUG: unexpected flag: $opt" >&2 ; exit 2 ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
     local text="$1" ; shift
 
     echo -n "$preset"
     for x ; do eval echo -n "\$p$x" ; done
-    echo -n "$preset"
+    $reset && echo -n "$preset"
 }
 
 echo This is normal color
@@ -74,9 +93,11 @@ for x in reset bold light italic underline blink rapidblink reverse \
 done
 
 echo If your terminal has multiple fonts, though poorly supported
-for x in primary {11..19} fraktur; do
-    eval "echo \"  FONT ${x^^}: \$preset\${p${x}font}\$text\$preset\""
+echo "  FONT PRIMARY: $preset$pprimaryfont$text$preset"
+for x in {11..19}; do
+    eval "echo \"  FONT ${x^^}: \$preset\${palternate${x}font}\$text\$preset\""
 done
+echo "  FONT FRAKTUR: $preset$pfrakturfont$text$preset"
 
 echo Mixing together
 echo_with_ascii_formatting "$text" bold light italic underline blink reverse \
