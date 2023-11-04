@@ -88,7 +88,13 @@ echo "Or you can make $(c 210 30 30)your own red$preset."
 Using an 24-bit color palette, and to a lesser degree 8-bit, you can use around
 500 X11-defined colors by name, or provide your own RGB values.
 
+## Reading
+
+* [_Terminal Colors_](https://github.com/termstandard/colors)
+
 ## TODO
 
 * Detect 24- vs 8-bit color.
+  See [_Check if terminal supports 24-bit / true
+  color_](https://unix.stackexchange.com/a/450366)
 * Detect and handle non-color, e.g., output is not to a terminal.
