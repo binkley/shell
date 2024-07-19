@@ -44,7 +44,7 @@ a new, empty WIP commit.
   have at least one commit prior (even if an empty commit).
 * `tdd status` - Shows which files are committed to WIP, which are untested.
 * `tdd test` - Runs tests and commits locally to WIP if passing.
-* `tdd accept` - Rust tests and pushes if passing.  Starts a new WIP.
+* `tdd accept` - Runs tests and pushes if passing.  Starts a new WIP.
 
 ## TODO
 
