@@ -12,15 +12,17 @@ set -e
 set -u
 set -o pipefail
 
-readonly version=0
+readonly version=0  ## EDITABLE, PERHAPS MANUALLY OR THROUGH A CI PROCESS
 
-# When executing in a console, inform various tools of your screen settings
+readonly progname="$0"
+
+# Meaningful to terminal programs displaying information sensibly
 : "${LINES:=$(tput lines)}"
 export LINES
 : "${COLUMNS:=$(tput cols)}"
 export COLUMNS
 
-# Used for paging output, particularly "help"
+# Meaninful to terminal programs, especially when showing "help"
 fmt=fmt
 readonly fmt_width=$((COLUMNS - 5))
 function -setup-terminal() {
@@ -66,19 +68,21 @@ function -maybe-debug() {
 
 function -print-usage() {
     cat <<EOU | $fmt
-Usage: $0 [OPTION]... [TASK]...
+Usage: $progname [OPTION]... [TASK]...
 EOU
 }
 
 function -print-help() {
-    echo "$0, version $version"
+    echo "$progname, version $version"
     -print-usage
     cat <<EOH
 
 Options:
+  -S, --save[=DIR]     Save output to DIR (default in place) named "out"
   -c, --color          Print in color
       --no-color       Print without color
-  -d, --debug          Print debug output while running.  Repeat for more output
+  -d, --debug          Print debug output while running.
+                       Repeat for more output
   -e, --prefix=PREFIX  Prefix dry run output (default '> ')
   -h, --help           Print help and exit normally
   -n, --dry-run        Do nothing (dry run); echo actions
@@ -114,7 +118,7 @@ EOV
 
 # Only needed for "task-based" scripts, ala how git has subcommands
 function -find-in-tasks() {
-    local cmd="$1"
+    local cmd="$1"; shift
     for task in "${tasks[@]}"; do
         [[ "$cmd" == "$task" ]] && return 0
     done
@@ -126,8 +130,8 @@ function -check-cmd() {
     local cmd="$1"
 
     if ! -find-in-tasks "$cmd"; then
-        echo "$0: $cmd: Unknown command." >&2
-        echo "Try '$0 --help' for more information." >&2
+        echo "$progname: $cmd: Unknown command." >&2
+        echo "Try '$progname --help' for more information." >&2
         -print-usage >&2
         exit 2
     fi
@@ -146,6 +150,10 @@ readonly tasks
 # Used for paging output, particularly "help"
 -setup-terminal
 
+function -check-savefile() {
+    local savedir="$1"
+}
+
 # Rule of thumb: Define default values for things which options can change
 [[ -t 1 ]] && color=true || color=false
 ((debug = 0)) || true
@@ -155,11 +163,15 @@ pwd=pwd
 run= # Nothing, unless dry run
 verbose=false
 # Note the "-" as an option: This supports long options ("--help" vs "-h")
-while getopts :cdE:hnv-: opt; do
+while getopts :E:Scdhns:v-: opt; do
     # Complex, but addresses "--foo=bar" type options
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     E | prefix) prefix="$OPTARG" ;;
+    S | )
+        savefile="$PWD/out"
+        -check-savefile "$savefile"
+        ;;
     c | color) color=true ;;
     no-color) color=false ;;
     d | debug) ((++debug)) ;;
@@ -170,6 +182,10 @@ while getopts :cdE:hnv-: opt; do
     n | dry-run)
         print="echo $prefix$print" pwd="echo $prefix$pwd"
         run=echo
+        ;;
+    s )
+        savefile="$OPTARG/out"
+        -check-savefile "$savefile"
         ;;
     v | verbose) verbose=true ;;
     version)
@@ -190,16 +206,20 @@ readonly verbose
 -maybe-debug
 readonly debug
 
-# Only needed for "task-based" scripts, ala how git has subcommands
-# Specific to this example.  YMMV
+# Heyo, this script is a template.
+# So I am bravely dumping info and quiting.
+
+echo "I am $progname (checking ... $0)"
+
+# Only needed for "task-based" scripts, ala git subcommands
 # shellcheck disable=SC2207
 commands=($(make -f functions/Runfile "$@"))
 
-# Only needed for "task-based" scripts, ala how git has subcommands
+# For "task-based" scripts, ala git commands
 for cmd in "${commands[@]}"; do
     if ! -find-in-tasks "$cmd"; then
-        echo "$0: $cmd: Unknown command." >&2
-        echo "Try '$0 --help' for more information." >&2
+        echo "$progname: $cmd: Unknown command." >&2
+        echo "Try '$progname --help' for more information." >&2
         -print-usage >&2
         exit 2
     fi
