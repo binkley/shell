@@ -12,7 +12,7 @@ set -e
 set -u
 set -o pipefail
 
-readonly version=0  ## EDITABLE, PERHAPS MANUALLY OR THROUGH A CI PROCESS
+readonly version=0 ## EDITABLE, PERHAPS MANUALLY OR THROUGH A CI PROCESS
 
 readonly progname="$0"
 
@@ -118,7 +118,8 @@ EOV
 
 # Only needed for "task-based" scripts, ala how git has subcommands
 function -find-in-tasks() {
-    local cmd="$1"; shift
+    local cmd="$1"
+    shift
     for task in "${tasks[@]}"; do
         [[ "$cmd" == "$task" ]] && return 0
     done
@@ -168,7 +169,7 @@ while getopts :E:Scdhns:v-: opt; do
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     E | prefix) prefix="$OPTARG" ;;
-    S | )
+    S | save)
         savefile="$PWD/out"
         -check-savefile "$savefile"
         ;;
@@ -183,7 +184,7 @@ while getopts :E:Scdhns:v-: opt; do
         print="echo $prefix$print" pwd="echo $prefix$pwd"
         run=echo
         ;;
-    s )
+    s)
         savefile="$OPTARG/out"
         -check-savefile "$savefile"
         ;;
