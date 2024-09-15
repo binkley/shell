@@ -48,7 +48,7 @@ offline=false
 update=false
 verbose=false
 while getopts :hiouv-: opt; do
-    [[ - == $opt ]] && opt="${OPTARG%%=*}" OPTARG="${OPTARG#*=}"
+    [[ - == "$opt" ]] && opt="${OPTARG%%=*}" OPTARG="${OPTARG#*=}"
     case $opt in
     h | help)
         print-help
@@ -69,8 +69,6 @@ Try '${0##*/} --help' for more information.
 EOE
         exit 2
         ;;
-
-    \
         ?)
         cat <<EOE >&2
 ${0##*/}: invalid option -- '$OPTARG'
@@ -95,12 +93,12 @@ fi
 
 name=${0##*/}
 if $inplace; then
-    pushd ${0%/*}
+    pushd "${0%/*}"
     url_file=$PWD/.$name.url
-    url=$(<$url_file)
-    content_file=$PWD/.$name
+    url="$(<"$url_file")"
+    content_file="$PWD/.$name"
     popd
-    set -- $url $content_file "$@"
+    set -- "$url" "$content_file" "$@"
 fi >/dev/null
 
 case $# in
@@ -129,50 +127,51 @@ if $offline; then
 fi
 
 case $name in
-.*) etag_file=$(dirname $content_file)/$name.etag ;;
-*) etag_file=$(dirname $content_file)/.$name.etag ;;
+.*) etag_file=$(dirname "$content_file")/$name.etag ;;
+*) etag_file=$(dirname "$content_file")/.$name.etag ;;
 esac
 readonly etag_file
-[[ -s $etag_file ]] || echo 0 >$etag_file
-readonly old_etag=$(<$etag_file)
+[[ -s $etag_file ]] || echo 0 >"$etag_file"
+old_etag="$(<"$etag_file")"
+readonly old_etag
 
 trap 'rm -rf $tmp_dir' EXIT
-tmp_dir=$(mktemp -d 2>/dev/null || mktemp -d -t ${0##*/})
+tmp_dir="$(mktemp -d 2>/dev/null || mktemp -d -t "${0##*/}")"
 tmp_headers_file=$tmp_dir/headers
 tmp_content_file=$tmp_dir/content
 
-read http_code < <(curl -s -D $tmp_headers_file -o $tmp_content_file \
+read -r http_code < <(curl -s -D "$tmp_headers_file" -o "$tmp_content_file" \
     -w '%{http_code}\n' \
     -H "If-None-Match: \"$old_etag\"" \
-    $url)
+    "$url")
 readonly http_code
 
 readonly no_update=304
 readonly updated=200
 case $http_code in
-$no_update)
+"$no_update")
     if $verbose; then
         echo "${0##*/}: no update" >&2
     fi
-    rm -rf $tmp_dir
+    rm -rf "$tmp_dir"
     exec $content_file "$@"
     ;;
-$updated) if $verbose; then
+"$updated") if $verbose; then
     echo "${0##*/}: updated" >&2
 fi ;;
 *)
-    echo "${0##*/}: reponse $http_code for $url" >&2
+    echo "${0##*/}: response $http_code for $url" >&2
     exit 1
     ;;
 esac
 
-while read header value; do
-    [[ ETag: == $header ]] || continue
+while read -r header value; do
+    [[ etag: == "${header,,}" ]] || continue
     new_etag=${value%$'\r'}
     new_etag=${new_etag#\"}
     new_etag=${new_etag%\"}
     break
-done <$tmp_headers_file
+done <"$tmp_headers_file"
 readonly new_etag
 
 if [[ -z "$new_etag" ]]; then
@@ -180,9 +179,9 @@ if [[ -z "$new_etag" ]]; then
     exit 1
 fi
 
-mv $tmp_content_file $content_file
-chmod +x $content_file
-echo $new_etag >$etag_file
+mv "$tmp_content_file" "$content_file"
+chmod +x "$content_file"
+echo "$new_etag" >"$etag_file"
 
-rm -rf $tmp_dir
+rm -rf "$tmp_dir"
 exec $content_file "$@"
