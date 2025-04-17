@@ -11,6 +11,7 @@ export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 set -e
 set -u
 set -o pipefail
+IFS=$'\t\n' # Ignore environment for parsing - security and good sense
 
 readonly version=0 ## EDITABLE, PERHAPS MANUALLY OR THROUGH A CI PROCESS
 
@@ -22,7 +23,7 @@ export LINES
 : "${COLUMNS:=$(tput cols)}"
 export COLUMNS
 
-# Meaninful to terminal programs, especially when showing "help"
+# Meaningful to terminal programs, especially when showing "help"
 fmt=fmt
 readonly fmt_width=$((COLUMNS - 5))
 function -setup-terminal() {
