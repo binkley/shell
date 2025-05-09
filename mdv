@@ -44,7 +44,7 @@ function setup-terminal() {
 
 function print-usage() {
     cat <<EOU | $fmt
-Usage: $0 [-h|--help][-m|--man][--version][-w|--web] MARKDOWN-FILE [VIEWER-OPTIONS]
+Usage: $0 [-h|--help][-F|--from][-m|--man][--version][-w|--web] MARKDOWN-FILE [VIEWER-OPTIONS]
 EOU
 }
 
@@ -53,10 +53,12 @@ function print-help() {
     print-usage
     cat <<EOH
 Renders a single GitHub MARKDOWN-FILE to your BROWSER or PAGER.
+This includes viewing Markdown manual pages using the --man option.
+The default web browser is lynx, a command-line tool.
 
 Options:
   -h, --help    Print help and exit normally
-  -f, --from    Pick a specific markdown variant (default: gfm)
+  -F, --from    Pick a specific pandoc markdown variant (default: gfm)
   -m, --man     View as man page
   --version     Print version and exit normally
   -w, --web     View as HTML (default)
@@ -100,7 +102,7 @@ function view-as-man() {
     shift
     is-single-file "$file"
 
-    pandoc -s -f $from -t man "$file" | groff -T utf8 -man | ${PAGER-less} "$@"
+    pandoc -s -f "$from" -t man "$file" | groff -T utf8 -man | ${PAGER-less} "$@"
 }
 
 function view-as-web() {
@@ -108,21 +110,21 @@ function view-as-web() {
     shift
     is-single-file "$file"
 
-    pandoc -f $from -t html5 "$file" | $BROWSER "$@"
+    pandoc -f "$from" -t html5 "$file" | $BROWSER "$@"
 }
 
 setup-terminal
 
 from=gfm
 view=web
-while getopts :hf:mvw-: opt; do
+while getopts :hF:mvw-: opt; do
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     h | help)
         print-help
         exit 0
         ;;
-    f | from) from="$OPTARG" ;;
+    F | from) from="$OPTARG" ;;
     m | man) view=man ;;
     version)
         print-version
