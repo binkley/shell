@@ -24,21 +24,21 @@ export LINES
 export COLUMNS
 
 # Meaningful to terminal programs, especially when showing "help"
-fmt=fmt
+fmt=(fmt)
 readonly fmt_width=$((COLUMNS - 5))
 function -setup-terminal() {
     if [[ ! -t 1 ]]; then
-        readonly fmt=cat
+        readonly fmt=(cat)
         return 0
     fi
 
     if ((fmt_width < 10)); then
-        echo "$0: Your terminal is too narrow." >&2
-        readonly fmt=cat
+        echo "$0: ${pred}Your terminal is too narrow${preset}." >&2
+        readonly fmt=(cat)
         return 0
     fi
 
-    fmt="fmt -w $fmt_width"
+    fmt=(fmt -w $fmt_width)
     readonly fmt
 }
 
@@ -46,13 +46,19 @@ function -setup-colors() {
     local -r ncolors=$(tput colors)
 
     if $color && ((${ncolors-0} > 7)); then
+        printf -v pred "$(tput setaf 1)"
         printf -v pgreen "$(tput setaf 2)"
+        printf -v pyellow "$(tput setaf 3)"
         printf -v preset "$(tput sgr0)"
     else
+        pred=''
         pgreen=''
+        pyellow=''
         preset=''
     fi
+    readonly pred
     readonly pgreen
+    readonly pyellow
     readonly preset
 }
 
@@ -132,7 +138,7 @@ function -check-cmd() {
     local cmd="$1"
 
     if ! -find-in-tasks "$cmd"; then
-        echo "$progname: $cmd: Unknown command." >&2
+        echo "$progname: $cmd: ${pred}Unknown command${preset}." >&2
         echo "Try '$progname --help' for more information." >&2
         -print-usage >&2
         exit 2
@@ -220,7 +226,7 @@ commands=($(make -f functions/Runfile "$@"))
 # For "task-based" scripts, ala git commands
 for cmd in "${commands[@]}"; do
     if ! -find-in-tasks "$cmd"; then
-        echo "$progname: $cmd: Unknown command." >&2
+        echo "$progname: $cmd: ${pred}Unknown command{$preset}." >&2
         echo "Try '$progname --help' for more information." >&2
         -print-usage >&2
         exit 2
