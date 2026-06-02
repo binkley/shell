@@ -33,7 +33,7 @@ function -setup-terminal() {
     fi
 
     if ((fmt_width < 10)); then
-        echo "$0: ${pred}Your terminal is too narrow${preset}." >&2
+        echo "$progname: ${pbold}${pred}Your terminal is too narrow${preset}." >&2
         readonly fmt=(cat)
         return 0
     fi
@@ -46,6 +46,7 @@ function -setup-colors() {
     local -r ncolors=$(tput colors)
 
     if $color && ((${ncolors-0} > 7)); then
+        printf -v pbold "$(tput bold)"
         printf -v pred "$(tput setaf 1)"
         printf -v pgreen "$(tput setaf 2)"
         printf -v pyellow "$(tput setaf 3)"
@@ -158,10 +159,6 @@ readonly tasks
 # Used for paging output, particularly "help"
 -setup-terminal
 
-function -check-savefile() {
-    local savedir="$1"
-}
-
 # Rule of thumb: Define default values for things which options can change
 [[ -t 1 ]] && color=true || color=false
 ((debug = 0)) || true
@@ -171,15 +168,12 @@ pwd=pwd
 run= # Nothing, unless dry run
 verbose=false
 # Note the "-" as an option: This supports long options ("--help" vs "-h")
-while getopts :E:Scdhns:v-: opt; do
+while getopts :E:Scdhnv-: opt; do
     # Complex, but addresses "--foo=bar" type options
     [[ $opt == - ]] && opt=${OPTARG%%=*} OPTARG=${OPTARG#*=}
     case $opt in
     E | prefix) prefix="$OPTARG" ;;
-    S | save)
-        savefile="$PWD/out"
-        -check-savefile "$savefile"
-        ;;
+    S) savefile="./out" ;;
     c | color) color=true ;;
     no-color) color=false ;;
     d | debug) ((++debug)) ;;
@@ -188,13 +182,11 @@ while getopts :E:Scdhns:v-: opt; do
         exit 0
         ;;
     n | dry-run)
-        print="echo $prefix$print" pwd="echo $prefix$pwd"
+        print="echo $prefix$print"
+        pwd="echo $prefix$pwd"
         run=echo
         ;;
-    s)
-        savefile="$OPTARG/out"
-        -check-savefile "$savefile"
-        ;;
+    save) [[ -n "$OPTARG" ]] && savefile="$OPTARG/out" || savefile="./out" ;;
     v | verbose) verbose=true ;;
     version)
         -print-version
@@ -226,7 +218,7 @@ commands=($(make -f functions/Runfile "$@"))
 # For "task-based" scripts, ala git commands
 for cmd in "${commands[@]}"; do
     if ! -find-in-tasks "$cmd"; then
-        echo "$progname: $cmd: ${pred}Unknown command${preset}." >&2
+        echo "$progname: $cmd: ${pbold}${pred}Unknown command${preset}." >&2
         echo "Try '$progname --help' for more information." >&2
         -print-usage >&2
         exit 2
