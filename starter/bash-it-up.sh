@@ -226,7 +226,7 @@ commands=($(make -f functions/Runfile "$@"))
 # For "task-based" scripts, ala git commands
 for cmd in "${commands[@]}"; do
     if ! -find-in-tasks "$cmd"; then
-        echo "$progname: $cmd: ${pred}Unknown command{$preset}." >&2
+        echo "$progname: $cmd: ${pred}Unknown command${preset}." >&2
         echo "Try '$progname --help' for more information." >&2
         -print-usage >&2
         exit 2
