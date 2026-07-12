@@ -11,6 +11,10 @@ export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]:+${FUNCNAME[0]}():} '
 set -e
 set -u
 set -o pipefail
+set -E # Inherit ERR (error) trap in functions and subshells
+# Run the last command of a pipe in the current shell. This lets you modify
+# shell variables from the last pipline state and avoid awkward workarounds
+shopt -s lastpipe
 IFS=$'\t\n' # Ignore environment for parsing - security and good sense
 
 readonly version=0 ## EDITABLE, PERHAPS MANUALLY OR THROUGH A CI PROCESS
@@ -31,7 +35,7 @@ export COLUMNS
 # Meaningful to terminal programs, especially when showing "help"
 fmt=(fmt)
 readonly fmt_width=$((COLUMNS - 5))
-function -setup-terminal() {
+function _setup-terminal() {
     if [[ ! -t 1 ]]; then
         readonly fmt=(cat)
         readonly pager=(cat)
@@ -48,16 +52,14 @@ function -setup-terminal() {
     readonly pager
 
     if ((fmt_width < 10)); then
-        echo "$progname: ${pbold}${pred}Your terminal is too narrow${preset}." >&2
-        readonly fmt=(cat)
-        return 0
+        _fail-error 1 "Your terminal is too narrow."
     fi
 
     fmt=(fmt -w $fmt_width)
     readonly fmt
 }
 
-function -setup-colors() {
+function _setup-colors() {
     if [[ -n "${NO_COLOR-}" ]]; then
         color=false
     fi
@@ -85,7 +87,27 @@ function -setup-colors() {
     readonly preset
 }
 
-function -maybe-debug() {
+function _fail-error() {
+    local -r code="$1"
+    shift
+    echo "$progname: ${pbold}${pred}$*${preset}" >&2
+    exit "$code"
+}
+
+function _on-error() {
+    # Call with CODE-NUMBER for exit followed by your error message
+    local -r code="$?"
+    trap - ERR # Prevent infinite loops if a command inside the trap fails
+    _fail-error "$code" "Command '$BASH_COMMAND' failed at line $LINENO."
+}
+
+function _on-exit() {
+    # If you have cleanup to always do, put it here, eg rm -rf "$tmpfile"
+    # This starter script has no cleanup so 'true' means nothing to do
+    true
+}
+
+function _maybe-debug() {
     case $debug in
     0) debug=false ;;
     1) debug=true ;;
@@ -96,15 +118,19 @@ function -maybe-debug() {
     esac
 }
 
-function -print-usage() {
+# Handle exit codes gracefully and provide cleanup if needed
+trap _on-exit EXIT
+trap _on-error ERR
+
+function _print-usage() {
     cat <<EOU | $fmt
 ${pbold}Usage:${preset} $progname [OPTION]... [TASK]...
 EOU
 }
 
-function -print-help() {
+function _print-help() {
     echo "${pbold}$progname${preset}, version $version"
-    -print-usage
+    _print-usage
     cat <<EOH
 
 ${pbold}Options:${preset}
@@ -123,15 +149,15 @@ ${pbold}Tasks:${preset}
 EOH
 
     for task in "${tasks[@]}"; do
-        local help_fn="-$task-help"
+        local help_fn="_$task-help"
         echo "  * ${pbold}${pgreen}$task${preset}"
         if declare -F -- "$help_fn" >/dev/null 2>&1; then
-            $help_fn | -format-help
+            $help_fn | _format-help
         fi
     done
 }
 
-function -format-help() {
+function _format-help() {
     if [[ "$fmt" == "cat" ]]; then
         cat | sed 's/^/       /'
     else
@@ -140,7 +166,7 @@ function -format-help() {
 }
 
 # Follow GNU standards for command line tools
-function -print-version() {
+function _print-version() {
     cat <<EOV
 ${0##*/} $version
 This is free and unencumbered software released into the public domain.
@@ -151,36 +177,36 @@ EOV
 }
 
 # Only needed for "task-based" scripts, ala how git has subcommands
-function -find-in-tasks() {
-    local cmd="$1"
+function _find-in-tasks() {
+    local command="$1"
     shift
     for task in "${tasks[@]}"; do
-        [[ "$cmd" == "$task" ]] && return 0
+        [[ "$command" == "$task" ]] && return 0
     done
     return 1
 }
 
 # Only needed for "task-based" scripts, ala how git has subcommands
-function -check-cmd() {
-    local cmd="$1"
+function _check-command() {
+    local command="$1"
 
-    if ! -find-in-tasks "$cmd"; then
-        echo "$progname: $cmd: ${pred}Unknown command${preset}." >&2
+    if ! _find-in-tasks "$command"; then
         echo "Try '$progname --help' for more information." >&2
-        -print-usage >&2
-        exit 2
+        _print-usage >&2
+        _fail-error 2 "$command: Unknown command."
     fi
 }
 
 # Only needed for "task-based" scripts, ala how git has subcommands
-# Unlike git, these are relative to the script location in "functions"
+shopt -s nullglob
 for f in "$scriptdir/functions"/*.sh; do
     # shellcheck source=functions
-    [[ -e "$f" ]] && source "$f" || true
+    source "$f"
 done
+shopt -u nullglob
 
 # Only needed for "task-based" scripts, ala how git has subcommands
-mapfile -t tasks < <(declare -F | cut -d' ' -f3 | grep -v '^-' | sort)
+declare -F | cut -d' ' -f3 | grep -v '^_' | sort | mapfile -t tasks
 readonly tasks
 
 # Rule of thumb: Define default values for things which options can change
@@ -202,9 +228,9 @@ while getopts :E:Scdhnv-: opt; do
     no-color) color=false ;;
     d | debug) ((++debug)) ;;
     h | help)
-        -setup-colors
-        -setup-terminal
-        -print-help | "${pager[@]}"
+        _setup-colors
+        _setup-terminal
+        _print-help | "${pager[@]}"
         exit 0
         ;;
     n | dry-run)
@@ -215,11 +241,11 @@ while getopts :E:Scdhnv-: opt; do
     save) [[ -n "$OPTARG" ]] && savefile="$OPTARG/out" || savefile="./out" ;;
     v | verbose) verbose=true ;;
     version)
-        -print-version
+        _print-version
         exit 0
         ;;
     *)
-        -print-usage >&2
+        _print-usage >&2
         exit 2
         ;;
     esac
@@ -228,12 +254,12 @@ shift $((OPTIND - 1))
 readonly print
 readonly verbose
 
--setup-colors
+_setup-colors
 
 # Used for paging output, particularly "help"
--setup-terminal
+_setup-terminal
 
--maybe-debug
+_maybe-debug
 readonly debug
 
 # Heyo, this script is a template.
@@ -241,17 +267,16 @@ readonly debug
 
 echo "I am $progname (checking ... $0)"
 
-# Only needed for "task-based" scripts, ala git subcommands
-# shellcheck disable=SC2207
-commands=($(make -f functions/Runfile "$@"))
+# For "task-based" scripts, ala git subcommands
+make -f functions/Runfile "$@" | mapfile -t commands
 
 # For "task-based" scripts, ala git commands
-for cmd in "${commands[@]}"; do
-    if ! -find-in-tasks "$cmd"; then
-        echo "$progname: $cmd: ${pbold}${pred}Unknown command${preset}." >&2
+for command in "${commands[@]}"; do
+    if ! _find-in-tasks "$command"; then
         echo "Try '$progname --help' for more information." >&2
-        -print-usage >&2
-        exit 2
+        _print-usage >&2
+        _fail-error 2 "$command: Unknown command."
     fi
-    $run "$cmd"
+    $run "$command"
 done
+
