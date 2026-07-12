@@ -17,10 +17,15 @@ readonly version=0 ## EDITABLE, PERHAPS MANUALLY OR THROUGH A CI PROCESS
 
 readonly progname="$0"
 
+scriptdir="."
+[[ "$0" == */* ]] && scriptdir="${0%/*}"
+readonly scriptdir
+
 # Meaningful to terminal programs displaying information sensibly
-: "${LINES:=$(tput lines)}"
+[[ -t 1 ]] && read -r LINES COLUMNS < <(stty size 2>/dev/null) || true
+: "${LINES:=24}"
 export LINES
-: "${COLUMNS:=$(tput cols)}"
+: "${COLUMNS:=80}"
 export COLUMNS
 
 # Meaningful to terminal programs, especially when showing "help"
@@ -29,8 +34,18 @@ readonly fmt_width=$((COLUMNS - 5))
 function -setup-terminal() {
     if [[ ! -t 1 ]]; then
         readonly fmt=(cat)
+        readonly pager=(cat)
         return 0
     fi
+
+    if command -v less >/dev/null 2>&1; then
+        pager=(less -F -R -X)
+    elif command -v more >/dev/null 2>&1; then
+        pager=(more)
+    else
+        pager=(cat)
+    fi
+    readonly pager
 
     if ((fmt_width < 10)); then
         echo "$progname: ${pbold}${pred}Your terminal is too narrow${preset}." >&2
@@ -43,23 +58,30 @@ function -setup-terminal() {
 }
 
 function -setup-colors() {
-    local -r ncolors=$(tput colors)
+    if [[ -n "${NO_COLOR-}" ]]; then
+        color=false
+    fi
 
-    if $color && ((${ncolors-0} > 7)); then
-        printf -v pbold "$(tput bold)"
-        printf -v pred "$(tput setaf 1)"
-        printf -v pgreen "$(tput setaf 2)"
-        printf -v pyellow "$(tput setaf 3)"
-        printf -v preset "$(tput sgr0)"
+    if $color; then
+        pbold=$'\033[1m'
+        pred=$'\033[0;31m'
+        pgreen=$'\033[0;32m'
+        pyellow=$'\033[0;33m'
+        punderline=$'\033[4m'
+        preset=$'\033[0m'
     else
+        pbold=''
         pred=''
         pgreen=''
         pyellow=''
+        punderline=''
         preset=''
     fi
+    readonly pbold
     readonly pred
     readonly pgreen
     readonly pyellow
+    readonly punderline
     readonly preset
 }
 
@@ -76,33 +98,33 @@ function -maybe-debug() {
 
 function -print-usage() {
     cat <<EOU | $fmt
-Usage: $progname [OPTION]... [TASK]...
+${pbold}Usage:${preset} $progname [OPTION]... [TASK]...
 EOU
 }
 
 function -print-help() {
-    echo "$progname, version $version"
+    echo "${pbold}$progname${preset}, version $version"
     -print-usage
     cat <<EOH
 
-Options:
-  -S, --save[=DIR]     Save output to DIR (default in place) named "out"
-  -c, --color          Print in color
-      --no-color       Print without color
-  -d, --debug          Print debug output while running.
+${pbold}Options:${preset}
+  ${pbold}${pgreen}-S, --save${preset}[=${punderline}DIR${preset}]     Save output to DIR (default in place) named "out"
+  ${pbold}${pgreen}-c, --color${preset}          Print in color
+      ${pbold}${pgreen}--no-color${preset}       Print without color
+  ${pbold}${pgreen}-d, --debug${preset}          Print debug output while running.
                        Repeat for more output
-  -e, --prefix=PREFIX  Prefix dry run output (default '> ')
-  -h, --help           Print help and exit normally
-  -n, --dry-run        Do nothing (dry run); echo actions
-  -v, --verbose        Verbose output
-  --version            Print version and exit normally
+  ${pbold}${pgreen}-e, --prefix${preset}=${punderline}PREFIX${preset}  Prefix dry run output (default '> ')
+  ${pbold}${pgreen}-h, --help${preset}           Print help and exit normally
+  ${pbold}${pgreen}-n, --dry-run${preset}        Do nothing (dry run); echo actions
+  ${pbold}${pgreen}-v, --verbose${preset}        Verbose output
+      ${pbold}${pgreen}--version${preset}        Print version and exit normally
 
-Tasks:
+${pbold}Tasks:${preset}
 EOH
 
     for task in "${tasks[@]}"; do
         local help_fn="-$task-help"
-        echo "  * $task"
+        echo "  * ${pbold}${pgreen}$task${preset}"
         if declare -F -- "$help_fn" >/dev/null 2>&1; then
             $help_fn | -format-help
         fi
@@ -110,7 +132,11 @@ EOH
 }
 
 function -format-help() {
-    $fmt -w $((fmt_width - 8)) | sed 's/^/       /'
+    if [[ "$fmt" == "cat" ]]; then
+        cat | sed 's/^/       /'
+    else
+        $fmt -w $((fmt_width - 8)) | sed 's/^/       /'
+    fi
 }
 
 # Follow GNU standards for command line tools
@@ -147,17 +173,15 @@ function -check-cmd() {
 }
 
 # Only needed for "task-based" scripts, ala how git has subcommands
-for f in "${0%/*}/functions"/*.sh; do
+# Unlike git, these are relative to the script location in "functions"
+for f in "$scriptdir/functions"/*.sh; do
     # shellcheck source=functions
-    source "$f"
+    [[ -e "$f" ]] && source "$f" || true
 done
 
 # Only needed for "task-based" scripts, ala how git has subcommands
 mapfile -t tasks < <(declare -F | cut -d' ' -f3 | grep -v '^-' | sort)
 readonly tasks
-
-# Used for paging output, particularly "help"
--setup-terminal
 
 # Rule of thumb: Define default values for things which options can change
 [[ -t 1 ]] && color=true || color=false
@@ -178,7 +202,9 @@ while getopts :E:Scdhnv-: opt; do
     no-color) color=false ;;
     d | debug) ((++debug)) ;;
     h | help)
-        -print-help
+        -setup-colors
+        -setup-terminal
+        -print-help | "${pager[@]}"
         exit 0
         ;;
     n | dry-run)
@@ -203,6 +229,10 @@ readonly print
 readonly verbose
 
 -setup-colors
+
+# Used for paging output, particularly "help"
+-setup-terminal
+
 -maybe-debug
 readonly debug
 
