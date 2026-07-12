@@ -6,6 +6,7 @@ BASH.
 ## Features
 
 * Full help
+* Colorful logging
 * Long option arguments
 * Debugging script itself
 * Dry-run example
