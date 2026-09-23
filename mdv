@@ -24,24 +24,6 @@ command -v pandoc >/dev/null || {
     exit 1
 }
 
-fmt=fmt
-readonly fmt_width=$((COLUMNS - 5))
-function setup-terminal() {
-    if [[ ! -t 1 ]]; then
-        readonly fmt=cat
-        return 0
-    fi
-
-    if ((fmt_width < 10)); then
-        echo "$0: Your terminal is too narrow." >&2
-        readonly fmt=cat
-        return 0
-    fi
-
-    fmt="fmt -w $fmt_width"
-    readonly fmt
-}
-
 function print-usage() {
     cat <<EOU
 Usage: $0 [-h|--help][-F|--from][-m|--man][--version][-w|--web] MARKDOWN-FILE
@@ -110,8 +92,6 @@ function view-as-web() {
 
     pandoc -f "$from" -t html5 "$file" | $BROWSER
 }
-
-setup-terminal
 
 from=gfm
 view=web
