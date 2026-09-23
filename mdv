@@ -43,7 +43,7 @@ function setup-terminal() {
 }
 
 function print-usage() {
-    cat <<EOU | $fmt
+    cat <<EOU
 Usage: $0 [-h|--help][-F|--from][-m|--man][--version][-w|--web] MARKDOWN-FILE [VIEWER-OPTIONS]
 EOU
 }
@@ -138,6 +138,14 @@ while getopts :hF:mvw-: opt; do
     esac
 done
 shift $((OPTIND - 1))
+
+case $# in
+    1 ) ;;
+    *)
+        print-usage >&2
+        exit 2
+        ;;
+esac
 
 file="$1"
 shift 2 || true # Drop the --
